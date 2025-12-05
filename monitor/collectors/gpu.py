@@ -1,7 +1,7 @@
 """GPU metrics collector using NVML or nvidia-smi."""
 
 import subprocess
-import re
+import os
 from typing import List, Dict, Any
 
 try:
@@ -9,6 +9,12 @@ try:
     PYNVML_AVAILABLE = True
 except ImportError:
     PYNVML_AVAILABLE = False
+
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
 
 
 class GPUCollector:
@@ -35,6 +41,77 @@ class GPUCollector:
             return self._collect_nvml()
         else:
             return self._collect_nvidia_smi()
+    
+    def collect_processes(self) -> List[Dict[str, Any]]:
+        """Get detailed process info for all GPUs."""
+        if not self.nvml_initialized:
+            return self._collect_processes_nvidia_smi()
+        
+        processes = []
+        try:
+            device_count = pynvml.nvmlDeviceGetCount()
+            for i in range(device_count):
+                handle = pynvml.nvmlDeviceGetHandleByIndex(i)
+                gpu_name = pynvml.nvmlDeviceGetName(handle)
+                
+                try:
+                    procs = pynvml.nvmlDeviceGetComputeRunningProcesses(handle)
+                    for proc in procs:
+                        proc_info = {
+                            'gpu_index': i,
+                            'gpu_name': gpu_name,
+                            'pid': proc.pid,
+                            'gpu_memory_mb': proc.usedGpuMemory / (1024**2) if proc.usedGpuMemory else 0,
+                            'name': 'Unknown',
+                            'username': 'Unknown',
+                        }
+                        
+                        if PSUTIL_AVAILABLE:
+                            try:
+                                p = psutil.Process(proc.pid)
+                                proc_info['name'] = p.name()
+                                proc_info['username'] = p.username()
+                                proc_info['cpu_percent'] = p.cpu_percent()
+                                proc_info['memory_mb'] = p.memory_info().rss / (1024**2)
+                                proc_info['cmdline'] = ' '.join(p.cmdline()[:3])
+                            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                                pass
+                        
+                        processes.append(proc_info)
+                except Exception:
+                    pass
+        except Exception:
+            pass
+        
+        return processes
+    
+    def _collect_processes_nvidia_smi(self) -> List[Dict[str, Any]]:
+        """Fallback process collection via nvidia-smi."""
+        try:
+            result = subprocess.run(
+                ['nvidia-smi', '--query-compute-apps=gpu_uuid,pid,used_memory,process_name',
+                 '--format=csv,noheader,nounits'],
+                capture_output=True, text=True, timeout=10
+            )
+            
+            if result.returncode != 0:
+                return []
+            
+            processes = []
+            for line in result.stdout.strip().split('\n'):
+                if not line:
+                    continue
+                parts = [p.strip() for p in line.split(',')]
+                if len(parts) >= 4:
+                    processes.append({
+                        'gpu_index': 0,
+                        'pid': int(parts[1]),
+                        'gpu_memory_mb': float(parts[2]) if parts[2] != '[N/A]' else 0,
+                        'name': parts[3],
+                    })
+            return processes
+        except Exception:
+            return []
     
     def _collect_nvml(self) -> List[Dict[str, Any]]:
         gpus = []

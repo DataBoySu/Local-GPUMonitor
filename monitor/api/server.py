@@ -1,16 +1,14 @@
-"""
-FastAPI Server
+"""FastAPI server for REST API and web dashboard."""
 
-REST API and web dashboard for Cluster Health Monitor.
-"""
-
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, Any, Optional
+import json
+import csv
+import io
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse, StreamingResponse
 
 from monitor.collectors.gpu import GPUCollector
 from monitor.collectors.system import SystemCollector
@@ -26,7 +24,6 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
         version="1.0.0"
     )
     
-    # Initialize components
     storage = MetricsStorage(config['storage']['path'])
     alert_engine = AlertEngine(config.get('alerts', {}))
     
@@ -44,7 +41,6 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
     
     @app.get("/api/status")
     async def get_status():
-        
         gpu_collector = GPUCollector()
         sys_collector = SystemCollector()
         
@@ -57,6 +53,9 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
             'gpus': gpus,
             'system': system,
         }
+        
+        # Store metrics for history
+        await storage.store(metrics)
         
         alerts = alert_engine.check(metrics)
         
@@ -71,6 +70,11 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
         collector = GPUCollector()
         return {'gpus': collector.collect()}
     
+    @app.get("/api/processes")
+    async def get_processes():
+        collector = GPUCollector()
+        return {'processes': collector.collect_processes()}
+    
     @app.get("/api/system")
     async def get_system():
         collector = SystemCollector()
@@ -80,22 +84,48 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
     async def get_alerts():
         return {'alerts': alert_engine.get_active_alerts()}
     
-    @app.get("/api/metrics")
-    async def get_metrics(
-        hostname: Optional[str] = None,
-        metric_type: Optional[str] = None,
-        metric_name: Optional[str] = None,
-        hours: int = 24
-    ):
-        
-        metrics = await storage.query(
-            hostname=hostname,
-            metric_type=metric_type,
-            metric_name=metric_name,
-            hours=hours
+    @app.get("/api/history")
+    async def get_history(hours: int = 1, metric: str = "gpu_0_utilization"):
+        metrics = await storage.query(metric_name=metric, hours=hours)
+        return {
+            'metric': metric,
+            'hours': hours,
+            'data': [{'timestamp': m['timestamp'], 'value': m['metric_value']} for m in metrics]
+        }
+    
+    @app.get("/api/history/available")
+    async def get_available_metrics():
+        return {
+            'metrics': [
+                'gpu_0_utilization', 'gpu_0_memory_used', 'gpu_0_temperature', 'gpu_0_power',
+                'cpu_percent', 'memory_percent', 'disk_percent'
+            ]
+        }
+    
+    @app.get("/api/export/json")
+    async def export_json(hours: int = 24):
+        metrics = await storage.query(hours=hours)
+        return StreamingResponse(
+            io.BytesIO(json.dumps(metrics, indent=2).encode()),
+            media_type="application/json",
+            headers={"Content-Disposition": f"attachment; filename=metrics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"}
         )
+    
+    @app.get("/api/export/csv")
+    async def export_csv(hours: int = 24):
+        metrics = await storage.query(hours=hours)
         
-        return {'metrics': metrics, 'count': len(metrics)}
+        output = io.StringIO()
+        if metrics:
+            writer = csv.DictWriter(output, fieldnames=metrics[0].keys())
+            writer.writeheader()
+            writer.writerows(metrics)
+        
+        return StreamingResponse(
+            io.BytesIO(output.getvalue().encode()),
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename=metrics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"}
+        )
     
     return app
 
@@ -107,9 +137,10 @@ def get_dashboard_html() -> str:
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cluster Health Monitor</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap');
+        
         :root {
             --bg-primary: #0d1117;
             --bg-secondary: #161b22;
@@ -123,13 +154,7 @@ def get_dashboard_html() -> str:
             --border-color: #30363d;
         }
         
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
             font-family: 'Merriweather', Georgia, serif;
@@ -138,37 +163,61 @@ def get_dashboard_html() -> str:
             line-height: 1.6;
         }
         
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
         
         header {
             background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
-            padding: 30px;
+            padding: 20px 30px;
             border-radius: 12px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         
-        header h1 {
-            font-size: 1.8em;
-        }
+        header h1 { font-size: 1.5em; }
         
         .status-badge {
-            padding: 8px 20px;
+            padding: 6px 16px;
             border-radius: 20px;
             font-weight: bold;
             text-transform: uppercase;
+            font-size: 0.85em;
         }
         
         .status-healthy { background: var(--accent-green); }
         .status-warning { background: var(--accent-yellow); color: #000; }
-        .status-critical { background: var(--accent-red); }
         
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+        
+        .tab:hover { background: var(--bg-tertiary); }
+        .tab.active {
+            background: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+        }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* Cards */
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -186,7 +235,7 @@ def get_dashboard_html() -> str:
         .card h2 {
             color: var(--accent-blue);
             margin-bottom: 15px;
-            font-size: 1.2em;
+            font-size: 1.1em;
         }
         
         .gpu-card {
@@ -230,8 +279,81 @@ def get_dashboard_html() -> str:
             border-bottom: 1px solid var(--border-color);
         }
         
-        .metric-label { color: var(--text-secondary); }
+        .metric-label { color: var(--text-secondary); font-size: 0.9em; }
         .metric-value { font-weight: bold; }
+        
+        /* Process table */
+        .process-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+        
+        .process-table th, .process-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .process-table th {
+            background: var(--bg-tertiary);
+            color: var(--accent-blue);
+        }
+        
+        .process-table tr:hover { background: var(--bg-tertiary); }
+        
+        /* Chart */
+        .chart-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .chart-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .chart-controls select, .chart-controls button {
+            padding: 8px 15px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+        
+        .chart-controls button:hover { background: var(--accent-blue); }
+        
+        /* Export */
+        .export-section {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .export-btn {
+            padding: 12px 25px;
+            background: var(--accent-blue);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        
+        .export-btn:hover { opacity: 0.9; }
+        .export-btn.secondary { background: var(--bg-tertiary); border: 1px solid var(--border-color); }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
         
         .alert-item {
             background: var(--bg-tertiary);
@@ -240,21 +362,6 @@ def get_dashboard_html() -> str:
             margin-bottom: 10px;
             border-radius: 0 8px 8px 0;
         }
-        
-        .alert-item.critical {
-            border-color: var(--accent-red);
-        }
-        
-        footer {
-            text-align: center;
-            padding: 20px;
-            color: var(--text-secondary);
-        }
-        
-        .refresh-timer {
-            font-size: 0.9em;
-            color: var(--text-secondary);
-        }
     </style>
 </head>
 <body>
@@ -262,26 +369,100 @@ def get_dashboard_html() -> str:
         <header>
             <div>
                 <h1>Cluster Health Monitor</h1>
-                <span class="refresh-timer">Auto-refresh: <span id="countdown">5</span>s</span>
+                <span style="font-size: 0.8em; opacity: 0.8;">Auto-refresh: <span id="countdown">5</span>s</span>
             </div>
             <div id="status-badge" class="status-badge status-healthy">HEALTHY</div>
         </header>
         
-        <div class="grid">
-            <div class="card">
-                <h2>GPU Status</h2>
-                <div id="gpu-list">Loading...</div>
+        <div class="tabs">
+            <div class="tab active" data-tab="home">Home</div>
+            <div class="tab" data-tab="history">History</div>
+            <div class="tab" data-tab="processes">Processes</div>
+            <div class="tab" data-tab="export">Export</div>
+        </div>
+        
+        <!-- HOME TAB -->
+        <div id="home" class="tab-content active">
+            <div class="grid">
+                <div class="card">
+                    <h2>GPU Status</h2>
+                    <div id="gpu-list">Loading...</div>
+                </div>
+                <div class="card">
+                    <h2>System</h2>
+                    <div id="system-info">Loading...</div>
+                </div>
             </div>
-            
             <div class="card">
-                <h2>System</h2>
-                <div id="system-info">Loading...</div>
+                <h2>Alerts</h2>
+                <div id="alerts-list">No active alerts</div>
             </div>
         </div>
         
-        <div class="card">
-            <h2>Alerts</h2>
-            <div id="alerts-list">No active alerts</div>
+        <!-- HISTORY TAB -->
+        <div id="history" class="tab-content">
+            <div class="chart-container">
+                <div class="chart-controls">
+                    <select id="metric-select">
+                        <option value="gpu_0_utilization">GPU Utilization</option>
+                        <option value="gpu_0_memory_used">GPU Memory</option>
+                        <option value="gpu_0_temperature">GPU Temperature</option>
+                        <option value="gpu_0_power">GPU Power</option>
+                        <option value="cpu_percent">CPU Usage</option>
+                        <option value="memory_percent">RAM Usage</option>
+                    </select>
+                    <select id="hours-select">
+                        <option value="1">Last 1 hour</option>
+                        <option value="6">Last 6 hours</option>
+                        <option value="24">Last 24 hours</option>
+                        <option value="168">Last 7 days</option>
+                    </select>
+                    <button onclick="loadHistory()">Refresh</button>
+                </div>
+                <canvas id="historyChart" height="100"></canvas>
+            </div>
+        </div>
+        
+        <!-- PROCESSES TAB -->
+        <div id="processes" class="tab-content">
+            <div class="card">
+                <h2>GPU Processes</h2>
+                <button onclick="loadProcesses()" style="margin-bottom: 15px; padding: 8px 15px; background: var(--accent-blue); border: none; border-radius: 6px; color: white; cursor: pointer;">Refresh</button>
+                <table class="process-table">
+                    <thead>
+                        <tr>
+                            <th>PID</th>
+                            <th>Process</th>
+                            <th>GPU</th>
+                            <th>GPU Memory</th>
+                            <th>User</th>
+                        </tr>
+                    </thead>
+                    <tbody id="process-list">
+                        <tr><td colspan="5">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- EXPORT TAB -->
+        <div id="export" class="tab-content">
+            <div class="card">
+                <h2>Export Data</h2>
+                <p style="margin-bottom: 20px; color: var(--text-secondary);">Download collected metrics data for analysis.</p>
+                <div class="chart-controls" style="margin-bottom: 20px;">
+                    <select id="export-hours">
+                        <option value="1">Last 1 hour</option>
+                        <option value="6">Last 6 hours</option>
+                        <option value="24" selected>Last 24 hours</option>
+                        <option value="168">Last 7 days</option>
+                    </select>
+                </div>
+                <div class="export-section">
+                    <button class="export-btn" onclick="exportData('json')">Download JSON</button>
+                    <button class="export-btn secondary" onclick="exportData('csv')">Download CSV</button>
+                </div>
+            </div>
         </div>
         
         <footer>
@@ -291,6 +472,20 @@ def get_dashboard_html() -> str:
     
     <script>
         let countdown = 5;
+        let historyChart = null;
+        
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+                
+                if (tab.dataset.tab === 'history') loadHistory();
+                if (tab.dataset.tab === 'processes') loadProcesses();
+            });
+        });
         
         async function fetchStatus() {
             try {
@@ -298,17 +493,15 @@ def get_dashboard_html() -> str:
                 const data = await response.json();
                 updateDashboard(data);
             } catch (error) {
-                console.error('Error fetching status:', error);
+                console.error('Error:', error);
             }
         }
         
         function updateDashboard(data) {
-            // Update status badge
             const badge = document.getElementById('status-badge');
             badge.className = 'status-badge status-' + data.status;
             badge.textContent = data.status.toUpperCase();
             
-            // Update GPUs
             const gpuList = document.getElementById('gpu-list');
             gpuList.innerHTML = data.metrics.gpus.map(gpu => {
                 if (gpu.error) return `<div class="gpu-card">Error: ${gpu.error}</div>`;
@@ -316,29 +509,26 @@ def get_dashboard_html() -> str:
                 const util = gpu.utilization || 0;
                 const memPct = gpu.memory_total > 0 ? (gpu.memory_used / gpu.memory_total * 100) : 0;
                 const temp = gpu.temperature || 0;
-                const tempClass = temp > 80 ? 'hot' : '';
                 
                 return `
                     <div class="gpu-card">
                         <div class="gpu-header">
                             <span class="gpu-name">GPU ${gpu.index}: ${gpu.name}</span>
-                            <span class="gpu-temp ${tempClass}">${temp}°C</span>
+                            <span class="gpu-temp ${temp > 80 ? 'hot' : ''}">${temp}C</span>
                         </div>
                         <div class="metric-row">
                             <span class="metric-label">Utilization</span>
                             <span class="metric-value">${util}%</span>
                         </div>
                         <div class="progress-bar">
-                            <div class="progress-fill ${util > 90 ? 'crit' : util > 70 ? 'warn' : ''}" 
-                                 style="width: ${util}%"></div>
+                            <div class="progress-fill ${util > 90 ? 'crit' : util > 70 ? 'warn' : ''}" style="width: ${util}%"></div>
                         </div>
                         <div class="metric-row">
                             <span class="metric-label">Memory</span>
                             <span class="metric-value">${(gpu.memory_used/1024).toFixed(1)}/${(gpu.memory_total/1024).toFixed(1)} GB</span>
                         </div>
                         <div class="progress-bar">
-                            <div class="progress-fill ${memPct > 90 ? 'crit' : memPct > 70 ? 'warn' : ''}" 
-                                 style="width: ${memPct}%"></div>
+                            <div class="progress-fill ${memPct > 90 ? 'crit' : memPct > 70 ? 'warn' : ''}" style="width: ${memPct}%"></div>
                         </div>
                         <div class="metric-row">
                             <span class="metric-label">Power</span>
@@ -348,67 +538,105 @@ def get_dashboard_html() -> str:
                 `;
             }).join('');
             
-            // Update system info
-            const sysInfo = document.getElementById('system-info');
             const sys = data.metrics.system;
-            sysInfo.innerHTML = `
-                <div class="metric-row">
-                    <span class="metric-label">Hostname</span>
-                    <span class="metric-value">${sys.hostname || 'N/A'}</span>
-                </div>
-                <div class="metric-row">
-                    <span class="metric-label">CPU</span>
-                    <span class="metric-value">${(sys.cpu_percent || 0).toFixed(1)}%</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: ${sys.cpu_percent || 0}%"></div>
-                </div>
-                <div class="metric-row">
-                    <span class="metric-label">Memory</span>
-                    <span class="metric-value">${(sys.memory_used_gb || 0).toFixed(1)}/${(sys.memory_total_gb || 0).toFixed(1)} GB</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: ${sys.memory_percent || 0}%"></div>
-                </div>
-                <div class="metric-row">
-                    <span class="metric-label">Disk</span>
-                    <span class="metric-value">${(sys.disk_used_gb || 0).toFixed(1)}/${(sys.disk_total_gb || 0).toFixed(1)} GB</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: ${sys.disk_percent || 0}%"></div>
-                </div>
+            document.getElementById('system-info').innerHTML = `
+                <div class="metric-row"><span class="metric-label">Hostname</span><span class="metric-value">${sys.hostname || 'N/A'}</span></div>
+                <div class="metric-row"><span class="metric-label">CPU</span><span class="metric-value">${(sys.cpu_percent || 0).toFixed(1)}%</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width: ${sys.cpu_percent || 0}%"></div></div>
+                <div class="metric-row"><span class="metric-label">Memory</span><span class="metric-value">${(sys.memory_used_gb || 0).toFixed(1)}/${(sys.memory_total_gb || 0).toFixed(1)} GB</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width: ${sys.memory_percent || 0}%"></div></div>
+                <div class="metric-row"><span class="metric-label">Disk</span><span class="metric-value">${(sys.disk_used_gb || 0).toFixed(1)}/${(sys.disk_total_gb || 0).toFixed(1)} GB</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width: ${sys.disk_percent || 0}%"></div></div>
             `;
             
-            // Update alerts
             const alertsList = document.getElementById('alerts-list');
             if (data.alerts && data.alerts.length > 0) {
-                alertsList.innerHTML = data.alerts.map(alert => `
-                    <div class="alert-item ${alert.severity}">
-                        <strong>${alert.severity.toUpperCase()}</strong>: ${alert.message}
-                    </div>
-                `).join('');
+                alertsList.innerHTML = data.alerts.map(a => `<div class="alert-item"><strong>${a.severity.toUpperCase()}</strong>: ${a.message}</div>`).join('');
             } else {
                 alertsList.innerHTML = '<div style="color: var(--accent-green);">No active alerts</div>';
             }
             
-            // Update last update time
             document.getElementById('last-update').textContent = 'Last update: ' + new Date().toLocaleTimeString();
+        }
+        
+        async function loadHistory() {
+            const metric = document.getElementById('metric-select').value;
+            const hours = document.getElementById('hours-select').value;
+            
+            try {
+                const response = await fetch(`/api/history?metric=${metric}&hours=${hours}`);
+                const data = await response.json();
+                
+                const ctx = document.getElementById('historyChart').getContext('2d');
+                
+                if (historyChart) historyChart.destroy();
+                
+                historyChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.data.map(d => new Date(d.timestamp).toLocaleTimeString()),
+                        datasets: [{
+                            label: metric.replace(/_/g, ' '),
+                            data: data.data.map(d => d.value),
+                            borderColor: '#58a6ff',
+                            backgroundColor: 'rgba(88, 166, 255, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { labels: { color: '#c9d1d9' } } },
+                        scales: {
+                            x: { ticks: { color: '#8b949e', maxTicksLimit: 10 }, grid: { color: '#30363d' } },
+                            y: { ticks: { color: '#8b949e' }, grid: { color: '#30363d' } }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading history:', error);
+            }
+        }
+        
+        async function loadProcesses() {
+            try {
+                const response = await fetch('/api/processes');
+                const data = await response.json();
+                
+                const tbody = document.getElementById('process-list');
+                if (data.processes.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="color: var(--text-secondary);">No GPU processes running</td></tr>';
+                } else {
+                    tbody.innerHTML = data.processes.map(p => `
+                        <tr>
+                            <td>${p.pid}</td>
+                            <td>${p.name}</td>
+                            <td>GPU ${p.gpu_index}</td>
+                            <td>${p.gpu_memory_mb.toFixed(0)} MB</td>
+                            <td>${p.username || 'N/A'}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading processes:', error);
+            }
+        }
+        
+        function exportData(format) {
+            const hours = document.getElementById('export-hours').value;
+            window.location.href = `/api/export/${format}?hours=${hours}`;
         }
         
         function tick() {
             countdown--;
             document.getElementById('countdown').textContent = countdown;
-            
             if (countdown <= 0) {
                 countdown = 5;
                 fetchStatus();
             }
         }
         
-        // Initial fetch
         fetchStatus();
-        
-        // Start countdown timer
         setInterval(tick, 1000);
     </script>
 </body>
