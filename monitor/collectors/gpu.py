@@ -232,12 +232,15 @@ class GPUCollector:
                     
                 parts = [p.strip() for p in line.split(',')]
                 if len(parts) >= 7:
+                    mem_used = float(parts[3]) if parts[3] != '[N/A]' else 0
+                    mem_total = float(parts[4]) if parts[4] != '[N/A]' else 0
                     gpus.append({
                         'index': int(parts[0]),
                         'name': parts[1],
                         'utilization': int(parts[2]) if parts[2] != '[N/A]' else 0,
-                        'memory_used': float(parts[3]) if parts[3] != '[N/A]' else 0,
-                        'memory_total': float(parts[4]) if parts[4] != '[N/A]' else 0,
+                        'memory_used': mem_used,
+                        'memory_total': mem_total,
+                        'memory_free': mem_total - mem_used,
                         'temperature': int(parts[5]) if parts[5] != '[N/A]' else 0,
                         'power': float(parts[6]) if parts[6] != '[N/A]' else 0,
                     })
