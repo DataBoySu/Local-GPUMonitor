@@ -1,201 +1,13 @@
-"""GPU Benchmark with real-time monitoring and configurable tests."""
+"""GPU benchmark orchestration and metrics collection."""
 
 import time
 import subprocess
-import json
-import sqlite3
-import threading
 from typing import Dict, Any, List, Optional
 from datetime import datetime
-from dataclasses import dataclass
-from pathlib import Path
 
-
-@dataclass
-class BenchmarkConfig:
-    mode: str = "standard"
-    duration_seconds: int = 30
-    memory_limit_mb: int = 0  # 0 = no limit
-    temp_limit_c: int = 85
-    power_limit_w: int = 0  # 0 = no limit
-    sample_interval_ms: int = 500
-    
-    @classmethod
-    def from_mode(cls, mode: str) -> 'BenchmarkConfig':
-        presets = {
-            'quick': cls(mode='quick', duration_seconds=15, temp_limit_c=85, sample_interval_ms=500),
-            'standard': cls(mode='standard', duration_seconds=60, temp_limit_c=85, sample_interval_ms=500),
-            'stress': cls(mode='stress', duration_seconds=180, temp_limit_c=92, sample_interval_ms=250),
-        }
-        return presets.get(mode, cls(mode='standard'))
-    
-    @classmethod
-    def custom(cls, duration: int, temp_limit: int, memory_limit: int = 0, power_limit: int = 0) -> 'BenchmarkConfig':
-        return cls(
-            mode='custom',
-            duration_seconds=duration,
-            temp_limit_c=temp_limit,
-            memory_limit_mb=memory_limit,
-            power_limit_w=power_limit,
-            sample_interval_ms=500
-        )
-
-
-class BaselineStorage:
-    """Storage for benchmark baseline results."""
-    
-    def __init__(self, db_path: str = './metrics.db'):
-        self.db_path = Path(db_path)
-        self._ensure_table()
-    
-    def _ensure_table(self):
-        conn = sqlite3.connect(str(self.db_path))
-        conn.execute('''
-            CREATE TABLE IF NOT EXISTS benchmark_baseline (
-                id INTEGER PRIMARY KEY,
-                gpu_name TEXT NOT NULL,
-                timestamp TEXT NOT NULL,
-                iterations_completed INTEGER,
-                avg_iteration_time_ms REAL,
-                avg_utilization REAL,
-                avg_temperature REAL,
-                avg_power REAL,
-                avg_memory_used REAL,
-                results_json TEXT,
-                UNIQUE(gpu_name)
-            )
-        ''')
-        conn.commit()
-        conn.close()
-    
-    def save_baseline(self, gpu_name: str, results: Dict[str, Any]):
-        conn = sqlite3.connect(str(self.db_path))
-        conn.execute('''
-            INSERT OR REPLACE INTO benchmark_baseline 
-            (gpu_name, timestamp, iterations_completed, avg_iteration_time_ms, 
-             avg_utilization, avg_temperature, avg_power, avg_memory_used, results_json)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            gpu_name,
-            results.get('timestamp', datetime.now().isoformat()),
-            results.get('iterations_completed', 0),
-            results.get('avg_iteration_time_ms', 0),
-            results.get('utilization', {}).get('avg', 0),
-            results.get('temperature_c', {}).get('avg', 0),
-            results.get('power_w', {}).get('avg', 0),
-            results.get('memory_used_mb', {}).get('avg', 0),
-            json.dumps(results)
-        ))
-        conn.commit()
-        conn.close()
-    
-    def get_baseline(self, gpu_name: str) -> Optional[Dict[str, Any]]:
-        conn = sqlite3.connect(str(self.db_path))
-        conn.row_factory = sqlite3.Row
-        cursor = conn.execute(
-            'SELECT * FROM benchmark_baseline WHERE gpu_name = ?', (gpu_name,)
-        )
-        row = cursor.fetchone()
-        conn.close()
-        
-        if row:
-            return {
-                'gpu_name': row['gpu_name'],
-                'timestamp': row['timestamp'],
-                'iterations_completed': row['iterations_completed'],
-                'avg_iteration_time_ms': row['avg_iteration_time_ms'],
-                'avg_utilization': row['avg_utilization'],
-                'avg_temperature': row['avg_temperature'],
-                'avg_power': row['avg_power'],
-                'avg_memory_used': row['avg_memory_used'],
-                'full_results': json.loads(row['results_json']) if row['results_json'] else None
-            }
-        return None
-
-
-class GPUStressWorker:
-    """
-    GPU stress workload - auto-detects best available method.
-    Priority: cupy > torch > passive monitoring (user runs own workload).
-    Each iteration = 1 complete stress cycle.
-    """
-    
-    def __init__(self):
-        self.iterations = 0
-        self.running = False
-        self.workload_type = "Detecting..."
-        self.method = None
-        self._detect_method()
-    
-    def _detect_method(self):
-        """Detect best available stress method without requiring extra installs."""
-        # Try cupy first
-        try:
-            import cupy as cp
-            cp.cuda.Device(0).compute_capability
-            self.method = 'cupy'
-            self.workload_type = "CUDA Matrix Multiply (cupy)"
-            return
-        except:
-            pass
-        
-        # Try torch
-        try:
-            import torch
-            if torch.cuda.is_available():
-                self.method = 'torch'
-                self.workload_type = "CUDA Matrix Multiply (torch)"
-                return
-        except:
-            pass
-        
-        # Fallback: passive monitoring mode
-        self.method = 'passive'
-        self.workload_type = "Passive Monitoring (run your own GPU workload)"
-    
-    def run_iteration(self) -> float:
-        """Run one iteration. Returns time in ms."""
-        start = time.perf_counter()
-        
-        if self.method == 'cupy':
-            try:
-                import cupy as cp
-                size = 2048
-                a = cp.random.rand(size, size).astype(cp.float32)
-                b = cp.random.rand(size, size).astype(cp.float32)
-                c = cp.matmul(a, b)
-                cp.cuda.Stream.null.synchronize()
-                del a, b, c
-            except Exception:
-                pass
-        elif self.method == 'torch':
-            try:
-                import torch
-                device = torch.device('cuda')
-                size = 2048
-                a = torch.rand(size, size, device=device)
-                b = torch.rand(size, size, device=device)
-                c = torch.matmul(a, b)
-                torch.cuda.synchronize()
-                del a, b, c
-            except Exception:
-                pass
-        else:
-            # Passive mode - just poll nvidia-smi to track iterations
-            try:
-                subprocess.run(
-                    ['nvidia-smi', '--query-gpu=utilization.gpu', '--format=csv,noheader'],
-                    capture_output=True, timeout=2
-                )
-            except Exception:
-                pass
-            time.sleep(0.05)  # Small delay in passive mode
-        
-        self.iterations += 1
-        return (time.perf_counter() - start) * 1000
-    
-    def reset(self):
-        self.iterations = 0
+from .config import BenchmarkConfig
+from .storage import BaselineStorage
+from .workloads import GPUStressWorker
 
 
 class GPUBenchmark:
@@ -212,12 +24,13 @@ class GPUBenchmark:
         self.current_phase = ""
         self.results: Dict[str, Any] = {}
         self.baseline_storage = BaselineStorage(db_path)
-        self.stress_worker = GPUStressWorker()
+        self.stress_worker: Optional[GPUStressWorker] = None
         self.iteration_times: List[float] = []
         self.completed_full = False
+        self.db_path = db_path
         
     def get_gpu_info(self) -> Dict[str, Any]:
-        """Get GPU information."""
+        """Get GPU information via nvidia-smi."""
         try:
             result = subprocess.run(
                 ['nvidia-smi', '--query-gpu=name,memory.total,driver_version,pcie.link.gen.current,pcie.link.width.current',
@@ -240,7 +53,7 @@ class GPUBenchmark:
             return {'error': str(e)}
     
     def sample_metrics(self) -> Dict[str, Any]:
-        """Collect a single sample of GPU metrics."""
+        """Collect a single sample of GPU metrics via nvidia-smi."""
         try:
             result = subprocess.run(
                 ['nvidia-smi', '--query-gpu=utilization.gpu,memory.used,memory.total,temperature.gpu,power.draw',
@@ -294,6 +107,10 @@ class GPUBenchmark:
         
         sample_interval = self.config.sample_interval_ms / 1000.0
         last_sample_time = 0
+        last_scale_check = 0
+        scale_interval = 2.0
+        scale_count = 0
+        max_scales = 15
         
         while True:
             elapsed = time.time() - self.start_time
@@ -316,6 +133,36 @@ class GPUBenchmark:
                 sample['last_iter_ms'] = round(iter_time, 2)
                 self.samples.append(sample)
                 last_sample_time = elapsed
+                
+                if self.config.auto_scale and elapsed - last_scale_check >= scale_interval:
+                    gpu_util = sample.get('utilization', 0)
+                    
+                    if scale_count < max_scales:
+                        if gpu_util < 70:
+                            scale_factor = 2.0
+                            print(f"[Auto-Scale] GPU util {gpu_util}% << target, scaling 2.0x...")
+                            self.stress_worker.scale_workload(scale_factor)
+                            scale_count += 1
+                            self.current_phase = f"Auto-Scaling: {self.stress_worker.workload_type}"
+                        elif gpu_util < 85:
+                            scale_factor = 1.5
+                            print(f"[Auto-Scale] GPU util {gpu_util}% < target, scaling 1.5x...")
+                            self.stress_worker.scale_workload(scale_factor)
+                            scale_count += 1
+                            self.current_phase = f"Auto-Scaling: {self.stress_worker.workload_type}"
+                        elif gpu_util < 93:
+                            scale_factor = 1.2
+                            print(f"[Auto-Scale] GPU util {gpu_util}% near target, scaling 1.2x...")
+                            self.stress_worker.scale_workload(scale_factor)
+                            scale_count += 1
+                            self.current_phase = f"Auto-Scaling: {self.stress_worker.workload_type}"
+                        else:
+                            print(f"[Auto-Scale] GPU util {gpu_util}% - target reached!")
+                    else:
+                        if gpu_util < 93:
+                            print(f"[Auto-Scale] Max scales reached ({max_scales}), GPU util at {gpu_util}%")
+                    
+                    last_scale_check = elapsed
                 
                 # Check stop conditions
                 stop = self.check_stop_conditions(sample)
@@ -347,13 +194,15 @@ class GPUBenchmark:
             }
         
         avg_iter_time = sum(self.iteration_times) / len(self.iteration_times) if self.iteration_times else 0
+        elapsed_sec = time.time() - self.start_time
         
         results = {
-            'duration_actual_sec': round(time.time() - self.start_time, 2),
+            'duration_actual_sec': round(elapsed_sec, 2),
             'samples_collected': len(valid_samples),
             'stop_reason': self.stop_reason,
             'completed_full': self.completed_full,
             'workload_type': self.stress_worker.workload_type,
+            'benchmark_type': self.config.benchmark_type,
             'iterations_completed': self.stress_worker.iterations,
             'avg_iteration_time_ms': round(avg_iter_time, 2),
             'iterations_per_second': round(1000 / avg_iter_time, 2) if avg_iter_time > 0 else 0,
@@ -363,13 +212,21 @@ class GPUBenchmark:
             'power_w': calc_stats('power_w'),
         }
         
-        # Calculate scores based on performance
+        perf_stats = self.stress_worker.get_performance_stats(elapsed_sec)
+        results['performance'] = perf_stats
+        
         temp_range = results['temperature_c']['max'] - results['temperature_c']['min']
         stability_score = max(0, 100 - int(temp_range * 5))
         thermal_score = max(0, min(100, int((90 - results['temperature_c']['max']) * 5)))
         
-        # Performance score based on iterations
-        perf_score = min(100, int(results['iterations_completed'] / 10))
+        if self.config.benchmark_type == 'gemm':
+            tflops = perf_stats.get('tflops', 0)
+            perf_score = min(100, int(tflops * 10))
+        elif self.config.benchmark_type == 'particle':
+            sps = perf_stats.get('steps_per_second', 0)
+            perf_score = min(100, int(sps / 100000))
+        else:
+            perf_score = min(100, int(results['iterations_completed'] / 10))
         
         results['scores'] = {
             'stability': stability_score,
@@ -390,6 +247,12 @@ class GPUBenchmark:
         self.samples = []
         self.completed_full = False
         
+        # Initialize stress worker with benchmark type from config
+        self.stress_worker = GPUStressWorker(
+            benchmark_type=config.benchmark_type,
+            config=config
+        )
+        
         try:
             gpu_info = self.get_gpu_info()
             
@@ -397,18 +260,21 @@ class GPUBenchmark:
                 'timestamp': datetime.now().isoformat(),
                 'config': {
                     'mode': config.mode,
+                    'benchmark_type': config.benchmark_type,
                     'duration_seconds': config.duration_seconds,
                     'temp_limit_c': config.temp_limit_c,
                     'power_limit_w': config.power_limit_w,
                     'memory_limit_mb': config.memory_limit_mb,
+                    'matrix_size': config.matrix_size if config.benchmark_type == 'gemm' else None,
+                    'num_particles': config.num_particles if config.benchmark_type == 'particle' else None,
                 },
                 'gpu_info': gpu_info,
                 'status': 'running',
             }
             
-            # Get baseline for comparison
+            # Get baseline for comparison (benchmark-type specific)
             if 'name' in gpu_info:
-                baseline = self.baseline_storage.get_baseline(gpu_info['name'])
+                baseline = self.baseline_storage.get_baseline(gpu_info['name'], config.benchmark_type)
                 if baseline:
                     self.results['baseline'] = baseline
             
@@ -418,13 +284,23 @@ class GPUBenchmark:
             
             # Save as baseline only if completed fully
             if self.completed_full and 'name' in gpu_info:
-                self.baseline_storage.save_baseline(gpu_info['name'], self.results)
+                self.baseline_storage.save_baseline(gpu_info['name'], config.benchmark_type, self.results)
                 self.results['saved_as_baseline'] = True
             
+        except KeyboardInterrupt:
+            self.results['status'] = 'interrupted'
+            self.results['error'] = 'Benchmark interrupted by user'
+            self.stop_reason = 'User interrupted'
         except Exception as e:
             self.results['status'] = 'failed'
             self.results['error'] = str(e)
         finally:
+            # Ensure cleanup happens
+            if self.stress_worker:
+                try:
+                    self.stress_worker.cleanup()
+                except Exception:
+                    pass
             self.running = False
             self.progress = 100
     
@@ -452,11 +328,11 @@ class GPUBenchmark:
         """Get benchmark results."""
         return self.results
     
-    def get_baseline(self) -> Optional[Dict[str, Any]]:
-        """Get stored baseline for current GPU."""
+    def get_baseline(self, benchmark_type: str = "gemm") -> Optional[Dict[str, Any]]:
+        """Get stored baseline for current GPU and benchmark type."""
         gpu_info = self.get_gpu_info()
         if 'name' in gpu_info:
-            return self.baseline_storage.get_baseline(gpu_info['name'])
+            return self.baseline_storage.get_baseline(gpu_info['name'], benchmark_type)
         return None
 
 
@@ -464,6 +340,7 @@ class GPUBenchmark:
 _benchmark: Optional[GPUBenchmark] = None
 
 def get_benchmark_instance() -> GPUBenchmark:
+    """Get or create global benchmark instance."""
     global _benchmark
     if _benchmark is None:
         _benchmark = GPUBenchmark()
