@@ -8,7 +8,7 @@ from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
 from rich.table import Table
 
-from monitor.benchmark.gpu_bench import GPUBenchmark, BenchmarkConfig
+from monitor.benchmark import GPUBenchmark, BenchmarkConfig
 
 console = Console()
 
@@ -103,7 +103,7 @@ def benchmark_cli(bench_type, mode, duration, matrix_size, particles, temp_limit
         console.print(f"\n[red]Benchmark failed:[/red] {results.get('error', 'Unknown error')}")
         return
     
-    console.print("\n[bold green]✓ Benchmark Complete[/bold green]")
+    console.print("\n[bold green]Benchmark Complete[/bold green]")
     console.print(f"[dim]Stop reason: {results.get('stop_reason', 'Unknown')}[/dim]\n")
     
     table = Table(title="Benchmark Results", show_header=True, header_style="bold magenta")
@@ -148,6 +148,6 @@ def benchmark_cli(bench_type, mode, duration, matrix_size, particles, temp_limit
     console.print(table)
     
     if results.get('saved_as_baseline'):
-        console.print(f"\n[green]✓ Results saved as new baseline[/green]")
+        console.print(f"\n[green]Results saved as new baseline[/green]")
     elif results.get('completed_full'):
         console.print(f"\n[dim]Baseline auto-saved on completion[/dim]")

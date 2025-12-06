@@ -3,7 +3,7 @@
 import threading
 from fastapi import APIRouter
 
-from monitor.benchmark.gpu_bench import BenchmarkConfig, get_benchmark_instance
+from monitor.benchmark import BenchmarkConfig, get_benchmark_instance
 
 router = APIRouter(
     prefix="/api/benchmark",
