@@ -16,10 +16,11 @@ from .backend_stress import BackendStressManager
 class GPUStressWorker:
     """GPU stress workload using cupy or torch libraries."""
     
-    def __init__(self, benchmark_type: str = "gemm", config: Optional[BenchmarkConfig] = None):
+    def __init__(self, benchmark_type: str = "gemm", config: Optional[BenchmarkConfig] = None, visualize: bool = False):
         self.iterations = 0
         self.benchmark_type = benchmark_type
         self.config = config or BenchmarkConfig()
+        self.visualize = visualize
         self.workload_type = "Detecting..."
         self._method = None
         self._initialized = False
@@ -78,14 +79,25 @@ class GPUStressWorker:
             self._gpu_arrays['B'] = cp.random.rand(n, n, dtype=cp.float32)
             self._flops_per_iter = 2.0 * (n ** 3)
         else:
-            self.workload_type = f"Bounce Simulation ({n:,} particles, cupy)"
+            backend_mult = self.config.backend_multiplier
             
             # Use modular GPU setup
             self._gpu_arrays, self._counters = gpu_setup.setup_cupy_arrays(n, cp)
             
-            # Initialize backend stress manager for offscreen GPU arrays
-            backend_mult = self.config.backend_multiplier
-            self._backend_stress.initialize('cupy', cp, n, backend_mult)
+            # Initialize backend stress manager only if backend_multiplier > 1
+            if backend_mult > 1:
+                self._backend_stress.initialize('cupy', cp, n, backend_mult)
+                total_backend = n * backend_mult
+                if self.visualize:
+                    self.workload_type = f"Bounce Simulation ({n:,} visible, {total_backend:,} backend, cupy)"
+                else:
+                    self.workload_type = f"Bounce Simulation ({total_backend:,} particles, cupy)"
+            else:
+                # No backend stress - just show visible particles
+                if self.visualize:
+                    self.workload_type = f"Bounce Simulation ({n:,} particles, cupy)"
+                else:
+                    self.workload_type = f"Bounce Simulation ({n:,} particles, cupy)"
             
             # Initialize instance variables from counters
             self._initial_particle_count = n
@@ -111,12 +123,25 @@ class GPUStressWorker:
             self._gpu_arrays['B'] = torch.randn(n, n, device=device, dtype=torch.float32)
             self._flops_per_iter = 2.0 * (n ** 3)
         else:
-            self.workload_type = f"Bounce Simulation ({n:,} particles, torch)"
+            backend_mult = self.config.backend_multiplier
             
             # Use modular GPU setup
             self._gpu_arrays, self._counters = gpu_setup.setup_torch_arrays(n, torch)
             
-            # Initialize backend stress manager for offscreen GPU arrays
+            # Initialize backend stress manager only if backend_multiplier > 1
+            if backend_mult > 1:
+                self._backend_stress.initialize('torch', torch, n, backend_mult)
+                total_backend = n * backend_mult
+                if self.visualize:
+                    self.workload_type = f"Bounce Simulation ({n:,} visible, {total_backend:,} backend, torch)"
+                else:
+                    self.workload_type = f"Bounce Simulation ({total_backend:,} particles, torch)"
+            else:
+                # No backend stress - just show visible particles
+                if self.visualize:
+                    self.workload_type = f"Bounce Simulation ({n:,} particles, torch)"
+                else:
+                    self.workload_type = f"Bounce Simulation ({n:,} particles, torch)"
             backend_mult = self.config.backend_multiplier
             self._backend_stress.initialize('torch', torch, n, backend_mult)
             
@@ -196,7 +221,8 @@ class GPUStressWorker:
             self._split_enabled = result['split_enabled']
             
             # Run physics on backend (offscreen) arrays using backend stress manager
-            self._backend_stress.run_physics(physics_cupy, params, self._cp)
+            if self._backend_stress.is_initialized():
+                self._backend_stress.run_physics(physics_cupy, params, self._cp)
             
             self._cp.cuda.Stream.null.synchronize()
             self.total_steps += 1
@@ -216,7 +242,8 @@ class GPUStressWorker:
             self._split_enabled = result['split_enabled']
             
             # Run physics on backend (offscreen) arrays using backend stress manager
-            self._backend_stress.run_physics(physics_torch, params, self._torch)
+            if self._backend_stress.is_initialized():
+                self._backend_stress.run_physics(physics_torch, params, self._torch)
             
             self._torch.cuda.synchronize()
             self.total_steps += 1
@@ -239,8 +266,9 @@ class GPUStressWorker:
         if big_ball_count is not None:
             self._update_big_ball_count(big_ball_count)
         if backend_multiplier is not None and hasattr(self, '_initial_particle_count'):
-            # Use backend stress manager to update multiplier (only for particle mode)
-            self._backend_stress.update_multiplier(backend_multiplier, self._initial_particle_count)
+            # Use backend stress manager to update multiplier (only for particle mode with backend stress)
+            if self._backend_stress.is_initialized():
+                self._backend_stress.update_multiplier(backend_multiplier, self._initial_particle_count)
     
     def update_split_enabled(self, enabled: bool):
         """Enable or disable particle splitting."""
@@ -347,6 +375,31 @@ class GPUStressWorker:
             
             self._flops_per_iter = 2.0 * (new_size ** 3)
             self.workload_type = f"GEMM {new_size}x{new_size} ({self._method})"
+        else:
+            # For particle simulation, scale the backend stress if it's enabled
+            if self._backend_stress.is_initialized():
+                current_backend_count = self._backend_stress.get_particle_count()
+                new_backend_count = int(current_backend_count * scale_factor)
+                self._backend_stress.scale_particles(new_backend_count)
+                
+                # Update workload type to show new backend count
+                if self.visualize:
+                    visible_count = self._initial_particle_count
+                    self.workload_type = f"Bounce Simulation ({visible_count:,} visible, {new_backend_count:,} backend, {self._method})"
+                else:
+                    self.workload_type = f"Bounce Simulation ({new_backend_count:,} particles, {self._method})"
+            else:
+                # No backend stress - workload type stays the same (no scaling needed)
+                self.workload_type = f"Bounce Simulation ({new_backend_count:,} particles, {self._method})"
+    
+    def update_workload_display(self, visible_count: int):
+        """Update workload type display with actual visible particle count (for visualization mode)."""
+        if self.visualize and self.benchmark_type == "particle":
+            if self._backend_stress.is_initialized():
+                backend_count = self._backend_stress.get_particle_count()
+                self.workload_type = f"Bounce Simulation ({visible_count:,} visible, {backend_count:,} backend, {self._method})"
+            else:
+                self.workload_type = f"Bounce Simulation ({visible_count:,} particles, {self._method})"
     
     def get_performance_stats(self, elapsed_seconds: float) -> Dict[str, Any]:
         """Get performance statistics."""

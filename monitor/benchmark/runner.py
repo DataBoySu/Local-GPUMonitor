@@ -40,21 +40,47 @@ class GPUBenchmark:
         """Get current benchmark status."""
         render_fps = getattr(self, 'render_fps', 0.0)
         gpu_util = self.metrics_sampler.get_current_util() if hasattr(self, 'metrics_sampler') and self.metrics_sampler else 0
+        
+        # Get latest sample with current metrics
+        latest_sample = None
+        if self.samples:
+            latest_sample = self.samples[-1].copy()
+            # Update with real-time GPU util if available
+            latest_sample['utilization'] = gpu_util
+        
+        current_iteration = self.stress_worker.iterations if self.stress_worker else 0
+        is_running = getattr(self, 'running', False)
+        
         return {
-            'running': getattr(self, 'running', False),
+            'status': 'running' if is_running else 'idle',  # Add status field for web UI
+            'running': is_running,
             'progress': getattr(self, 'progress', 0),
-            'phase': getattr(self, 'current_phase', 'Initializing'),
+            'phase': getattr(self, 'current_phase', 'Running'),
             'samples_count': len(getattr(self, 'samples', [])),
-            'iterations': self.stress_worker.iterations if self.stress_worker else 0,
+            'iterations': current_iteration,
+            'current_iteration': current_iteration,  # Add explicit field for web UI
             'workload_type': self.stress_worker.workload_type if self.stress_worker else 'N/A',
-            'latest_sample': self.samples[-1] if getattr(self, 'samples', []) else None,
+            'latest_sample': latest_sample,
+            'latest_metrics': latest_sample,  # Alias for compatibility
             'fps': render_fps,
             'gpu_util': gpu_util,
+            'results': self.results if not is_running else None,  # Include results when idle
+            'stop_reason': self.stop_reason if not is_running else None,
         }
     
     def get_samples(self) -> list:
         """Get all collected samples for real-time graphing."""
         return getattr(self, 'samples', []).copy()
+    
+    def get_baseline(self, benchmark_type: str, run_mode: str = 'benchmark') -> Optional[Dict[str, Any]]:
+        """Get baseline for a benchmark type."""
+        try:
+            gpu_info = self.get_gpu_info()
+            if gpu_info and 'name' in gpu_info:
+                return self.baseline_storage.get_baseline(gpu_info['name'], benchmark_type, run_mode)
+        except Exception:
+            pass
+        return None
     
     def get_results(self) -> Dict[str, Any]:
         """Get benchmark results."""
@@ -81,6 +107,21 @@ class GPUBenchmark:
         if visualize and not visualizer:
             print("[WARNING] Visualization requested but not available")
         
+        # Check if stress worker is properly initialized for visualization
+        if visualize and visualizer and not self.stress_worker._initialized:
+            print("[ERROR] Cannot visualize - GPU workload not initialized (cupy/torch not available)")
+            if visualizer:
+                visualizer.close()
+            self.stop_reason = "Visualization failed - GPU libraries not available"
+            return self._calculate_results()
+        
+        if visualize and visualizer and self.config.benchmark_type != "particle":
+            print("[ERROR] Cannot visualize - visualization only available for particle benchmark")
+            if visualizer:
+                visualizer.close()
+            self.stop_reason = "Visualization failed - not a particle benchmark"
+            return self._calculate_results()
+        
         # Start background GPU metrics collection
         self.metrics_sampler.start()
         
@@ -97,124 +138,173 @@ class GPUBenchmark:
         scale_interval = 2.0
         scale_count = 0
         max_scales = 15
+        auto_scale_timeout = 60.0 if visualize else float('inf')  # 60s timeout for visualization mode
+        target_reached = False
+        target_reached_time = None
         
-        while True:
-            elapsed = time.time() - self.start_time
-            
-            # Check duration
-            if elapsed >= self.config.duration_seconds:
-                print()  # New line after real-time metrics
-                self.stop_reason = "Duration completed"
-                self.completed_full = True
-                break
-            
-            # Run one iteration of stress work
-            iter_time = self.stress_worker.run_iteration()
-            self.iteration_times.append(iter_time)
-            
-            # Sample GPU metrics for storage (at configured interval)
-            if elapsed - last_sample_time >= sample_interval:
-                sample = self.metrics_sampler.sample_metrics()
-                sample['elapsed_sec'] = round(elapsed, 2)
-                sample['iterations'] = self.stress_worker.iterations
-                sample['last_iter_ms'] = round(iter_time, 2)
-                self.samples.append(sample)
-                last_sample_time = elapsed
-            
-            # Render visualization frame (every frame, no throttling)
-            if visualizer and visualizer.running:
-                # Calculate stable FPS from recent frame times
-                now = time.time()
-                frame_time = now - last_frame_time
-                last_frame_time = now
+        try:
+            while True:
+                elapsed = time.time() - self.start_time
                 
-                frame_times.append(frame_time)
-                if len(frame_times) > max_frame_history:
-                    frame_times.pop(0)
-                
-                avg_frame_time = sum(frame_times) / len(frame_times)
-                render_fps = 1.0 / avg_frame_time if avg_frame_time > 0 else 0
-                self.render_fps = render_fps
-                
-                # Update physics parameters from UI
-                slider_values = visualizer.get_slider_values()
-                self.stress_worker.update_physics_params(
-                    gravity_strength=slider_values['gravity'],
-                    small_ball_speed=slider_values['small_ball_speed'],
-                    initial_balls=int(slider_values['initial_balls']),
-                    max_balls_cap=int(slider_values['max_balls_cap']),
-                    big_ball_count=int(slider_values.get('big_ball_count', 5)),
-                    backend_multiplier=int(slider_values.get('backend_multiplier', 1))
-                )
-                
-                self.stress_worker.update_split_enabled(visualizer.get_split_enabled())
-                
-                # Process spawn requests
-                spawn_requests = visualizer.get_spawn_requests()
-                for sim_x, sim_y, count in spawn_requests:
-                    self.stress_worker.spawn_big_balls(sim_x, sim_y, count)
-                
-                # Get particle sample for rendering
-                positions, masses, colors, glows = self.stress_worker.get_particle_sample(max_samples=2000)
-                
-                if positions is not None:
-                    influence_boundaries = self.stress_worker.get_influence_boundaries(
-                        gravity_strength=slider_values['gravity']
-                    )
-                    active_particles = int(self.stress_worker._active_count)
-                    
-                    # Get real-time GPU utilization from background thread
-                    gpu_util = self.metrics_sampler.get_current_util()
-                    
-                    visualizer.render_frame(
-                        positions=positions,
-                        masses=masses,
-                        colors=colors,
-                        glows=glows,
-                        influence_boundaries=influence_boundaries,
-                        total_particles=self.stress_worker._initial_particle_count,
-                        active_particles=active_particles,
-                        fps=render_fps,
-                        gpu_util=gpu_util,
-                        elapsed_time=elapsed
-                    )
-            
-            # Auto-scaling check
-            if self.config.auto_scale and elapsed - last_scale_check >= scale_interval:
-                current_sample = self.samples[-1] if self.samples else {}
-                gpu_util_check = current_sample.get('utilization', 0)
-                
-                if scale_count < max_scales:
-                    if gpu_util_check < 70:
-                        print(f"[Auto-Scale] GPU util {gpu_util_check}% << target, scaling 2.0x...")
-                        self.stress_worker.scale_workload(2.0)
-                        scale_count += 1
-                    elif gpu_util_check < 85:
-                        print(f"[Auto-Scale] GPU util {gpu_util_check}% < target, scaling 1.5x...")
-                        self.stress_worker.scale_workload(1.5)
-                        scale_count += 1
-                    elif gpu_util_check < 93:
-                        print(f"[Auto-Scale] GPU util {gpu_util_check}% near target, scaling 1.2x...")
-                        self.stress_worker.scale_workload(1.2)
-                        scale_count += 1
-                
-                last_scale_check = elapsed
-            
-            # Check stop conditions
-            if self.samples:
-                latest_sample = self.samples[-1]
-                stop = self.metrics_sampler.check_stop_conditions(latest_sample, self.config)
-                if stop:
-                    self.stop_reason = stop
+                # Check duration
+                if elapsed >= self.config.duration_seconds:
+                    self.stop_reason = "Duration completed"
+                    self.completed_full = True
                     break
-            
-            # Check if user stopped
-            if self.should_stop or (visualizer and not visualizer.running):
-                self.stop_reason = "User stopped" if self.should_stop else "Visualization closed"
-                break
-            
-            # Update progress
-            self.progress = int((elapsed / self.config.duration_seconds) * 100)
+                
+                # Check auto-scale timeout for visualization mode
+                if visualize and self.config.auto_scale and elapsed >= auto_scale_timeout and not target_reached:
+                    self.stop_reason = "Auto-scale timeout - target GPU utilization not reached in 60s"
+                    break
+                
+                # Run one iteration of stress work
+                iter_time = self.stress_worker.run_iteration()
+                self.iteration_times.append(iter_time)
+                
+                # Sample GPU metrics for storage (at configured interval)
+                if elapsed - last_sample_time >= sample_interval:
+                    sample = self.metrics_sampler.sample_metrics()
+                    sample['elapsed_sec'] = round(elapsed, 2)
+                    sample['iterations'] = self.stress_worker.iterations
+                    sample['last_iter_ms'] = round(iter_time, 2)
+                    self.samples.append(sample)
+                    last_sample_time = elapsed
+                
+                # Render visualization frame (every frame, no throttling)
+                if visualizer:
+                    # Process pygame events separately - don't let window close stop the benchmark
+                    from . import event_handler
+                    try:
+                        events = visualizer.pygame.event.get() if visualizer.pygame else []
+                        if not event_handler.handle_events(visualizer, events):
+                            # User closed window - mark it but continue benchmark for visualization mode
+                            if visualize:
+                                visualizer.running = False
+                                # Don't break - let the benchmark complete its duration
+                            else:
+                                visualizer.running = False
+                                break
+                    except Exception as e:
+                        print(f"[WARNING] Event handling error: {e}")
+                    
+                    # Only render if window is still open
+                    if visualizer.running:
+                        # Calculate stable FPS from recent frame times
+                        now = time.time()
+                        frame_time = now - last_frame_time
+                        last_frame_time = now
+                        
+                        frame_times.append(frame_time)
+                        if len(frame_times) > max_frame_history:
+                            frame_times.pop(0)
+                        
+                        avg_frame_time = sum(frame_times) / len(frame_times)
+                        render_fps = 1.0 / avg_frame_time if avg_frame_time > 0 else 0
+                        self.render_fps = render_fps
+                        
+                        # Update physics parameters from UI
+                        slider_values = visualizer.get_slider_values()
+                        self.stress_worker.update_physics_params(
+                            gravity_strength=slider_values['gravity'],
+                            small_ball_speed=slider_values['small_ball_speed'],
+                            initial_balls=int(slider_values['initial_balls']),
+                            max_balls_cap=int(slider_values['max_balls_cap']),
+                            big_ball_count=int(slider_values.get('big_ball_count', 5)),
+                            backend_multiplier=int(slider_values.get('backend_multiplier', 1))
+                        )
+                        
+                        self.stress_worker.update_split_enabled(visualizer.get_split_enabled())
+                        
+                        # Process spawn requests
+                        spawn_requests = visualizer.get_spawn_requests()
+                        for sim_x, sim_y, count in spawn_requests:
+                            self.stress_worker.spawn_big_balls(sim_x, sim_y, count)
+                        
+                        # Get particle sample for rendering
+                        positions, masses, colors, glows = self.stress_worker.get_particle_sample(max_samples=2000)
+                        
+                        # Always render to keep window responsive, even if no particle data
+                        if positions is not None and len(positions) > 0:
+                            # Update workload display with actual visible particle count
+                            visible_count = len(positions)
+                            self.stress_worker.update_workload_display(visible_count)
+                            
+                            influence_boundaries = self.stress_worker.get_influence_boundaries(
+                                gravity_strength=slider_values['gravity']
+                            )
+                            active_particles = int(self.stress_worker._active_count)
+                            
+                            # Get real-time GPU utilization from background thread
+                            gpu_util = self.metrics_sampler.get_current_util()
+                            
+                            visualizer.render_frame(
+                                positions=positions,
+                                masses=masses,
+                                colors=colors,
+                                glows=glows,
+                                influence_boundaries=influence_boundaries,
+                                total_particles=self.stress_worker._initial_particle_count,
+                                active_particles=active_particles,
+                                fps=render_fps,
+                                gpu_util=gpu_util,
+                                elapsed_time=elapsed
+                            )
+                        else:
+                            # No particle data - render empty frame to keep window alive
+                            print(f"[WARNING] No particle data available for rendering (positions={positions})")
+                            # Still need to update the display to process events
+                            if hasattr(visualizer, 'pygame') and visualizer.pygame:
+                                visualizer.pygame.display.flip()
+                
+                # Auto-scaling check - target 94% GPU utilization for visualization
+                if self.config.auto_scale and elapsed - last_scale_check >= scale_interval:
+                    current_sample = self.samples[-1] if self.samples else {}
+                    gpu_util_check = current_sample.get('utilization', 0)
+                    
+                    # For visualization mode, target 94% GPU util
+                    target_util = 94 if visualize else 98
+                    
+                    if scale_count < max_scales and not target_reached:
+                        if gpu_util_check < 70:
+                            self.stress_worker.scale_workload(2.0)
+                            scale_count += 1
+                        elif gpu_util_check < 85:
+                            self.stress_worker.scale_workload(1.5)
+                            scale_count += 1
+                        elif gpu_util_check < target_util - 1:
+                            self.stress_worker.scale_workload(1.2)
+                            scale_count += 1
+                        elif gpu_util_check >= target_util - 1:
+                            # Target reached - mark the time and continue running
+                            target_reached = True
+                            target_reached_time = elapsed
+                    
+                    last_scale_check = elapsed
+                
+                # Check stop conditions
+                if self.samples:
+                    latest_sample = self.samples[-1]
+                    stop = self.metrics_sampler.check_stop_conditions(latest_sample, self.config)
+                    if stop:
+                        self.stop_reason = stop
+                        break
+                
+                # Check if user stopped
+                if self.should_stop:
+                    self.stop_reason = "User stopped"
+                    break
+                
+                # For visualization mode, don't auto-close on window events - only stop on duration or user stop button
+                # The user can close the pygame window manually if they want
+                
+                # Update progress
+                self.progress = int((elapsed / self.config.duration_seconds) * 100)
+        
+        except Exception as e:
+            print(f"[ERROR] Benchmark loop exception: {e}")
+            import traceback
+            traceback.print_exc()
+            self.stop_reason = f"Error: {str(e)}"
         
         # Cleanup
         if visualizer:
@@ -292,7 +382,31 @@ class GPUBenchmark:
             'overall': int((stability_score + thermal_score + perf_score) / 3)
         }
         
+        # Add web UI compatible format
+        self._add_webui_format(results)
+        
         return results
+    
+    def _add_webui_format(self, results: Dict[str, Any]):
+        """Add fields expected by web UI."""
+        # Web UI expects flat fields like avg_temperature, peak_temperature
+        results['avg_temperature'] = results['temperature_c']['avg']
+        results['peak_temperature'] = results['temperature_c']['max']
+        results['avg_gpu_utilization'] = results['utilization']['avg']
+        results['avg_memory_usage'] = results['memory_used_mb']['avg']
+        results['avg_power_draw'] = results['power_w']['avg']
+        results['duration'] = results['duration_actual_sec']
+        results['total_iterations'] = results['iterations_completed']
+        
+        # Add performance metrics based on benchmark type
+        if results['benchmark_type'] == 'particle':
+            perf = results.get('performance', {})
+            results['avg_steps_per_sec'] = perf.get('steps_per_second', 0)
+            results['peak_steps_per_sec'] = perf.get('peak_steps_per_second', perf.get('steps_per_second', 0))
+        elif results['benchmark_type'] == 'gemm':
+            perf = results.get('performance', {})
+            results['avg_tflops'] = perf.get('tflops', 0)
+            results['peak_tflops'] = perf.get('peak_tflops', perf.get('tflops', 0))
     
     def run(self, config: BenchmarkConfig, visualize: bool = False) -> Dict[str, Any]:
         """Run complete benchmark with configuration."""
@@ -308,7 +422,8 @@ class GPUBenchmark:
         # Initialize stress worker
         self.stress_worker = GPUStressWorker(
             benchmark_type=config.benchmark_type,
-            config=config
+            config=config,
+            visualize=visualize
         )
         
         try:
@@ -331,18 +446,20 @@ class GPUBenchmark:
             }
             
             # Get baseline
+            run_mode = 'simulation' if visualize else 'benchmark'
             if 'name' in gpu_info:
-                baseline = self.baseline_storage.get_baseline(gpu_info['name'], config.benchmark_type)
+                baseline = self.baseline_storage.get_baseline(gpu_info['name'], config.benchmark_type, run_mode)
                 if baseline:
                     self.results['baseline'] = baseline
             
             results = self.run_stress_benchmark(visualize=visualize)
             self.results.update(results)
             self.results['status'] = 'completed'
+            self.results['run_mode'] = run_mode
             
             # Save as baseline if completed
             if self.completed_full and 'name' in gpu_info:
-                self.baseline_storage.save_baseline(gpu_info['name'], config.benchmark_type, self.results)
+                self.baseline_storage.save_baseline(gpu_info['name'], config.benchmark_type, self.results, run_mode)
                 self.results['saved_as_baseline'] = True
             
         except KeyboardInterrupt:

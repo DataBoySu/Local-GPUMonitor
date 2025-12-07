@@ -12,6 +12,8 @@ class BackendStressManager:
         self._backend_multiplier = 1
         self._method = None
         self._library = None  # cp or torch
+        self._particle_count = 0
+        self._initialized = False
     
     def initialize(self, method: str, library, particle_count: int, backend_multiplier: int):
         """
@@ -26,7 +28,9 @@ class BackendStressManager:
         self._method = method
         self._library = library
         self._backend_multiplier = backend_multiplier
+        self._particle_count = particle_count
         self._backend_arrays = []
+        self._initialized = True
         
         if backend_multiplier > 1:
             for i in range(backend_multiplier - 1):  # -1 because main arrays count as 1x
@@ -99,3 +103,28 @@ class BackendStressManager:
     def get_array_count(self) -> int:
         """Get number of backend arrays."""
         return len(self._backend_arrays)
+    
+    def is_initialized(self) -> bool:
+        """Check if backend stress manager is initialized."""
+        return self._initialized and self._method is not None
+    
+    def get_particle_count(self) -> int:
+        """Get total backend particle count."""
+        if not self._initialized:
+            return 0
+        return self._particle_count * self._backend_multiplier
+    
+    def scale_particles(self, new_total_count: int):
+        """
+        Scale backend particles to a new total count.
+        
+        Args:
+            new_total_count: New total backend particle count
+        """
+        if not self._initialized or self._particle_count == 0:
+            return
+        
+        # Calculate new multiplier based on desired total count
+        new_multiplier = max(1, int(new_total_count / self._particle_count))
+        if new_multiplier != self._backend_multiplier:
+            self.update_multiplier(new_multiplier, self._particle_count)

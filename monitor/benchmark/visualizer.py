@@ -76,6 +76,10 @@ class ParticleVisualizer:
         """Initialize pygame (optional dependency)."""
         try:
             import pygame
+            import os
+            # Set SDL video driver for Windows to allow background thread display
+            os.environ['SDL_VIDEODRIVER'] = 'windows'
+            
             self.pygame = pygame
             pygame.init()
             self.screen = pygame.display.set_mode(self.window_size)
@@ -84,6 +88,8 @@ class ParticleVisualizer:
             self.font = pygame.font.Font(None, 28)
             self.small_font = pygame.font.Font(None, 20)
             self.running = True
+            
+            print(f"[VISUALIZER] Pygame initialized successfully - Window: {self.window_size}")
             
             # Pre-generate random colors and sizes for particles
             for _ in range(self.max_render_particles):
@@ -97,10 +103,13 @@ class ParticleVisualizer:
                 # Varying sizes for depth effect
                 self.particle_sizes.append(random.randint(3, 8))
                 
-        except ImportError:
+        except ImportError as e:
             self.running = False
-            print("[WARNING] pygame not installed - visualization disabled")
+            print(f"[WARNING] pygame not installed - visualization disabled: {e}")
             print("Install with: pip install pygame")
+        except Exception as e:
+            self.running = False
+            print(f"[ERROR] Failed to initialize pygame: {e}")
     
     def is_available(self) -> bool:
         """Check if visualizer is ready."""
@@ -135,11 +144,6 @@ class ParticleVisualizer:
             elapsed_time: Benchmark elapsed time
         """
         if not self.is_available():
-            return
-        
-        # Handle pygame events using event_handler module
-        if not event_handler.handle_events(self, self.pygame.event.get()):
-            self.running = False
             return
         
         # Clear screen with dark space background
