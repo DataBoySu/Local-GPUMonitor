@@ -1,4 +1,4 @@
-"""GPU benchmark orchestration and metrics collection - REFACTORED."""
+"""GPU benchmark orchestration and metrics collection."""
 
 import time
 from typing import Dict, Any, List, Optional
@@ -133,11 +133,12 @@ class GPUBenchmark:
         max_frame_history = 10
         last_frame_time = time.time()
         
-        # Auto-scaling
+        # Auto-scaling for stress-test mode
         last_scale_check = 0
-        scale_interval = 2.0
-        scale_count = 0
-        max_scales = 15
+        scale_interval = 5.0  # Scale every 5 seconds
+        current_backend_total = 200000  # Start with 200k total backend particles
+        max_backend_total = 500000  # Max 500k total backend particles
+        backend_increment = 50000  # Increase by 50k every 5 seconds
         auto_scale_timeout = 60.0 if visualize else float('inf')  # 60s timeout for visualization mode
         target_reached = False
         target_reached_time = None
@@ -172,18 +173,14 @@ class GPUBenchmark:
                 
                 # Render visualization frame (every frame, no throttling)
                 if visualizer:
-                    # Process pygame events separately - don't let window close stop the benchmark
+                    # Process pygame events separately
                     from . import event_handler
                     try:
                         events = visualizer.pygame.event.get() if visualizer.pygame else []
                         if not event_handler.handle_events(visualizer, events):
-                            # User closed window - mark it but continue benchmark for visualization mode
-                            if visualize:
-                                visualizer.running = False
-                                # Don't break - let the benchmark complete its duration
-                            else:
-                                visualizer.running = False
-                                break
+                            visualizer.running = False
+                            self.stop_reason = "User closed visualization window"
+                            break
                     except Exception as e:
                         print(f"[WARNING] Event handling error: {e}")
                     
@@ -256,28 +253,33 @@ class GPUBenchmark:
                             if hasattr(visualizer, 'pygame') and visualizer.pygame:
                                 visualizer.pygame.display.flip()
                 
-                # Auto-scaling check - target 94% GPU utilization for visualization
+                # Auto-scaling check for stress-test mode - increase backend particles every 5 seconds
                 if self.config.auto_scale and elapsed - last_scale_check >= scale_interval:
                     current_sample = self.samples[-1] if self.samples else {}
                     gpu_util_check = current_sample.get('utilization', 0)
                     
-                    # For visualization mode, target 94% GPU util
-                    target_util = 94 if visualize else 98
+                    # Target 98% GPU util for stress test
+                    target_util = 98
                     
-                    if scale_count < max_scales and not target_reached:
-                        if gpu_util_check < 70:
-                            self.stress_worker.scale_workload(2.0)
-                            scale_count += 1
-                        elif gpu_util_check < 85:
-                            self.stress_worker.scale_workload(1.5)
-                            scale_count += 1
-                        elif gpu_util_check < target_util - 1:
-                            self.stress_worker.scale_workload(1.2)
-                            scale_count += 1
-                        elif gpu_util_check >= target_util - 1:
-                            # Target reached - mark the time and continue running
+                    if not target_reached:
+                        if gpu_util_check >= target_util - 1:
                             target_reached = True
                             target_reached_time = elapsed
+                        elif current_backend_total < max_backend_total:
+                            # Increase total backend particles
+                            current_backend_total += backend_increment
+                            if current_backend_total > max_backend_total:
+                                current_backend_total = max_backend_total
+                            
+                            # Apply the new backend particle count
+                            if self.stress_worker._backend_stress.is_initialized():
+                                new_total_backend = current_backend_total
+                                visible_count = self.stress_worker._initial_particle_count
+                                self.stress_worker._backend_stress.scale_particles(new_total_backend)
+                                
+                                # Update workload display
+                                if self.stress_worker.visualize:
+                                    self.stress_worker.workload_type = f"Bounce Simulation ({visible_count:,} visible, {new_total_backend:,} backend, {self.stress_worker._method})"
                     
                     last_scale_check = elapsed
                 
@@ -390,20 +392,20 @@ class GPUBenchmark:
     def _add_webui_format(self, results: Dict[str, Any]):
         """Add fields expected by web UI."""
         # Web UI expects flat fields like avg_temperature, peak_temperature
-        results['avg_temperature'] = results['temperature_c']['avg']
-        results['peak_temperature'] = results['temperature_c']['max']
-        results['avg_gpu_utilization'] = results['utilization']['avg']
-        results['avg_memory_usage'] = results['memory_used_mb']['avg']
-        results['avg_power_draw'] = results['power_w']['avg']
-        results['duration'] = results['duration_actual_sec']
-        results['total_iterations'] = results['iterations_completed']
+        results['avg_temperature'] = results.get('temperature_c', {}).get('avg', 0)
+        results['peak_temperature'] = results.get('temperature_c', {}).get('max', 0)
+        results['avg_gpu_utilization'] = results.get('utilization', {}).get('avg', 0)
+        results['avg_memory_usage'] = results.get('memory_used_mb', {}).get('avg', 0)
+        results['avg_power_draw'] = results.get('power_w', {}).get('avg', 0)
+        results['duration'] = results.get('duration_actual_sec', 0)
+        results['total_iterations'] = results.get('iterations_completed', 0)
         
         # Add performance metrics based on benchmark type
-        if results['benchmark_type'] == 'particle':
+        if results.get('benchmark_type') == 'particle':
             perf = results.get('performance', {})
             results['avg_steps_per_sec'] = perf.get('steps_per_second', 0)
             results['peak_steps_per_sec'] = perf.get('peak_steps_per_second', perf.get('steps_per_second', 0))
-        elif results['benchmark_type'] == 'gemm':
+        elif results.get('benchmark_type') == 'gemm':
             perf = results.get('performance', {})
             results['avg_tflops'] = perf.get('tflops', 0)
             results['peak_tflops'] = perf.get('peak_tflops', perf.get('tflops', 0))

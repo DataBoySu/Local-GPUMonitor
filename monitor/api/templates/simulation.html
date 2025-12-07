@@ -197,12 +197,36 @@
             line-height: 1.6;
             margin-top: 10px;
         }
+        
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #333;
+        }
+        
+        .metric-label {
+            color: #999;
+        }
+        
+        .metric-value {
+            color: #00ff88;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <div id="container">
         <div id="header">
             <h1>🎱 3D Ball Physics Simulation</h1>
+            <div style="flex-grow: 1; text-align: center;">
+                <div id="workload-info" style="color: #00ff88; font-size: 0.95em; font-weight: 500;">
+                    <!-- Workload info will appear here -->
+                </div>
+                <div id="iteration-counter" style="display: none; color: #00ff88; font-size: 0.9em; margin-top: 5px;">
+                    <!-- Iteration counter will appear here -->
+                </div>
+            </div>
             <div id="stats">
                 <div class="stat">
                     <span class="stat-label">FPS</span>
@@ -229,6 +253,14 @@
             </div>
             
             <div id="controls">
+                <!-- Baseline Information -->
+                <div class="control-group" id="sim-baseline-info" style="display: none;">
+                    <h3>📊 Baseline (Simulation Mode)</h3>
+                    <div id="sim-baseline-details" style="font-size: 0.9em; line-height: 1.6;">
+                        <!-- Baseline content loaded via JavaScript -->
+                    </div>
+                </div>
+                
                 <div class="control-group">
                     <h3>⚡ Simulation Control</h3>
                     <button id="startBtn" class="button">Start Simulation</button>
@@ -437,6 +469,11 @@
                 }
             });
         }
+        
+        // Load baseline on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSimulationBaseline();
+        });
     </script>
 </body>
 </html>

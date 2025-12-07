@@ -380,6 +380,7 @@ class GPUStressWorker:
             if self._backend_stress.is_initialized():
                 current_backend_count = self._backend_stress.get_particle_count()
                 new_backend_count = int(current_backend_count * scale_factor)
+                print(f"[SCALING] Current: {current_backend_count:,}, Factor: {scale_factor}, New: {new_backend_count:,}")
                 self._backend_stress.scale_particles(new_backend_count)
                 
                 # Update workload type to show new backend count
@@ -389,8 +390,9 @@ class GPUStressWorker:
                 else:
                     self.workload_type = f"Bounce Simulation ({new_backend_count:,} particles, {self._method})"
             else:
-                # No backend stress - workload type stays the same (no scaling needed)
-                self.workload_type = f"Bounce Simulation ({new_backend_count:,} particles, {self._method})"
+                # No backend stress - workload type stays the same (no scaling happens for visible particles)
+                print("[SCALING] Backend stress not initialized - skipping scaling")
+                pass
     
     def update_workload_display(self, visible_count: int):
         """Update workload type display with actual visible particle count (for visualization mode)."""

@@ -18,12 +18,10 @@ def handle_events(visualizer, pygame_events):
     
     for event in pygame_events:
         if event.type == visualizer.pygame.QUIT:
-            print("[EVENT] User closed pygame window via QUIT event")
             return False
         
         elif event.type == visualizer.pygame.KEYDOWN:
             if event.key == visualizer.pygame.K_ESCAPE:
-                print("[EVENT] User pressed ESC key to close window")
                 return False
             elif visualizer.max_balls_cap['active']:
                 if not _handle_text_input(visualizer, event):

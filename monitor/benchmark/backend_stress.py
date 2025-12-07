@@ -41,24 +41,25 @@ class BackendStressManager:
                 else:
                     continue
                 self._backend_arrays.append(backend_gpu)
-            
-            total_particles = backend_multiplier * particle_count
-            print(f"[Backend Stress] Initialized {backend_multiplier}x multiplier ({total_particles:,} total particles on GPU)")
     
     def update_multiplier(self, new_multiplier: int, particle_count: int):
         """
         Update backend multiplier by recreating arrays.
         
         Args:
-            new_multiplier: New multiplier value (1-100)
+            new_multiplier: New multiplier value (minimum 1, no upper limit)
             particle_count: Number of particles per array
         """
         if new_multiplier < 1:
             new_multiplier = 1
-        if new_multiplier > 100:
-            new_multiplier = 100
+        # No upper limit - allow large multipliers for stress testing
         
         old_multiplier = self._backend_multiplier
+        
+        # Don't update if multiplier hasn't changed
+        if new_multiplier == old_multiplier:
+            return
+        
         self._backend_multiplier = new_multiplier
         
         # Clear old arrays
@@ -74,9 +75,6 @@ class BackendStressManager:
                 else:
                     continue
                 self._backend_arrays.append(backend_gpu)
-            
-            total_particles = new_multiplier * particle_count
-            print(f"[Backend Stress] Updated multiplier: {old_multiplier}x → {new_multiplier}x ({total_particles:,} total particles)")
     
     def run_physics(self, physics_module, params, library):
         """

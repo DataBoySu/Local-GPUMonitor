@@ -29,6 +29,20 @@ function selectMode(mode) {
     });
     document.getElementById('custom-controls').style.display = mode === 'custom' ? 'block' : 'none';
     
+    // Disable Start Simulation button for stress-test and custom modes
+    const simBtn = document.getElementById('start-sim-btn');
+    if (simBtn) {
+        if (mode === 'stress-test' || mode === 'custom') {
+            simBtn.disabled = true;
+            simBtn.style.opacity = '0.5';
+            simBtn.style.cursor = 'not-allowed';
+        } else {
+            simBtn.disabled = false;
+            simBtn.style.opacity = '1';
+            simBtn.style.cursor = 'pointer';
+        }
+    }
+    
     // Update mode description
     const descriptions = {
         'quick': 'Quick baseline test - 15 seconds with fixed workload size',
@@ -137,13 +151,23 @@ async function pollBenchmarkStatus() {
             
             // Update iteration counter
             if (data.current_iteration !== undefined) {
-                document.getElementById('iteration-counter').textContent = `Iteration #${data.current_iteration}`;
+                const iterElement = document.getElementById('iteration-counter');
+                if (iterElement) {
+                    iterElement.style.display = 'inline';
+                    iterElement.textContent = `Iteration #${data.current_iteration}`;
+                }
             }
             
             // Update workload type
             if (data.workload_type) {
-                document.getElementById('workload-info').textContent = 'Workload: ' + data.workload_type;
-                document.getElementById('bench-workload').textContent = data.workload_type;
+                const workloadElement = document.getElementById('workload-info');
+                const benchWorkloadElement = document.getElementById('bench-workload');
+                if (workloadElement) {
+                    workloadElement.textContent = 'Workload: ' + data.workload_type;
+                }
+                if (benchWorkloadElement) {
+                    benchWorkloadElement.textContent = data.workload_type;
+                }
             }
             
             // Update live charts with latest metrics

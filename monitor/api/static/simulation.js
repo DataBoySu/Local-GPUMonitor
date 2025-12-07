@@ -1,5 +1,27 @@
 // simulation.js - Particle simulation visualization controls
 
+// Load baseline when page loads
+async function loadSimulationBaseline() {
+    try {
+        const response = await fetch('/api/benchmark/baseline?benchmark_type=particle&run_mode=simulation');
+        const baseline = await response.json();
+        if (baseline && baseline.status !== 'no_baseline') {
+            document.getElementById('sim-baseline-info').style.display = 'block';
+            document.getElementById('sim-baseline-details').innerHTML = `
+                <div class="metric-row"><span class="metric-label">GPU</span><span class="metric-value">${baseline.gpu_name}</span></div>
+                <div class="metric-row"><span class="metric-label">Workload</span><span class="metric-value">${baseline.workload_type || 'Particle Simulation'}</span></div>
+                <div class="metric-row"><span class="metric-label">Iterations</span><span class="metric-value">${baseline.iterations_completed}</span></div>
+                <div class="metric-row"><span class="metric-label">Avg Temp</span><span class="metric-value">${baseline.avg_temperature.toFixed(1)} C</span></div>
+                <p style="font-size: 0.85em; color: var(--text-secondary); margin-top: 10px;">Saved: ${new Date(baseline.timestamp).toLocaleString()}</p>
+            `;
+        } else {
+            document.getElementById('sim-baseline-info').style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error loading simulation baseline:', error);
+    }
+}
+
 async function startSimulation() {
     console.log('Start Simulation clicked');
     console.log('Current benchmark type:', selectedBenchType);

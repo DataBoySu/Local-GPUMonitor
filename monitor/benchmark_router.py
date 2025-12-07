@@ -75,6 +75,6 @@ async def get_benchmark_results():
     return benchmark_instance.get_results() if benchmark_instance.results else {'status': 'no_results'}
 
 @router.get("/baseline")
-async def get_benchmark_baseline(benchmark_type: str = "gemm"):
-    baseline = benchmark_instance.get_baseline(benchmark_type)
+async def get_benchmark_baseline(benchmark_type: str = "gemm", run_mode: str = "benchmark"):
+    baseline = benchmark_instance.get_baseline(benchmark_type, run_mode)
     return baseline if baseline else {'status': 'no_baseline'}
