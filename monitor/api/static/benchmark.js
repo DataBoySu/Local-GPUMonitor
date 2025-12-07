@@ -30,6 +30,7 @@ function selectMode(mode) {
     document.getElementById('custom-controls').style.display = mode === 'custom' ? 'block' : 'none';
     
     // Disable Start Simulation button for stress-test and custom modes
+    // (or if GPU features not available - checked by loadFeatures)
     const simBtn = document.getElementById('start-sim-btn');
     if (simBtn) {
         if (mode === 'stress-test' || mode === 'custom') {
@@ -37,9 +38,13 @@ function selectMode(mode) {
             simBtn.style.opacity = '0.5';
             simBtn.style.cursor = 'not-allowed';
         } else {
-            simBtn.disabled = false;
-            simBtn.style.opacity = '1';
-            simBtn.style.cursor = 'pointer';
+            // Only enable if not already disabled by loadFeatures
+            // Check if it's disabled due to missing GPU libraries
+            if (simBtn.title !== 'Install CuPy or PyTorch for simulation') {
+                simBtn.disabled = false;
+                simBtn.style.opacity = '1';
+                simBtn.style.cursor = 'pointer';
+            }
         }
     }
     
@@ -182,7 +187,7 @@ async function pollBenchmarkStatus() {
 
 function displayBenchmarkResults(results) {
     const resultsDiv = document.getElementById('benchmark-results');
-    resultsDiv.innerHTML = '<h3>📊 Benchmark Results</h3>';
+    resultsDiv.innerHTML = '<h3>Benchmark Results</h3>';
     
     // Build results HTML based on benchmark type
     let html = '<div class="results-grid">';
