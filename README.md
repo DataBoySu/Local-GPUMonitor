@@ -1,6 +1,7 @@
 # GPU Health Monitor
 
-Professional GPU monitoring and stress testing tool with real-time visualization and performance baselines.
+Simple, fast and minimal cli + webui interface for local NVIDIA GPU monitoring
+*only for windows
 
 ## Features
 
