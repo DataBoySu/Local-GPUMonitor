@@ -247,7 +247,7 @@
         </div>
         
         <footer>
-            <p>Cluster Health Monitor v1.0.0 | <span id="last-update">-</span></p>
+            <p>Cluster Health Monitor {{VERSION}} | <span id="last-update">-</span></p>
         </footer>
     </div>
     
@@ -257,5 +257,28 @@
     <script src="/static/benchmark.js"></script>
     <script src="/static/simulation.js"></script>
     <script src="/static/main-new.js"></script>
+    <script>
+        (function(){
+            function pad(n){ return String(n).padStart(2,'0'); }
+            function formatTime(d){
+                var h = d.getHours();
+                var ampm = h >= 12 ? 'PM' : 'AM';
+                h = h % 12; if (h === 0) h = 12;
+                return pad(h) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + ' ' + ampm;
+            }
+
+            function setLastUpdate(timestamp){
+                var el = document.getElementById('last-update');
+                if (!el) return;
+                var d = timestamp ? new Date(timestamp) : new Date();
+                el.textContent = formatTime(d);
+            }
+
+            // Expose for other scripts to set server-provided timestamp.
+            // The UI will update the "Last update" only when the client
+            // receives fresh metrics from the server and calls this.
+            window.setLastUpdate = setLastUpdate;
+        })();
+    </script>
 </body>
 </html>

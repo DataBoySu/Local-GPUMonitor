@@ -19,6 +19,7 @@ from monitor.storage.sqlite import MetricsStorage
 from monitor.alerting.rules import AlertEngine
 from monitor import benchmark_router
 from monitor.benchmark import runner as benchmark_runner, config as benchmark_config
+from monitor.__version__ import __version__ as _pkg_version
 
 # Path to the templates directory, relative to this file
 TEMPLATE_DIR = Path(__file__).parent / "templates"
@@ -29,7 +30,7 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
     app = FastAPI(
         title="Cluster Health Monitor",
         description="Real-time GPU cluster monitoring",
-        version="1.0.0"
+        version=_pkg_version
     )
     
     # Mount static files
@@ -51,11 +52,28 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
     
     @app.get("/", response_class=HTMLResponse)
     async def read_dashboard():
-        return FileResponse(TEMPLATE_DIR / "index.html")
+        # Inject current package version into the static template placeholder
+        tpl_path = TEMPLATE_DIR / "index.html"
+        try:
+            import re
+            content = tpl_path.read_text(encoding='utf-8')
+            # Replace {{VERSION}} or {{ VERSION }} (allow whitespace) with vX.Y.Z
+            content = re.sub(r"\{\{\s*VERSION\s*\}\}", f"v{_pkg_version}", content)
+            return HTMLResponse(content=content)
+        except Exception:
+            return FileResponse(tpl_path)
     
     @app.get("/simulation", response_class=HTMLResponse)
     async def read_simulation():
-        return FileResponse(TEMPLATE_DIR / "simulation.html")
+        # Simulation page doesn't display version currently, but keep parity
+        tpl_path = TEMPLATE_DIR / "simulation.html"
+        try:
+            import re
+            content = tpl_path.read_text(encoding='utf-8')
+            content = re.sub(r"\{\{\s*VERSION\s*\}\}", f"v{_pkg_version}", content)
+            return HTMLResponse(content=content)
+        except Exception:
+            return FileResponse(tpl_path)
     
     @app.websocket("/ws/simulation")
     async def websocket_simulation(websocket: WebSocket):

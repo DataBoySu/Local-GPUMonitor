@@ -8,7 +8,10 @@ from pathlib import Path
 from typing import Optional, Dict
 
 GITHUB_API = "https://api.github.com/repos/DataBoySu/cluster-monitor/releases/latest"
-CURRENT_VERSION = "1.0.0"
+try:
+    from monitor.__version__ import __version__ as CURRENT_VERSION
+except Exception:
+    CURRENT_VERSION = "1.2.0"
 
 def get_latest_version() -> Optional[Dict]:
     """

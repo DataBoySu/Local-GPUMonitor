@@ -23,11 +23,13 @@ from monitor.storage.sqlite import MetricsStorage
 from monitor.alerting.rules import AlertEngine
 from monitor.cli.benchmark_cli import benchmark_cli
 
+from monitor.__version__ import __version__ as _pkg_version
+
 console = Console()
 
-BANNER = """
+BANNER = f"""
 ╔══════════════════════════════════════════════════╗
-║          CLUSTER HEALTH MONITOR v1.0.0           ║
+║          CLUSTER HEALTH MONITOR v{_pkg_version}           ║
 ║         Real-time GPU Cluster Monitoring         ║
 ╚══════════════════════════════════════════════════╝
 """
