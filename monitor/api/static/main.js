@@ -90,17 +90,10 @@ async function shutdownServer() {
             return;
         } catch (postErr) {
             // Network error when posting — server may have terminated before sending a response.
-            try { modal.setText('No response from server — waiting for shutdown...'); } catch (e) {}
-            // Poll to confirm server is down
-            const stopped = await waitForServerStop(60, 1000);
+            // Immediately proceed to the final page rather than showing an intermediate "waiting" message.
             try { modal.remove(); } catch (e) {}
-            if (stopped) {
-                showServerStoppedPage(true);
-            } else {
-                // couldn't confirm; show message and re-enable Exit button
-                showServerStoppedPage(false);
-                if (btn) { btn.disabled = false; btn.textContent = 'Exit'; }
-            }
+            // Show final stopped page (assume server is stopping/has stopped)
+            try { showServerStoppedPage(true); } catch (e) { console.debug('showServerStoppedPage error', e); }
             return;
         }
     } catch (e) {
