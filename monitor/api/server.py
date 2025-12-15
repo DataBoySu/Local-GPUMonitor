@@ -237,6 +237,32 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
             'processes': processes,
             'gpu_memory': gpu_memory_stats
         }
+
+    @app.post("/api/processes/terminate")
+    async def terminate_process(payload: Dict[str, int]):
+        """Terminate a process by PID. Expects JSON: {"pid": 1234}. Returns status."""
+        pid = payload.get('pid') if isinstance(payload, dict) else None
+        try:
+            pid = int(pid)
+        except Exception:
+            return {'status': 'error', 'error': 'invalid_pid'}
+
+        try:
+            import psutil
+            p = psutil.Process(pid)
+            p.terminate()
+            try:
+                p.wait(timeout=3)
+                return {'status': 'terminated'}
+            except psutil.TimeoutExpired:
+                p.kill()
+                return {'status': 'killed'}
+        except Exception as e:
+            # psutil.NoSuchProcess and other errors
+            errname = getattr(e, '__class__', type(e)).__name__
+            if 'NoSuchProcess' in errname:
+                return {'status': 'not_found'}
+            return {'status': 'error', 'error': str(e)}
     
     @app.get("/api/system")
     async def get_system():

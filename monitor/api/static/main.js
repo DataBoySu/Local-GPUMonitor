@@ -633,6 +633,10 @@ async function loadHistory() {
 
 async function loadProcesses() {
     try {
+        const tbody = document.getElementById('process-list');
+        // show loading state while we fetch latest processes
+        tbody.innerHTML = '<tr><td colspan="5" style="color: var(--text-secondary);">Loading processes…</td></tr>';
+
         const response = await fetch('/api/processes');
         const data = await response.json();
         
@@ -663,39 +667,26 @@ async function loadProcesses() {
             }
         }
         
-        const tbody = document.getElementById('process-list');
         if (!data.processes || data.processes.length === 0) {
             tbody.innerHTML = '<tr><td colspan="5" style="color: var(--text-secondary);">No GPU processes running</td></tr>';
         } else {
-            // Check if any process has utilization data
-            const hasUtilData = data.processes.some(p => p.gpu_utilization !== null && p.gpu_utilization !== undefined);
-            
-            // Sort by GPU memory usage (descending)
-            const sorted = data.processes.sort((a, b) => (b.gpu_memory_mb || 0) - (a.gpu_memory_mb || 0));
-            
+            // Sort by GPU utilization (descending). Fall back to gpu_utilization_percent or 0.
+            const sorted = (data.processes || []).slice().sort((a, b) => {
+                const au = Number(a.gpu_utilization ?? a.gpu_utilization_percent ?? 0) || 0;
+                const bu = Number(b.gpu_utilization ?? b.gpu_utilization_percent ?? 0) || 0;
+                return bu - au;
+            });
+
             tbody.innerHTML = sorted.map(p => {
-                let utilDisplay;
-                if (p.gpu_utilization !== null && p.gpu_utilization !== undefined) {
-                    utilDisplay = `${p.gpu_utilization.toFixed(1)}%`;
-                } else if (hasUtilData) {
-                    // Some processes have data, this one doesn't
-                    utilDisplay = '<span style="opacity: 0.5;">N/A</span>';
-                } else {
-                    // No processes have data - show helpful message on first row only
-                    if (sorted.indexOf(p) === 0) {
-                        utilDisplay = '<span style="opacity: 0.5;" title="Per-process GPU utilization requires:\n1. CUDA/compute workloads (not graphics)\n2. Accounting mode enabled\n3. Supported GPU hardware">Not available</span>';
-                    } else {
-                        utilDisplay = '<span style="opacity: 0.5;">—</span>';
-                    }
-                }
-                
+                const userDisplay = p.username || p.user || 'N/A';
+                const pid = p.pid;
                 return `
                     <tr>
-                        <td>${p.pid}</td>
+                        <td>${pid}</td>
                         <td>${p.name || 'N/A'}</td>
                         <td>GPU ${p.gpu_index}</td>
-                        <td>${utilDisplay}</td>
-                        <td>${p.username || 'N/A'}</td>
+                        <td>${userDisplay}</td>
+                        <td><button id="terminate-${pid}" onclick="terminateProcess(${pid})" style="padding:6px 10px;border-radius:6px;border:none;background:var(--accent-red);color:#fff;cursor:pointer;">Terminate</button></td>
                     </tr>
                 `;
             }).join('');
@@ -710,6 +701,37 @@ async function loadProcesses() {
 function exportData(format) {
     const hours = document.getElementById('export-hours').value;
     window.location.href = `/api/export/${format}?hours=${hours}`;
+}
+
+// Terminate a process by PID via server endpoint
+async function terminateProcess(pid) {
+    try {
+        // Directly send terminate request (no confirm). Disable button while in-flight.
+        const btn = document.getElementById(`terminate-${pid}`);
+        if (btn) { btn.disabled = true; btn.textContent = 'Terminating...'; }
+
+        const resp = await fetch('/api/processes/terminate', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pid })
+        });
+        const data = await resp.json().catch(() => ({}));
+        if (resp.ok && (data.status === 'terminated' || data.status === 'killed')) {
+            if (typeof showSuccess === 'function') showSuccess('Process terminated');
+            if (btn) { btn.textContent = 'Terminated'; }
+            try { const row = document.getElementById(`terminate-${pid}`).closest('tr'); if (row) { row.style.opacity = '0.6'; } } catch(e){}
+        } else if (data.status === 'not_found') {
+            if (typeof showError === 'function') showError('Process not found');
+            if (btn) { btn.disabled = false; btn.textContent = 'Terminate'; }
+        } else {
+            const msg = data.error || data.status || 'Error';
+            if (typeof showError === 'function') showError('Terminate failed: ' + msg);
+            if (btn) { btn.disabled = false; btn.textContent = 'Terminate'; }
+        }
+    } catch (e) {
+        if (typeof showError === 'function') showError('Terminate error: ' + (e && e.message ? e.message : e));
+        const btn = document.getElementById(`terminate-${pid}`);
+        if (btn) { btn.disabled = false; btn.textContent = 'Terminate'; }
+    }
 }
 
 // Benchmark functions
