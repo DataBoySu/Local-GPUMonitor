@@ -1,4 +1,4 @@
-# Contributing to Cluster Health Monitor
+# Contributing to Local GPU Monitor
 
 First off, thanks for taking the time to go through my project!
 
@@ -14,53 +14,41 @@ All contributions are welcome, bug fixes, new features, documentation improvemen
 - **Python**: 3.10+
 - **CUDA**: Toolkit 12.x (required for GPU benchmarking features).
 
-### Setting Up the Development Environment
+### Two ways to get started
 
-1. **Clone the repository**:
+Choose one of the options below — both end with running the included `setup.ps1` to prepare the environment.
 
-   ```bash
-   git clone https://github.com/DataBoySu/Local-GPUMonitor.git
-   # Contributing to GPU Health Monitor
+Option A — Install from Releases (ZIP)
+-------------------------------------
 
-   Thank you for taking an interest in contributing. This document describes how to get the repository locally, coding and commit guidelines, and the process for submitting changes.
+1. Download the latest release ZIP from the Releases page: https://github.com/DataBoySu/Local-GPUMonitor/releases
+2. Extract the ZIP to a local folder.
+3. Open PowerShell, `cd` into the extracted folder and run:
 
-   Repository: https://github.com/DataBoySu/Local-GPUMonitor
+```powershell
+# from the extracted release folder
+.\setup.ps1
+```
 
-   ## Quick Start (clone & run)
+Option B — Clone the repository (for development)
+-----------------------------------------------
 
-   1. Fork the repository on GitHub and clone your fork:
+1. Clone the repository and `cd` into it:
 
-   ```bash
-   git clone https://github.com/DataBoySu/Local-GPUMonitor.git
-   cd Local-GPUMonitor
-   ```
+```bash
+git clone https://github.com/DataBoySu/Local-GPUMonitor.git
+cd Local-GPUMonitor
+```
 
-   2. Create and activate a Python virtual environment:
+2. Run the setup script to install dependencies and prepare the environment:
 
-   ```powershell
-   python -m venv .venv
-   .\.venv\Scripts\Activate.ps1
-   ```
+```powershell
+.\setup.ps1
+```
 
-   3. Install dependencies:
+After `setup.ps1` completes, run the web dashboard or CLI as described below.
 
-   ```powershell
-   pip install -r requirements.txt
-   ```
-
-   4. Run the application (web dashboard):
-
-   ```powershell
-   python health_monitor.py web
-   ```
-
-   Or run the CLI mode:
-
-   ```powershell
-   python health_monitor.py cli
-   ```
-
-   ## Branching & Commit Guidelines
+## Branching & Commit Guidelines
 
    - Branch from `main` for new work: `git checkout -b feat/short-description` or `fix/short-description`.
    - Keep commits small and focused. Use clear commit messages (imperative present tense):
@@ -69,33 +57,31 @@ All contributions are welcome, bug fixes, new features, documentation improvemen
 
    - Rebase or squash when appropriate before opening a PR to keep history tidy.
 
-   ## Pull Requests
+## Pull Requests
 
    1. Push your branch to your fork and open a Pull Request against `DataBoySu/Local-GPUMonitor:main`.
    2. In the PR description include:
       - A short summary of the change/with images if possible.
       - Motivation and any relevant issue links.
       - Testing steps to reproduce or verify the change.
-   3. Ensure CI (if any) passes and address review comments promptly.
 
-   ## Code Style & Tests
+## Code Style & Tests
 
-   - Python: follow PEP 8 and use type hints where appropriate. We prefer readable, explicit code.
+   - Python: follow PEP 8 and use type hints where appropriate.
    - JavaScript: keep vanilla JS simple and modular. Follow consistent indentation and naming.
-   - Add tests where appropriate (unit tests for collectors, integration tests for API endpoints). If you add tests, include instructions to run them in your PR.
 
-   ## Running Locally (developer tips)
+## Running Locally (developer tips)
 
    - To run the web server with auto-reload during development, use your editor's Python run configuration or run with `watchdog`/`honcho` if you add it.
    - For debugging GPU collectors on non-GPU machines, mock or stub out GPU calls (see `monitor/collectors` for structure).
 
-   ## Communication, Reporting Issues & Security
+## Communication, Reporting Issues & Security
 
    - Use GitHub Discussions for general conversation and design proposals: <https://github.com/DataBoySu/Local-GPUMonitor/discussions/9>
    - Open issues for bugs, feature requests, and design discussions
    - For sensitive security issues, please contact the repository owner directly instead of opening a public issue.
 
-   ## License
+## License
 
    This project is distributed under the MIT License. See `LICENSE` for details.
 
