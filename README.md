@@ -1,11 +1,12 @@
-# Cluster Health Monitor
+<div style="text-align:center; margin:18px 0;">
+  <img src="monitor/api/static/logo.png" alt="logo"/>
+</div>
 
-**A lightweight, admin-focused GPU monitoring and management utility.**
-
-> *Essentially an `nvidia-smi` wrapper built for varying levels of complexity.*
+> *Essentially a complex `nvidia-smi` wrapper which saves your time and gives some cool visuals.*
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![Tag](https://img.shields.io/badge/tag-v1.2.3-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
 
 ## Gallery
@@ -51,13 +52,7 @@
 
 </details>
 
----
 
-## Overview
-
-**Cluster Health Monitor** started as a personal project for local monitoring and testing while working with AI models. It has evolved into a versatile utility that bridges the gap between simple command-line tools and complex enterprise monitoring solutions.
-
-Whether you are a researcher fine-tuning LLMs, a developer testing CUDA kernels, or an admin managing a local compute cluster, this tool provides the visibility and control you need without the overhead.
 
 ### Why use this?
 
