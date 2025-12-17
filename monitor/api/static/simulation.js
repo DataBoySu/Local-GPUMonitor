@@ -113,11 +113,24 @@ async function startSimulation() {
     
     // Initialize live charts
     initLiveCharts();
+    // Reset progress UI immediately when starting simulation
+    try { document.getElementById('bench-progress-bar').style.width = '0%'; } catch(e) {}
+    try { document.getElementById('bench-percent').textContent = '0%'; } catch(e) {}
     
     try {
         const resp = await fetch(url, { method: 'POST' });
         try {
-            const body = await resp.json();
+            if (!resp.ok) {
+                throw new Error('Server returned ' + resp.status);
+            }
+            const body = await resp.json().catch(() => null);
+            if (body && body.status === 'already_running') {
+                console.warn('Benchmark already running');
+                btn.disabled = false;
+                btn.textContent = 'Start Simulation';
+                stopBtn.style.display = 'inline-block';
+                return;
+            }
             const cfg = body && body.config ? body.config : null;
             if (cfg) {
                 const backend = cfg.preferred_backend || (document.getElementById('benchmark-backend-select') && document.getElementById('benchmark-backend-select').value) || 'auto';

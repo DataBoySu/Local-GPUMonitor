@@ -25,8 +25,8 @@
                 <span style="font-size: 0.8em; opacity: 0.8;">Auto-refresh: <span id="countdown">5</span>s</span>
             </div>
             <div class="header-right">
-                <button class="update-btn" onclick="checkForUpdates()" id="update-btn" data-tooltip="Check latest release on GitHub">Check for Updates</button>
-                <button class="update-btn" onclick="shutdownServer()" id="shutdown-btn" data-tooltip="Shut down the server" style="background: var(--accent-red);">Exit</button>
+                <button class="update-btn" onclick="checkForUpdates()" id="update-btn" data-hover="Check latest release on GitHub">Check for Updates</button>
+                <button class="update-btn" onclick="shutdownServer()" id="shutdown-btn" data-hover="Shut down the server" style="background: var(--accent-red);">Exit</button>
                 <div id="status-badge" class="status-badge status-healthy">HEALTHY</div>
             </div>
         </header>
@@ -221,8 +221,8 @@
                     </div>
                     
                         <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                            <button class="export-btn" onclick="startBenchmark()" id="start-bench-btn" data-tooltip="Not implemented">Start Benchmark</button>
-                                <button class="export-btn" onclick="startSimulation()" id="start-sim-btn" title="Start particle simulation with visualization" data-tooltip="Not implemented">Start Simulation</button>
+                            <button class="export-btn" onclick="startBenchmark()" id="start-bench-btn" data-hover="Start benchmark">Start Benchmark</button>
+                                <button class="export-btn" onclick="startSimulation()" id="start-sim-btn" data-hover="Start simulation">Start Simulation</button>
                         <button class="export-btn secondary" onclick="stopBenchmark()" id="stop-bench-btn" style="display: none;">Stop</button>
                         <span id="iteration-counter" style="display: none; font-size: 1.2em; color: var(--accent-green); font-weight: bold; margin-left: 20px;"></span>
                     </div>

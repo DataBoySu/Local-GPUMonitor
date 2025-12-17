@@ -9,11 +9,11 @@ function updateDashboard(data) {
     // Add tooltip with alert count
     const alertCount = data.alerts ? data.alerts.length : 0;
     if (data.status === 'warning' && alertCount > 0) {
-        badge.setAttribute('data-tooltip', `${alertCount} active alert${alertCount > 1 ? 's' : ''}`);
+        badge.setAttribute('data-hover', `${alertCount} active alert${alertCount > 1 ? 's' : ''}`);
     } else if (data.status === 'info') {
-        badge.setAttribute('data-tooltip', 'System information available');
+        badge.setAttribute('data-hover', 'System information available');
     } else {
-        badge.setAttribute('data-tooltip', 'All systems operational');
+        badge.setAttribute('data-hover', 'All systems operational');
     }
     
     const gpuList = document.getElementById('gpu-list');
@@ -220,7 +220,7 @@ async function loadProcesses() {
                 } else {
                     // No processes have data - show helpful message on first row only
                     if (sorted.indexOf(p) === 0) {
-                        utilDisplay = '<span style="opacity: 0.5;" title="Per-process GPU utilization requires:\n1. CUDA/compute workloads (not graphics)\n2. Accounting mode enabled\n3. Supported GPU hardware">Not available</span>';
+                        utilDisplay = '<span style="opacity: 0.5;" data-hover="Per-process GPU utilization requires:\n1. CUDA/compute workloads (not graphics)\n2. Accounting mode enabled\n3. Supported GPU hardware">Not available</span>';
                     } else {
                         utilDisplay = '<span style="opacity: 0.5;">—</span>';
                     }
@@ -259,11 +259,11 @@ async function loadFeatures() {
 
         if (!features.cupy) {
             const opt = Array.from(backendSelect.options).find(o => o.value === 'cupy');
-            if (opt) { opt.disabled = true; opt.title = 'CuPy not available on server'; }
+            if (opt) { opt.disabled = true; opt.setAttribute('data-hover', 'CuPy not available on server'); }
         }
         if (!features.torch) {
             const opt = Array.from(backendSelect.options).find(o => o.value === 'torch');
-            if (opt) { opt.disabled = true; opt.title = 'PyTorch (CUDA) not available on server'; }
+            if (opt) { opt.disabled = true; opt.setAttribute('data-hover', 'PyTorch (CUDA) not available on server'); }
         }
 
         // If neither cupy nor torch available, set default to Auto (client will show no GPU backends)

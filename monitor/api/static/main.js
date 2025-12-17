@@ -418,11 +418,11 @@ function updateDashboard(data) {
     // Add tooltip with alert count (keep original alert logic based on server status)
     const alertCount = data.alerts ? data.alerts.length : 0;
     if (data.status === 'warning' && alertCount > 0) {
-        badge.setAttribute('data-tooltip', `${alertCount} active alert${alertCount > 1 ? 's' : ''}`);
+        badge.setAttribute('data-hover', `${alertCount} active alert${alertCount > 1 ? 's' : ''}`);
     } else if (displayStatus === 'info') {
-        badge.setAttribute('data-tooltip', 'System information available');
+        badge.setAttribute('data-hover', 'System information available');
     } else {
-        badge.setAttribute('data-tooltip', 'All systems operational');
+        badge.setAttribute('data-hover', 'All systems operational');
     }
     
     const gpuList = document.getElementById('gpu-list');
@@ -700,7 +700,7 @@ async function loadProcesses() {
                 const pid = p.pid;
                 // Disable terminate button and add tooltip when the server is not running elevated
                 const disabledAttr = (window.isAdmin ? '' : 'disabled');
-                const tooltipAttr = (window.isAdmin ? '' : ' data-tooltip="Run as admin"');
+                const tooltipAttr = (window.isAdmin ? '' : ' data-hover="Run as admin"');
                 const baseStyle = 'padding:6px 10px;border-radius:6px;border:none;background:var(--accent-red);color:#fff;';
                 const disabledStyle = window.isAdmin ? '' : 'opacity:0.55;cursor:not-allowed;';
                 const combinedStyle = `style="${baseStyle}${disabledStyle}"`;
@@ -892,6 +892,9 @@ async function startBenchmark() {
     document.getElementById('bench-stop-reason').textContent = '';
     document.getElementById('iteration-counter').style.display = 'inline';
     document.getElementById('iteration-counter').textContent = 'Iteration #0';
+    // Reset progress UI immediately when starting
+    try { document.getElementById('bench-progress-bar').style.width = '0%'; } catch (e) {}
+    try { document.getElementById('bench-percent').textContent = '0%'; } catch (e) {}
     
     // Build URL with params
     let url = '/api/benchmark/start?benchmark_type=' + selectedBenchType;
@@ -923,8 +926,17 @@ async function startBenchmark() {
     initLiveCharts();
     
     try {
-        await fetch(url, { method: 'POST' });
-        benchmarkPollInterval = setInterval(pollBenchmarkStatus, 500);
+        const resp = await fetch(url, { method: 'POST' });
+        if (!resp.ok) throw new Error('Server returned ' + resp.status);
+        const body = await resp.json().catch(() => null);
+        if (body && body.status === 'already_running') {
+            console.warn('Benchmark already running');
+            btn.disabled = false;
+            btn.textContent = 'Start Benchmark';
+            stopBtn.style.display = 'inline-block';
+        } else {
+            benchmarkPollInterval = setInterval(pollBenchmarkStatus, 500);
+        }
     } catch (error) {
         console.error('Error starting benchmark:', error);
         btn.disabled = false;
@@ -999,11 +1011,22 @@ async function startSimulation() {
     
     // Initialize live charts
     initLiveCharts();
+    // Reset progress UI immediately when starting simulation
+    try { document.getElementById('bench-progress-bar').style.width = '0%'; } catch (e) {}
+    try { document.getElementById('bench-percent').textContent = '0%'; } catch (e) {}
     
     try {
-        await fetch(url, { method: 'POST' });
-        btn.textContent = 'Simulation Running';
-        benchmarkPollInterval = setInterval(pollBenchmarkStatus, 500);
+        const resp = await fetch(url, { method: 'POST' });
+        if (!resp.ok) throw new Error('Server returned ' + resp.status);
+        const body = await resp.json().catch(() => null);
+        if (body && body.status === 'already_running') {
+            console.warn('Benchmark already running');
+            btn.disabled = false;
+            btn.textContent = 'Start Simulation';
+        } else {
+            btn.textContent = 'Simulation Running';
+            benchmarkPollInterval = setInterval(pollBenchmarkStatus, 500);
+        }
     } catch (error) {
         console.error('Error starting simulation:', error);
         btn.disabled = false;
@@ -1080,6 +1103,11 @@ async function pollBenchmarkStatus() {
             document.getElementById('start-bench-btn').disabled = false;
             document.getElementById('start-bench-btn').textContent = 'Start Benchmark';
             document.getElementById('stop-bench-btn').style.display = 'none';
+            // Also reset Start Simulation button so simulation can be run again
+            try {
+                const simBtn = document.getElementById('start-sim-btn');
+                if (simBtn) { simBtn.disabled = false; simBtn.textContent = 'Start Simulation'; }
+            } catch(e) { console.debug('reset sim button failed', e); }
 
             // fetch results and render
             try {
@@ -1122,7 +1150,7 @@ async function checkForUpdates() {
     const btn = document.getElementById('update-btn');
     btn.disabled = true;
     btn.textContent = 'Checking...';
-    btn.removeAttribute('data-tooltip');
+    btn.removeAttribute('data-hover');
     const GITHUB_REPO = 'DataBoySu/cluster-monitor';
 
     function parseVersion(text) {
@@ -1158,7 +1186,7 @@ async function checkForUpdates() {
             btn.textContent = `Update: ${latestTag}`;
             btn.classList.remove('success', 'error');
             btn.disabled = false;
-            btn.setAttribute('data-tooltip', `Current: ${currentVersion} → Latest: ${latestTag}`);
+            btn.setAttribute('data-hover', `Current: ${currentVersion} → Latest: ${latestTag}`);
 
             btn.onclick = async () => {
                 btn.textContent = 'Installing...';
@@ -1169,35 +1197,35 @@ async function checkForUpdates() {
                     if (result.status === 'success') {
                         btn.textContent = 'Restart App';
                         btn.classList.add('success');
-                        btn.setAttribute('data-tooltip', 'Update installed - restart application');
+                        btn.setAttribute('data-hover', 'Update installed - restart application');
                     } else {
                         btn.textContent = 'Update Failed';
                         btn.classList.add('error');
-                        btn.setAttribute('data-tooltip', result.message || 'Failed to install');
+                        btn.setAttribute('data-hover', result.message || 'Failed to install');
                         btn.disabled = false;
                     }
                 } catch (e) {
                     btn.textContent = 'Install Error';
                     btn.classList.add('error');
-                    btn.setAttribute('data-tooltip', e && e.message ? e.message : 'Install failed');
+                    btn.setAttribute('data-hover', e && e.message ? e.message : 'Install failed');
                     btn.disabled = false;
                 }
             };
         } else {
             btn.textContent = 'Latest Version';
             btn.classList.add('success');
-            btn.setAttribute('data-tooltip', `Version ${currentVersion}`);
+            btn.setAttribute('data-hover', `Version ${currentVersion}`);
             setTimeout(() => {
                 btn.textContent = 'Check for Updates';
                 btn.classList.remove('success');
                 btn.disabled = false;
-                btn.removeAttribute('data-tooltip');
+                btn.removeAttribute('data-hover');
             }, 3000);
         }
     } catch (error) {
         btn.textContent = 'Network Error';
         btn.classList.add('error');
-        btn.setAttribute('data-tooltip', 'Could not check GitHub releases');
+        btn.setAttribute('data-hover', 'Could not check GitHub releases');
         btn.disabled = false;
     }
 }
@@ -1250,9 +1278,9 @@ async function loadFeatures() {
                 benchTab.classList.add('disabled');
                 // If libraries are present but compiled for wrong CUDA, show specific guidance
                 if ((features.cupy_present && !features.cupy_cuda_ok) || (features.torch_present && !features.torch_cuda_ok)) {
-                    benchTab.setAttribute('data-tooltip', 'Incompatible CUDA version: install CUDA 12.x and matching CuPy/PyTorch wheels');
+                    benchTab.setAttribute('data-hover', 'Incompatible CUDA version: install CUDA 12.x and matching CuPy/PyTorch wheels');
                 } else {
-                    benchTab.setAttribute('data-tooltip', 'Install CuPy or PyTorch for GPU benchmarking (CUDA 12.x)');
+                    benchTab.setAttribute('data-hover', 'Install CuPy or PyTorch for GPU benchmarking (CUDA 12.x)');
                 }
                 benchTab.style.pointerEvents = 'auto';
             }
@@ -1294,7 +1322,7 @@ async function loadFeatures() {
             // ENABLE controls when GPU benchmark IS available
             if (benchTab) {
                 benchTab.classList.remove('disabled');
-                benchTab.removeAttribute('data-tooltip');
+                benchTab.removeAttribute('data-hover');
                 benchTab.style.pointerEvents = '';
             }
             
@@ -1351,7 +1379,7 @@ try {
         btn.style.color = '#76b900';
         btn.style.cursor = 'pointer';
         btn.style.marginRight = '8px';
-        btn.title = 'Restart the server with elevated privileges (UAC prompt)';
+        btn.setAttribute('data-hover', 'Restart the server with elevated privileges (UAC prompt)');
 
         btn.onclick = async function() {
             try {
