@@ -1,11 +1,10 @@
 # Local GPU Monitor Configuration
-# Vortex Monitor Configuration
 
 cluster:
   name: "My GPU Cluster"
-  name: "Vortex Local"
+  name: "Prototype Cluster Monitor"
   nodes: []  # Add nodes for multi-node monitoring
-  # Example:
+  # Example for future multi-node setup:
   # - hostname: gpu-server-01
   #   ssh_user: admin
   # - hostname: gpu-server-02
@@ -13,7 +12,7 @@ cluster:
 
 monitoring:
   interval_seconds: 5
-  history_retention_hours: 168  # 1 week
+  history_retention_hours: 168  # 1 week to change
 
 alerts:
   # GPU alerts

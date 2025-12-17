@@ -37,7 +37,7 @@ console = Console()
 BANNER = f"""
 ╔══════════════════════════════════════════════════╗
 ║             LOCAL GPU MONITOR v{_pkg_version}             ║
-║        Local GPU monitoring and diagnostics       ║
+║        Local GPU monitoring and diagnostics      ║
 ╚══════════════════════════════════════════════════╝
 """
 
@@ -266,7 +266,9 @@ def _run_app(config_path, port, nodes, once, web_mode=False, cli_mode=False):
     # attempt to relaunch elevated (Windows UAC). This project targets Windows only,
     # so POSIX sudo fallbacks were removed.
     try:
-        import sys, platform, os
+        import sys
+        import platform
+        import os
         def _is_elevated():
             try:
                 import ctypes
@@ -277,7 +279,8 @@ def _run_app(config_path, port, nodes, once, web_mode=False, cli_mode=False):
         if '--admin' in (sys.argv[1:] if len(sys.argv) > 1 else []) and not _is_elevated():
             # Attempt relaunch elevated on Windows using ShellExecuteW or PowerShell Start-Process
             try:
-                import ctypes, subprocess
+                import ctypes
+                import subprocess
                 params = '"' + os.path.abspath(sys.argv[0]) + '"'
                 other_args = [a for a in sys.argv[1:]]
                 if other_args:
@@ -374,7 +377,9 @@ def cli(ctx, config, port, update, admin):
 
     def _relaunch_elevated():
         try:
-            import sys, os, subprocess
+            import sys
+            import os
+            import subprocess
             script = os.path.abspath(sys.argv[0])
             args = sys.argv[1:]
             # Ensure --admin present
@@ -554,7 +559,7 @@ def refresh():
                 console.print(f"  PyTorch: [green]OK (CUDA {cuda_report})[/green]")
             else:
                 console.print(f"  PyTorch: [yellow]Installed but incompatible CUDA ({cuda_report})[/yellow]")
-                console.print(f"           Install a PyTorch wheel built for CUDA 12.x and ensure CUDA 12.x is installed")
+                console.print("           Install a PyTorch wheel built for CUDA 12.x and ensure CUDA 12.x is installed")
     except ImportError:
         console.print("  PyTorch: [yellow]Not installed[/yellow]")
     except Exception as e:
