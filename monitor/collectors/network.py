@@ -1,10 +1,3 @@
-"""Network metrics collector for interfaces and connectivity.
-
-Maintenance:
-- Purpose: gather interface, IP and I/O stats via psutil when available.
-- Debug: `ping_host` uses OS ping—results and parsing differ between platforms.
-"""
-
 import subprocess
 import socket
 import platform
@@ -48,13 +41,11 @@ class NetworkCollector:
                         'is_up': stats[name].isup,
                     }
                     
-                    # Get IPv4 address
                     for addr in addr_list:
                         if addr.family == socket.AF_INET:
                             iface['ipv4'] = addr.address
                             break
                     
-                    # Get I/O stats
                     if name in io:
                         iface['bytes_sent'] = io[name].bytes_sent
                         iface['bytes_recv'] = io[name].bytes_recv
@@ -84,14 +75,12 @@ class NetworkCollector:
             if proc.returncode == 0:
                 result['reachable'] = True
                 
-                # Parse latency
                 import re
                 # Linux: rtt min/avg/max/mdev = 0.1/0.2/0.3/0.1 ms
                 match = re.search(r'avg[^=]*=\s*[\d.]+/([\d.]+)/', proc.stdout)
                 if match:
                     result['latency_ms'] = float(match.group(1))
                 else:
-                    # Windows: Average = 1ms
                     match = re.search(r'Average\s*=\s*(\d+)ms', proc.stdout)
                     if match:
                         result['latency_ms'] = float(match.group(1))

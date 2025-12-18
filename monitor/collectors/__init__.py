@@ -25,11 +25,8 @@ def _lazy(name: str):
 	# 'GpuCollector' when the class is named 'GPUCollector'.
 	parts = name.split('_')
 	candidates = [
-		# e.g. 'GPU' -> 'GPUCollector'
 		name.upper() + 'Collector',
-		# e.g. 'gpu' -> 'GpuCollector' (fallback)
 		''.join(p.capitalize() for p in parts) + 'Collector',
-		# e.g. 'system' -> 'SystemCollector'
 		parts[0].capitalize() + 'Collector',
 	]
 
@@ -44,7 +41,6 @@ def _lazy(name: str):
 
 	raise AttributeError(f"No Collector class found in module monitor.collectors.{name}")
 
-# Export commonly-used collectors
 GPUCollector = _lazy('gpu')
 SystemCollector = _lazy('system')
 NetworkCollector = _lazy('network')

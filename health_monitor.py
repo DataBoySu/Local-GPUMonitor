@@ -1,13 +1,3 @@
-#!/usr/bin/env python3
-"""Local GPU Monitor - Real-time GPU monitoring.
-
-Maintenance:
-- Purpose: CLI entrypoint and small web/server launcher for the project.
-- Debug: run `python health_monitor.py web` to start the server; check
-    `config.yaml` for configuration. If debugging collectors, import and
-    instantiate `monitor.collectors` classes directly.
-"""
-
 import asyncio
 import sys
 import time
@@ -108,14 +98,12 @@ def collect_metrics() -> dict:
     """Collect metrics from local system."""
     metrics = {}
 
-    # GPU metrics
     try:
         gpu_collector = GPUCollector()
         metrics['gpus'] = gpu_collector.collect()
     except Exception as e:
         metrics['gpus'] = [{'error': str(e)}]
 
-    # System metrics
     try:
         sys_collector = SystemCollector()
         sys_metrics = sys_collector.collect()
@@ -132,7 +120,6 @@ def collect_metrics() -> dict:
         net_collector = NetworkCollector()
         metrics['network'] = net_collector.collect()
     except Exception:
-        # Network collector is optional; ignore failures
         pass
 
     return metrics
@@ -146,7 +133,6 @@ def create_dashboard(metrics: dict, alerts: list) -> Layout:
         Layout(name="footer", size=3)
     )
     
-    # Header
     layout["header"].update(Panel(
         f"[bold cyan]LOCAL GPU MONITOR[/bold cyan] | "
         f"Node: [green]{metrics.get('hostname', 'N/A')}[/green] | "
@@ -155,13 +141,11 @@ def create_dashboard(metrics: dict, alerts: list) -> Layout:
         style="bold"
     ))
     
-    # Main content
     layout["main"].split_row(
         Layout(name="gpus", ratio=2),
         Layout(name="system", ratio=1)
     )
     
-    # GPU Table
     gpu_table = Table(title="GPU Status", show_header=True, expand=True)
     gpu_table.add_column("GPU", style="cyan")
     gpu_table.add_column("Utilization", style="green")
@@ -194,7 +178,6 @@ def create_dashboard(metrics: dict, alerts: list) -> Layout:
     
     layout["gpus"].update(Panel(gpu_table, title="GPU Metrics"))
     
-    # System Info
     sys_info = metrics.get('system', {})
     system_content = (
         f"[bold]CPU:[/bold] {sys_info.get('cpu_percent', 0):.1f}%\n"
@@ -204,7 +187,6 @@ def create_dashboard(metrics: dict, alerts: list) -> Layout:
     )
     layout["system"].update(Panel(system_content, title="System"))
     
-    # Footer
     if alerts:
         alert_text = " | ".join([f"[red]{a['message']}[/red]" for a in alerts[:3]])
         layout["footer"].update(Panel(alert_text, title="Active Alerts"))
@@ -266,7 +248,6 @@ async def run_cli_monitor(config: dict):
         initial_metrics = collect_metrics()
         initial_alerts = alert_engine.check(initial_metrics)
 
-        # Create layout
         dashboard = Layout()
         dashboard.split_column(
             Layout(name="header", size=3),
@@ -348,24 +329,19 @@ async def run_cli_monitor(config: dict):
         dashboard["footer"].update(Panel(footer_text, title="Status"))
 
         with Live(console=fixed_console, refresh_per_second=1) as live:
-            # Render initial frame
             live.update(dashboard)
 
             while True:
                 try:
-                    # Collect metrics
                     metrics = collect_metrics()
 
-                    # Check alerts
                     alerts = alert_engine.check(metrics)
 
-                    # Store metrics
                     await storage.store(metrics)
 
                     # Rebuild only the inner renderables (text grid and strings)
                     gpu_text = _format_gpu_grid(metrics.get('gpus', []), fixed_width - 6)
 
-                    # System Info (omit Load)
                     sys_info = metrics.get('system', {})
                     system_content = (
                         f"[bold]CPU:[/bold] {sys_info.get('cpu_percent', 0):.1f}%\n"
@@ -392,10 +368,8 @@ async def run_cli_monitor(config: dict):
                     dashboard["right"]["help"].update(Panel(benchmark_text, title="Benchmark"))
                     dashboard["footer"].update(Panel(new_footer, title="Status"))
 
-                    # Update GPU panel (text grid)
                     dashboard["gpus"].update(Panel(gpu_text, title="GPU Metrics"))
 
-                    # Push diffs to the live display
                     live.update(dashboard)
 
                     await asyncio.sleep(config['monitoring']['interval_seconds'])
@@ -415,7 +389,6 @@ def _run_app(config_path, port, nodes, once, web_mode=False, cli_mode=False):
     """Helper to run main application logic."""
     # If the user requested admin mode via --admin in argv, and the process is not elevated,
     # attempt to relaunch elevated (Windows UAC). This project targets Windows only,
-    # so POSIX sudo fallbacks were removed.
     try:
         import sys
         import platform
@@ -448,7 +421,6 @@ def _run_app(config_path, port, nodes, once, web_mode=False, cli_mode=False):
                         try: os._exit(0)
                         except Exception: pass
                 except Exception:
-                    # PowerShell fallback
                     def _ps_quote(s):
                         return "'" + str(s).replace("'", "''") + "'"
                     ps_args = [os.path.abspath(sys.argv[0])] + list(sys.argv[1:])
@@ -469,7 +441,6 @@ def _run_app(config_path, port, nodes, once, web_mode=False, cli_mode=False):
     except Exception:
         pass
 
-    # Load configuration (print comes from load_config)
     cfg = load_config(config_path)
     console.print(BANNER, style="bold cyan")
     
@@ -480,7 +451,6 @@ def _run_app(config_path, port, nodes, once, web_mode=False, cli_mode=False):
     if nodes:
         cfg['cluster']['nodes'] = [{'hostname': n.strip()} for n in nodes.split(',')]
 
-    # Single collection mode
     if once:
         metrics = collect_metrics()
         console.print_json(data=metrics)
@@ -488,7 +458,6 @@ def _run_app(config_path, port, nodes, once, web_mode=False, cli_mode=False):
 
     async def main():
         if web_mode and cli_mode:
-            # Run both concurrently
             console.print("[cyan]Starting both web server and CLI dashboard...[/cyan]")
             web_task = asyncio.create_task(run_web_server(cfg))
             cli_task = asyncio.create_task(run_cli_monitor(cfg))
@@ -501,7 +470,6 @@ def _run_app(config_path, port, nodes, once, web_mode=False, cli_mode=False):
             # Default to CLI if no mode is specified on the root command
             await run_cli_monitor(cfg)
 
-    # Run
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
@@ -532,7 +500,6 @@ def cli(ctx, config, port, update, admin):
             import subprocess
             script = os.path.abspath(sys.argv[0])
             args = sys.argv[1:]
-            # Ensure --admin present
             if '--admin' not in args:
                 args = args + ['--admin']
 
@@ -547,7 +514,6 @@ def cli(ctx, config, port, update, admin):
                 except Exception:
                     ok = False
                 if ok:
-                    # launched elevated; exit current process
                     print('Relaunching elevated, exiting original process')
                     try: os._exit(0)
                     except SystemExit: raise
@@ -649,16 +615,13 @@ def refresh():
         os.remove(cache_file)
         console.print("[yellow]Removed old cache[/yellow]")
     
-    # Run diagnostics first
     console.print("\n[cyan]Running diagnostics...[/cyan]")
     
-    # Test CuPy
     try:
         import cupy as cp
         # Try to detect CuPy CUDA runtime major version
         cuda_ok = False
         try:
-            # attempt several runtime inspection methods
             cuda_version = None
             try:
                 if hasattr(cp, 'cuda') and hasattr(cp.cuda, 'runtime') and hasattr(cp.cuda.runtime, 'get_runtime_version'):
@@ -672,7 +635,6 @@ def refresh():
                 except Exception:
                     cuda_version = None
 
-            # normalize/inspect
             if cuda_version is not None:
                 s = str(cuda_version)
                 if s.startswith('12') or ('.' in s and s.split('.')[0] == '12'):
@@ -680,7 +642,6 @@ def refresh():
         except Exception:
             cuda_ok = False
 
-        # Validate device access
         try:
             cp.cuda.Device(0).compute_capability
         except Exception:
@@ -697,7 +658,6 @@ def refresh():
     except Exception as e:
         console.print(f"  CuPy: [red]Error - {str(e)}[/red]")
     
-    # Test PyTorch
     try:
         import torch
         cuda_report = getattr(torch.version, 'cuda', None)

@@ -1,10 +1,3 @@
-"""GPU workload implementations for benchmarking.
-
-Provides GEMM and particle simulation workloads used by the benchmark runner.
-This module keeps compute-heavy loops separate to simplify profiling and
-reporting (avg/peak TFLOPS, steps/second). Configure via BenchmarkConfig.
-"""
-
 import time
 import subprocess
 import math
@@ -74,7 +67,6 @@ class GPUStressWorker:
         if preferred == 'cupy':
             if try_cupy():
                 return
-            # fall back to torch then passive
             if try_torch():
                 return
         elif preferred == 'torch':
@@ -83,7 +75,6 @@ class GPUStressWorker:
             if try_cupy():
                 return
         elif preferred == 'cpu':
-            # Force passive mode
             self._method = 'passive'
             self.workload_type = "Passive CPU mode selected"
             return
@@ -94,7 +85,6 @@ class GPUStressWorker:
         if try_torch():
             return
 
-        # Fallback: passive monitoring
         self._method = 'passive'
         self.workload_type = "Passive Monitoring (cupy/torch not available - run your own GPU workload)"
     
@@ -111,7 +101,6 @@ class GPUStressWorker:
         else:
             backend_mult = self.config.backend_multiplier
             
-            # Use modular GPU setup
             self._gpu_arrays, self._counters = gpu_setup.setup_cupy_arrays(n, cp)
             
             # Initialize backend stress manager only if backend_multiplier > 1
@@ -129,7 +118,6 @@ class GPUStressWorker:
                 else:
                     self.workload_type = f"Bounce Simulation ({n:,} particles, cupy)"
             
-            # Initialize instance variables from counters
             self._initial_particle_count = n
             self._active_count = self._counters['active_count']
             self._small_ball_count = self._counters['small_ball_count']
@@ -155,7 +143,6 @@ class GPUStressWorker:
         else:
             backend_mult = self.config.backend_multiplier
             
-            # Use modular GPU setup
             self._gpu_arrays, self._counters = gpu_setup.setup_torch_arrays(n, torch)
             
             # Initialize backend stress manager only if backend_multiplier > 1
@@ -175,7 +162,6 @@ class GPUStressWorker:
             backend_mult = self.config.backend_multiplier
             self._backend_stress.initialize('torch', torch, n, backend_mult)
             
-            # Initialize instance variables from counters
             self._initial_particle_count = n
             self._active_count = self._counters['active_count']
             self._small_ball_count = self._counters['small_ball_count']
@@ -227,7 +213,6 @@ class GPUStressWorker:
     
     def _run_particle(self):
         """Run particle simulation workload - delegates to modular physics engines."""
-        # Build params dictionary
         params = {
             'dt': 0.016,
             'gravity_strength': self._gravity_strength,
@@ -248,7 +233,6 @@ class GPUStressWorker:
                 self._cp
             )
             
-            # Update counters from result
             self._active_count = result['active_count']
             self._small_ball_count = result['small_ball_count']
             self._drop_timer = result['drop_timer']
@@ -259,7 +243,6 @@ class GPUStressWorker:
                 self._backend_stress.run_physics(physics_cupy, params, self._cp)
             
             self._cp.cuda.Stream.null.synchronize()
-            # approximate flops: per active particle update
             try:
                 particles = int(self._active_count)
             except Exception:
@@ -275,7 +258,6 @@ class GPUStressWorker:
                 self._torch
             )
             
-            # Update counters from result
             self._active_count = result['active_count']
             self._small_ball_count = result['small_ball_count']
             self._drop_timer = result['drop_timer']

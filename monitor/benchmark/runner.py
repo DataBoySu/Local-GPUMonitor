@@ -1,13 +1,3 @@
-"""GPU benchmark orchestration and metrics collection.
-
-Maintenance:
-- Purpose: coordinate benchmark execution, collect samples and expose runtime
-    status to the API/UI. This is the central orchestration class for stress
-    tests and particle simulations.
-- Debug: use `get_status()`, `get_samples()` and `get_results()` to inspect
-    runtime state; long-running threads indicate worker shutdown or join issues.
-"""
-
 import time
 from typing import Dict, Any, List, Optional
 from datetime import datetime
@@ -37,7 +27,6 @@ class GPUBenchmark:
         self.completed_full = False
         self.db_path = db_path
         
-        # Initialize metrics sampler
         self.metrics_sampler = GPUMetricsSampler()
     
     def get_gpu_info(self) -> Dict[str, Any]:
@@ -49,7 +38,6 @@ class GPUBenchmark:
         render_fps = getattr(self, 'render_fps', 0.0)
         gpu_util = self.metrics_sampler.get_current_util() if hasattr(self, 'metrics_sampler') and self.metrics_sampler else 0
         
-        # Get latest sample with current metrics
         latest_sample = None
         if self.samples:
             latest_sample = self.samples[-1].copy()
@@ -113,7 +101,6 @@ class GPUBenchmark:
         self.running = True
         self.start_time = time.time()
         
-        # Create visualizer if requested
         visualizer = create_visualizer(
             enabled=visualize,
             window_size=(1200, 800),
@@ -138,18 +125,15 @@ class GPUBenchmark:
             self.stop_reason = "Visualization failed - not a particle benchmark"
             return self._calculate_results()
         
-        # Start background GPU metrics collection
         self.metrics_sampler.start()
         
         sample_interval = self.config.sample_interval_ms / 1000.0
         last_sample_time = 0
         
-        # FPS tracking independent of rendering
         frame_times = []
         max_frame_history = 10
         last_frame_time = time.time()
         
-        # Auto-scaling for stress-test mode
         last_scale_check = 0
         scale_interval = 5.0  # Scale every 5 seconds
         current_backend_total = 200000  # Start with 200k total backend particles
@@ -163,7 +147,6 @@ class GPUBenchmark:
             while True:
                 elapsed = time.time() - self.start_time
                 
-                # Check duration
                 if elapsed >= self.config.duration_seconds:
                     self.stop_reason = "Duration completed"
                     self.completed_full = True
@@ -174,7 +157,6 @@ class GPUBenchmark:
                     self.stop_reason = "Auto-scale timeout - target GPU utilization not reached in 60s"
                     break
                 
-                # Run one iteration of stress work
                 iter_time = self.stress_worker.run_iteration()
                 self.iteration_times.append(iter_time)
                 
@@ -189,7 +171,6 @@ class GPUBenchmark:
                 
                 # Render visualization frame (every frame, no throttling)
                 if visualizer:
-                    # Process pygame events separately
                     from . import event_handler
                     try:
                         events = visualizer.pygame.event.get() if visualizer.pygame else []
@@ -215,7 +196,6 @@ class GPUBenchmark:
                         render_fps = 1.0 / avg_frame_time if avg_frame_time > 0 else 0
                         self.render_fps = render_fps
                         
-                        # Update physics parameters from UI
                         slider_values = visualizer.get_slider_values()
                         self.stress_worker.update_physics_params(
                             gravity_strength=slider_values['gravity'],
@@ -228,12 +208,10 @@ class GPUBenchmark:
                         
                         self.stress_worker.update_split_enabled(visualizer.get_split_enabled())
                         
-                        # Process spawn requests
                         spawn_requests = visualizer.get_spawn_requests()
                         for sim_x, sim_y, count in spawn_requests:
                             self.stress_worker.spawn_big_balls(sim_x, sim_y, count)
                         
-                        # Get particle sample for rendering
                         positions, masses, colors, glows = self.stress_worker.get_particle_sample(max_samples=2000)
                         
                         # Always render to keep window responsive, even if no particle data
@@ -282,24 +260,20 @@ class GPUBenchmark:
                             target_reached = True
                             target_reached_time = elapsed
                         elif current_backend_total < max_backend_total:
-                            # Increase total backend particles
                             current_backend_total += backend_increment
                             if current_backend_total > max_backend_total:
                                 current_backend_total = max_backend_total
                             
-                            # Apply the new backend particle count
                             if self.stress_worker._backend_stress.is_initialized():
                                 new_total_backend = current_backend_total
                                 visible_count = self.stress_worker._initial_particle_count
                                 self.stress_worker._backend_stress.scale_particles(new_total_backend)
                                 
-                                # Update workload display
                                 if self.stress_worker.visualize:
                                     self.stress_worker.workload_type = f"Bounce Simulation ({visible_count:,} visible, {new_total_backend:,} backend, {self.stress_worker._method})"
                     
                     last_scale_check = elapsed
                 
-                # Check stop conditions
                 if self.samples:
                     latest_sample = self.samples[-1]
                     stop = self.metrics_sampler.check_stop_conditions(latest_sample, self.config)
@@ -307,7 +281,6 @@ class GPUBenchmark:
                         self.stop_reason = stop
                         break
                 
-                # Check if user stopped
                 if self.should_stop:
                     self.stop_reason = "User stopped"
                     break
@@ -315,7 +288,6 @@ class GPUBenchmark:
                 # For visualization mode, don't auto-close on window events - only stop on duration or user stop button
                 # The user can close the pygame window manually if they want
                 
-                # Update progress
                 self.progress = int((elapsed / self.config.duration_seconds) * 100)
         
         except Exception as e:
@@ -324,7 +296,6 @@ class GPUBenchmark:
             traceback.print_exc()
             self.stop_reason = f"Error: {str(e)}"
         
-        # Cleanup
         if visualizer:
             visualizer.close()
         
@@ -380,7 +351,6 @@ class GPUBenchmark:
         perf_stats = self.stress_worker.get_performance_stats(elapsed_sec)
         results['performance'] = perf_stats
         
-        # Calculate scores
         temp_range = results['temperature_c']['max'] - results['temperature_c']['min']
         stability_score = max(0, 100 - int(temp_range * 5))
         thermal_score = max(0, min(100, int((90 - results['temperature_c']['max']) * 5)))
@@ -401,7 +371,6 @@ class GPUBenchmark:
             'overall': int((stability_score + thermal_score + perf_score) / 3)
         }
         
-        # Add web UI compatible format
         self._add_webui_format(results)
         
         return results
@@ -438,7 +407,6 @@ class GPUBenchmark:
         self.progress = 0
         self.stop_reason = None
         
-        # Initialize stress worker
         self.stress_worker = GPUStressWorker(
             benchmark_type=config.benchmark_type,
             config=config,
@@ -464,7 +432,6 @@ class GPUBenchmark:
                 'status': 'running',
             }
             
-            # Get baseline
             run_mode = 'simulation' if visualize else 'benchmark'
             if 'name' in gpu_info:
                 baseline = self.baseline_storage.get_baseline(gpu_info['name'], config.benchmark_type, run_mode)
@@ -476,7 +443,6 @@ class GPUBenchmark:
             self.results['status'] = 'completed'
             self.results['run_mode'] = run_mode
             
-            # Save as baseline if completed
             if self.completed_full and 'name' in gpu_info:
                 self.baseline_storage.save_baseline(gpu_info['name'], config.benchmark_type, self.results, run_mode)
                 self.results['saved_as_baseline'] = True
@@ -489,10 +455,8 @@ class GPUBenchmark:
             self.results['status'] = 'failed'
             self.results['error'] = str(e)
         finally:
-            # Stop background metrics thread
             self.metrics_sampler.stop()
             
-            # Ensure cleanup happens
             if self.stress_worker:
                 try:
                     self.stress_worker.cleanup()
@@ -508,7 +472,6 @@ class GPUBenchmark:
         self.run(config, visualize)
 
 
-# Global instance
 _benchmark: Optional[GPUBenchmark] = None
 
 def get_benchmark_instance() -> GPUBenchmark:

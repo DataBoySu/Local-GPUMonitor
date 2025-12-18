@@ -1,10 +1,3 @@
-"""Windows toast helper for alerts.
-
-This module attempts to use `win10toast` when available but avoids noisy
-pkg_resources warnings and the WNDPROC/TypeError by invoking the notifier
-in a safe, non-blocking way.
-"""
-# no dependencies required here
 import warnings
 import threading
 
@@ -63,7 +56,6 @@ def send_toast(title: str, msg: str, duration: int = 5, severity: str = 'info'):
         # If winrt is available, use native Windows 10+ notifications (synchronous API)
         if _has_winrt:
             try:
-                # build a simple ToastGeneric XML
                 def _xml_escape(s):
                     return (s.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'))
                 xml = f"<toast><visual><binding template='ToastGeneric'><text>{_xml_escape(display_title)}</text><text>{_xml_escape(msg)}</text></binding></visual></toast>"
@@ -74,7 +66,6 @@ def send_toast(title: str, msg: str, duration: int = 5, severity: str = 'info'):
                 notifier.show(notif)
                 return True
             except Exception:
-                # fall back to win10toast path below
                 pass
 
         if _ToastNotifierClass is not None:

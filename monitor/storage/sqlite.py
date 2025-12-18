@@ -1,4 +1,3 @@
-"""SQLite storage for metrics history."""
 """SQLite storage backend for metrics.
 
 Maintenance:
@@ -27,7 +26,6 @@ class MetricsStorage:
         self.conn = sqlite3.connect(str(self.db_path), check_same_thread=False)
         self.conn.row_factory = sqlite3.Row
         
-        # Create tables
         self.conn.executescript('''
             CREATE TABLE IF NOT EXISTS metrics (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -66,7 +64,6 @@ class MetricsStorage:
         timestamp = metrics.get('timestamp', datetime.now().isoformat())
         hostname = metrics.get('hostname', 'unknown')
         
-        # Store GPU metrics
         for gpu in metrics.get('gpus', []):
             if 'error' in gpu:
                 continue
@@ -76,7 +73,6 @@ class MetricsStorage:
             self._insert_metric(timestamp, hostname, 'gpu', f"gpu_{gpu['index']}_temperature", gpu.get('temperature', 0))
             self._insert_metric(timestamp, hostname, 'gpu', f"gpu_{gpu['index']}_power", gpu.get('power', 0))
         
-        # Store system metrics
         sys_metrics = metrics.get('system', {})
         self._insert_metric(timestamp, hostname, 'system', 'cpu_percent', sys_metrics.get('cpu_percent', 0))
         self._insert_metric(timestamp, hostname, 'system', 'memory_percent', sys_metrics.get('memory_percent', 0))

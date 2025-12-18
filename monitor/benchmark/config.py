@@ -1,5 +1,3 @@
-"""Benchmark configuration management."""
-
 from dataclasses import dataclass
 
 

@@ -1,11 +1,3 @@
-"""API router for benchmark-related endpoints.
-
-Maintenance:
-- Purpose: expose HTTP endpoints used by the UI to start/stop benchmarks.
-- Debug: if endpoints are not responding, ensure the router is included in the
-    FastAPI app and that the server startup initialized the benchmark instance.
-"""
-
 import threading
 from fastapi import APIRouter
 
@@ -16,7 +8,6 @@ router = APIRouter(
     tags=["Benchmark"],
 )
 
-# Benchmark state should be managed here
 benchmark_instance = get_benchmark_instance()
 benchmark_thread = None
 benchmark_lock = threading.Lock()

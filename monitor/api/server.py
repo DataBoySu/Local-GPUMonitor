@@ -1,13 +1,3 @@
-"""FastAPI server for REST API and web dashboard.
-
-Maintenance:
-- Purpose: defines the web endpoints and WebSocket handlers used by the
-    dashboard UI and simulation features.
-- Debug: enable request logging and inspect `/api/*` endpoints; WebSocket
-    simulation frames are sent from the benchmark runner. If server fails to
-    start, check dependency imports (FastAPI, uvicorn) and configuration paths.
-"""
-
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, Optional
@@ -54,13 +44,11 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
     except Exception:
         app.state.is_admin = False
     
-    # Mount static files
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
     
     storage = MetricsStorage(config['storage']['path'])
     alert_engine = AlertEngine(config.get('alerts', {}))
     
-    # Include routers
     app.include_router(benchmark_router.router)
     # VRAM cap persistence helpers (simple JSON file next to package)
     def _vram_caps_file() -> Path:
@@ -106,11 +94,8 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
         except Exception:
             pass
 
-    # initialize in-memory caps
     app.state.vram_caps = _load_vram_caps()
-    # load persisted watchlist
     app.state.vram_watchlist = _load_vram_watchlist()
-    # initialize enforcer singleton (best-effort)
     try:
         from monitor.enforcer import get_enforcer
         app.state.vram_enforcer = get_enforcer()
@@ -190,7 +175,6 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
     @app.on_event("startup")
     async def startup():
         await storage.initialize()
-        # start vram cap watcher task
         async def _vram_cap_watcher():
             from monitor.alerting.toaster import send_toast
             from datetime import datetime
@@ -201,7 +185,6 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
                         await asyncio.sleep(config.get('monitoring', {}).get('interval_seconds', 5))
                         continue
 
-                    # collect current GPU metrics
                     try:
                         collector = GPUCollector()
                         gpus = collector.collect()
@@ -241,7 +224,6 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
                                 pass
 
                         if exceeded:
-                            # build alert
                             ts = datetime.now().isoformat()
                             msg = f"GPU {idx} VRAM cap exceeded: {reason}"
                             alert = {
@@ -307,7 +289,6 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
                                                         except Exception:
                                                             pass
 
-                                                        # break out results
                                                         alert_engine.active_alerts.append({
                                                             'timestamp': datetime.now().isoformat(),
                                                             'hostname': 'local',
@@ -348,7 +329,6 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
                                                                 except Exception:
                                                                     pass
                                                     except Exception:
-                                                        # record failure
                                                         alert_engine.active_alerts.append({
                                                             'timestamp': datetime.now().isoformat(),
                                                             'hostname': 'local',
@@ -367,7 +347,6 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
                     pass
                 await asyncio.sleep(config.get('monitoring', {}).get('interval_seconds', 5))
 
-        # Schedule watcher
         try:
             app.state._vram_watcher_task = asyncio.create_task(_vram_cap_watcher())
         except Exception:
@@ -376,7 +355,6 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
     @app.on_event("shutdown")
     async def shutdown():
         storage.close()
-        # cancel watcher task
         try:
             t = getattr(app.state, '_vram_watcher_task', None)
             if t:
@@ -420,7 +398,6 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
                 data = await websocket.receive_json()
                 
                 if data['type'] == 'start':
-                    # Create benchmark configuration
                     particle_count = data.get('particles', 100000)
                     backend_mult = data.get('backend', 1)
                     
@@ -432,10 +409,8 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
                         backend_multiplier=backend_mult
                     )
                     
-                    # Create benchmark runner
                     sim_runner = benchmark_runner.get_benchmark_instance()
                     
-                    # Start in background thread
                     sim_thread = threading.Thread(
                         target=sim_runner.run,
                         args=(config, True),
@@ -443,11 +418,9 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
                     )
                     sim_thread.start()
                     
-                    # Send frames in a loop
                     while sim_runner.running:
                         status = sim_runner.get_status()
                         
-                        # Get particle data
                         if sim_runner.stress_worker:
                             positions, masses, colors, glows = sim_runner.stress_worker.get_particle_sample(max_samples=500)
                             
@@ -463,7 +436,6 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
                                         'radius': 36.0 if masses[i] > 100 else 8.0
                                     })
                                 
-                                # Send frame
                                 await websocket.send_json({
                                     'type': 'frame',
                                     'fps': status.get('fps', 0),
@@ -476,14 +448,12 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
                         await asyncio.sleep(0.033)  # ~30 FPS update rate
                 
                 elif data['type'] == 'spawn' and sim_runner and sim_runner.stress_worker:
-                    # Spawn balls
                     x = data.get('x', 500)
                     y = data.get('y', 400)
                     count = data.get('count', 1)
                     sim_runner.stress_worker.spawn_big_balls(x, y, count)
                 
                 elif data['type'] == 'update_params' and sim_runner and sim_runner.stress_worker:
-                    # Update physics parameters
                     sim_runner.stress_worker.update_physics_params(
                         gravity_strength=data.get('gravity'),
                         small_ball_speed=data.get('speed'),
@@ -521,7 +491,6 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
             'system': system,
         }
         
-        # Store metrics for history
         await storage.store(metrics)
         
         alerts = alert_engine.check(metrics)
@@ -666,7 +635,6 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
         app.state.vram_caps = caps
         _save_vram_caps(caps)
 
-        # Immediate evaluation and termination (admin-only)
         exceeded_gpus = []
         try:
             if getattr(app.state, 'is_admin', False):
@@ -712,13 +680,11 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
 
                         if exceeded:
                             exceeded_gpus.append(idx)
-                            # send Windows toast (no emojis)
                             try:
                                 send_toast(f'VRAM of GPU {idx} exceeded', reason or 'VRAM cap exceeded', duration=8, severity='critical')
                             except Exception:
                                 pass
 
-                            # terminate watched PIDs immediately
                             for proc in proc_list:
                                 try:
                                     pid = int(proc.get('pid'))
@@ -791,7 +757,6 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
             enforcer = getattr(app.state, 'vram_enforcer', None)
             if enforcer is None:
                 return {'status': 'error', 'error': 'no_enforcer_available', 'vram_caps': caps}
-            # determine mb to reserve
             if 'cap_mb' in cap_entry:
                 mb_to_reserve = int(cap_entry['cap_mb'])
             elif 'cap_percent' in cap_entry and gpu_index in caps:
@@ -811,7 +776,6 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
             # Ask enforcer to allocate reserve to achieve cap: we allocate that amount (best-effort)
             try:
                 res = enforcer.allocate_reserve(gpu_index, mb_to_reserve)
-                # include reserve result in response
                 return {'status': 'ok', 'vram_caps': caps, 'enforce_result': res}
             except Exception as e:
                 return {'status': 'error', 'error': str(e), 'vram_caps': caps}
@@ -856,7 +820,6 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
         """Clear configured VRAM caps. If `gpu_index` query param is provided, clears that GPU only."""
         caps = getattr(app.state, 'vram_caps', {}) or {}
         if gpu_index is None:
-            # release any reserves
             enforcer = getattr(app.state, 'vram_enforcer', None)
             if enforcer is not None:
                 for gi in list(caps.keys()):
@@ -911,7 +874,6 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
                 p.kill()
                 return {'status': 'killed'}
         except Exception as e:
-            # psutil.NoSuchProcess and other errors
             errname = getattr(e, '__class__', type(e)).__name__
             if 'NoSuchProcess' in errname:
                 return {'status': 'not_found'}
@@ -937,7 +899,6 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
                 try:
                     ts = datetime.now().isoformat()
                     ln = f"[{ts}] {msg}\n"
-                    # write to console
                     print(ln, end='')
                     # append to a log file for easier debugging
                     try:
@@ -959,7 +920,6 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
             repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
             candidate = os.path.join(repo_root, 'health_monitor.py')
             if not os.path.exists(candidate):
-                # fallback to the current argv[0]
                 candidate = os.path.abspath(sys.argv[0])
 
             args_list = []
@@ -989,7 +949,6 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
                     _log('inplace restart exception: ' + str(e))
                     return {'status': 'error', 'error': str(e)}
 
-            # Try ShellExecuteW first
             try:
                 import ctypes
                 _log(f'Attempting ShellExecuteW runas: {sys.executable} {params}')
@@ -1168,17 +1127,14 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
         import os
         import signal
         
-        # Stop any running benchmark
         benchmark_instance = benchmark_runner.get_benchmark_instance()
         if benchmark_instance.running:
             benchmark_instance.stop()
             # Wait a bit for benchmark to stop
             await asyncio.sleep(1)
         
-        # Close storage
         storage.close()
         
-        # Send shutdown signal
         os.kill(os.getpid(), signal.SIGTERM)
         
         return {"status": "shutting_down", "message": "Server is shutting down gracefully"}

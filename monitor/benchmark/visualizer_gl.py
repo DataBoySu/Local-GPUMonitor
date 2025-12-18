@@ -1,11 +1,3 @@
-"""Ultra-optimized GPU particle visualizer using ModernGL with instanced rendering.
-
-Maintenance:
-- Purpose: optional GPU-accelerated visual frontend for particle workloads.
-- Debug: requires `moderngl`; if visualization fails, fallback to headless mode
-    by not instantiating this class. Keep rendering code isolated for profiling.
-"""
-
 import time
 import numpy as np
 from typing import Optional, Tuple
@@ -36,12 +28,10 @@ class GLParticleVisualizer:
         self._window = None
         self.running = True
         
-        # Performance tracking
         self._frame_counter = 0
         self._adaptive_skip = 0
         self._last_stats_frame = 0
         
-        # Slider state (stored for get_slider_values)
         self.sliders = {
             'gravity': {'value': 500.0, 'min': 0.0, 'max': 10000.0, 'pos': (50, 700), 'width': 220, 'label': 'Big Ball Gravity'},
             'small_ball_speed': {'value': 300.0, 'min': 50.0, 'max': 600.0, 'pos': (300, 700), 'width': 220, 'label': 'Small Ball Speed'},
@@ -62,7 +52,6 @@ class GLParticleVisualizer:
         self.multiplier_levels = [1, 10, 100, 1000]
         self.split_enabled = False
         
-        # GPU resources
         self._particle_vao = None
         self._particle_vbo = None  # Persistent mapped buffer
         self._particle_program = None
@@ -105,19 +94,15 @@ class GLParticleVisualizer:
         glfw.make_context_current(self._window)
         glfw.swap_interval(0)  # No vsync
         
-        # Callbacks
         glfw.set_mouse_button_callback(self._window, self._mouse_callback)
         glfw.set_cursor_pos_callback(self._window, self._cursor_callback)
         glfw.set_key_callback(self._window, self._key_callback)
         
-        # ModernGL context
         self._ctx = mgl.create_context()
         self._ctx.enable(mgl.BLEND)
         self._ctx.blend_func = mgl.SRC_ALPHA, mgl.ONE_MINUS_SRC_ALPHA
         
-        # ========== PARTICLE RENDERING (Instanced Point Sprites) ==========
         particle_vert = """
-        #version 450 core
         
         layout (location = 0) in vec2 position;
         layout (location = 1) in vec3 color;
@@ -140,7 +125,6 @@ class GLParticleVisualizer:
         """
         
         particle_frag = """
-        #version 450 core
         
         in vec3 v_color;
         in float v_glow;
@@ -174,9 +158,7 @@ class GLParticleVisualizer:
             [(self._particle_vbo, '2f 3f 1f 1f', 'position', 'color', 'radius', 'glow')]
         )
         
-        # ========== CIRCLE RENDERING (Instanced Geometry) ==========
         circle_vert = """
-        #version 450 core
         
         layout (location = 0) in vec2 vertex;      // Circle template vertices
         layout (location = 1) in vec3 instance;    // (center_x, center_y, radius)
@@ -190,7 +172,6 @@ class GLParticleVisualizer:
         """
         
         circle_frag = """
-        #version 450 core
         
         out vec4 fragColor;
         
@@ -204,7 +185,6 @@ class GLParticleVisualizer:
             fragment_shader=circle_frag
         )
         
-        # Pre-compute circle geometry (unit circle)
         num_segments = 64
         angles = np.linspace(0, 2 * np.pi, num_segments + 1, dtype=np.float32)
         circle_verts = np.column_stack([np.cos(angles), np.sin(angles)]).astype(np.float32)
@@ -222,9 +202,7 @@ class GLParticleVisualizer:
             ]
         )
         
-        # ========== UI RENDERING (Simple rectangles for sliders) ==========
         ui_vert = """
-        #version 450 core
         
         layout (location = 0) in vec2 position;
         layout (location = 1) in vec4 color;
@@ -240,7 +218,6 @@ class GLParticleVisualizer:
         """
         
         ui_frag = """
-        #version 450 core
         
         in vec4 v_color;
         out vec4 fragColor;
@@ -300,7 +277,6 @@ class GLParticleVisualizer:
     
     def _handle_click(self, x, y):
         """UI click handler."""
-        # Text input
         tx, ty = self.max_balls_cap['pos']
         tw, th = self.max_balls_cap['width'], self.max_balls_cap['height']
         if tx <= x <= tx + tw and ty <= y <= ty + th:
@@ -309,7 +285,6 @@ class GLParticleVisualizer:
         else:
             self.max_balls_cap['active'] = False
         
-        # Multiplier button
         mx, my = self.multiplier_button['pos']
         mw, mh = self.multiplier_button['width'], self.multiplier_button['height']
         if mx <= x <= mx + mw and my <= y <= my + mh:
@@ -324,7 +299,6 @@ class GLParticleVisualizer:
             slider['max'] = slider['base_max'] * self.slider_multiplier
             return
         
-        # Split button
         bx, by = self.split_button['pos']
         bw, bh = self.split_button['width'], self.split_button['height']
         if bx <= x <= bx + bw and by <= y <= by + bh:
@@ -332,7 +306,6 @@ class GLParticleVisualizer:
             self.split_button['label'] = f"Ball Splitting: {'ON' if self.split_enabled else 'OFF'}"
             return
         
-        # Sliders
         for key, slider in self.sliders.items():
             sx, sy = slider['pos']
             width = slider['width']
@@ -369,7 +342,6 @@ class GLParticleVisualizer:
         
         self._frame_counter += 1
         
-        # Adaptive frame skipping
         if fps > 0 and fps < 15:
             self._adaptive_skip = max(1, int(30 / fps))
         elif fps >= 30:
@@ -379,7 +351,6 @@ class GLParticleVisualizer:
             glfw.poll_events()
             return
         
-        # ========== GPU RENDERING ==========
         self._ctx.clear(0.02, 0.02, 0.06)
         
         # Draw circles (instanced - single draw call for all circles)
@@ -393,7 +364,6 @@ class GLParticleVisualizer:
             self._ctx.line_width = 2.0
             self._circle_vao.render(mgl.LINE_STRIP, instances=num_circles)
         
-        # Draw particles
         if positions is not None and len(positions) > 0:
             num_particles = len(positions)
             
@@ -410,36 +380,29 @@ class GLParticleVisualizer:
                     glows = glows[::step]
                 num_particles = len(positions)
             
-            # Build vertex data efficiently
             vertex_data = np.empty((num_particles, 7), dtype=np.float32)
             vertex_data[:, 0:2] = positions
             
-            # Colors
             if colors is not None and len(colors) == num_particles and colors.shape[1] == 3:
                 vertex_data[:, 2:5] = colors
             else:
                 vertex_data[:, 2:5] = 1.0
             
-            # Radius (big balls = 36, small = 8)
             if masses is not None:
                 vertex_data[:, 5] = np.where(masses >= 100.0, 36.0, 8.0)
             else:
                 vertex_data[:, 5] = 8.0
             
-            # Glow
             if glows is not None and len(glows) == num_particles:
                 vertex_data[:, 6] = glows
             else:
                 vertex_data[:, 6] = 0.0
             
-            # Single GPU upload
             self._particle_vbo.write(vertex_data.tobytes())
             
-            # Single draw call for all particles
             self._ctx.enable(mgl.PROGRAM_POINT_SIZE)
             self._particle_vao.render(mgl.POINTS, vertices=num_particles)
         
-        # Stats (console output - minimal overhead)
         if self._frame_counter - self._last_stats_frame >= 30:
             self._last_stats_frame = self._frame_counter
             
@@ -457,7 +420,6 @@ class GLParticleVisualizer:
             if self._frame_counter % 120 == 0:
                 print(f"[Ctrl] Grav:{self.sliders['gravity']['value']:.0f} Speed:{self.sliders['small_ball_speed']['value']:.0f} Balls:{int(self.sliders['initial_balls']['value'])} BigBalls:{int(self.sliders['big_ball_count']['value'])} Cap:{self.max_balls_cap['value']} Split:{'ON' if self.split_enabled else 'OFF'}")
         
-        # Draw UI overlay (sliders and buttons)
         self._draw_ui()
         
         glfw.swap_buffers(self._window)
@@ -467,9 +429,7 @@ class GLParticleVisualizer:
         """Draw simple UI overlay (sliders, buttons, labels)."""
         ui_verts = []
         
-        # Helper to add a rectangle
         def add_rect(x, y, w, h, r, g, b, a):
-            # Two triangles for rectangle
             ui_verts.extend([
                 x, y, r, g, b, a,
                 x+w, y, r, g, b, a,
@@ -480,46 +440,38 @@ class GLParticleVisualizer:
                 x, y+h, r, g, b, a,
             ])
         
-        # Draw sliders
         for key, slider in self.sliders.items():
             x, y = slider['pos']
             width = slider['width']
             
-            # Background track (dark gray)
             add_rect(x, y, width, 8, 0.2, 0.2, 0.2, 0.8)
             
             # Value indicator (bright color based on value)
             t = (slider['value'] - slider['min']) / (slider['max'] - slider['min'])
             handle_x = x + t * width
             
-            # Filled portion (cyan)
             add_rect(x, y, t * width, 8, 0.2, 0.8, 1.0, 0.9)
             
             # Handle (white circle approximated as small rect)
             add_rect(handle_x - 5, y - 4, 10, 16, 1.0, 1.0, 1.0, 1.0)
         
-        # Draw buttons
         for button_data in [self.multiplier_button, self.split_button]:
             bx, by = button_data['pos']
             bw, bh = button_data['width'], button_data['height']
             
-            # Button background (semi-transparent)
             add_rect(bx, by, bw, bh, 0.3, 0.3, 0.3, 0.7)
             
-            # Border (bright)
             add_rect(bx, by, bw, 2, 0.8, 0.8, 0.8, 1.0)  # Top
             add_rect(bx, by+bh-2, bw, 2, 0.8, 0.8, 0.8, 1.0)  # Bottom
             add_rect(bx, by, 2, bh, 0.8, 0.8, 0.8, 1.0)  # Left
             add_rect(bx+bw-2, by, 2, bh, 0.8, 0.8, 0.8, 1.0)  # Right
         
-        # Text input box
         tx, ty = self.max_balls_cap['pos']
         tw, th = self.max_balls_cap['width'], self.max_balls_cap['height']
         
         color = (0.5, 0.7, 1.0) if self.max_balls_cap['active'] else (0.3, 0.3, 0.3)
         add_rect(tx, ty, tw, th, color[0], color[1], color[2], 0.8)
         
-        # Upload and render
         if len(ui_verts) > 0:
             ui_data = np.array(ui_verts, dtype=np.float32)
             self._ui_vbo.write(ui_data.tobytes())

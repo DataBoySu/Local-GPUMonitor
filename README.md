@@ -65,9 +65,8 @@
 ## Features
 
 - **Real-time Monitoring**:
-  - Detailed GPU metrics (Utilization, VRAM, Power, Temp, Fan Speed).
+  - Detailed GPU metrics (Utilization, VRAM, Power, Temp).
   - System metrics (CPU, RAM, etc.).
-  - Per-process VRAM usage tracking.
 
 - **Admin & Enforcement**:
   - **VRAM Caps**: Set hard limits on VRAM usage per GPU.

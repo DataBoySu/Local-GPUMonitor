@@ -1,12 +1,3 @@
-"""System metrics collector for CPU, memory, disk.
-
-Maintenance:
-- Purpose: expose system-level metrics via psutil when available.
-- Debug: if `psutil` is unavailable, the collector will provide best-effort values
-    and include a warning in the returned metrics. For Windows, some fields may be
-    less accurate.
-"""
-
 import os
 import platform
 import socket
@@ -38,7 +29,6 @@ class SystemCollector:
     def _collect_psutil(self) -> Dict[str, Any]:
         metrics = {}
         
-        # CPU
         try:
             metrics['cpu_percent'] = psutil.cpu_percent(interval=0.1)
             metrics['cpu_count'] = psutil.cpu_count()
@@ -46,7 +36,6 @@ class SystemCollector:
         except Exception as e:
             metrics['cpu_error'] = str(e)
         
-        # Memory
         try:
             mem = psutil.virtual_memory()
             metrics['memory_total_gb'] = mem.total / (1024**3)
@@ -56,7 +45,6 @@ class SystemCollector:
         except Exception as e:
             metrics['memory_error'] = str(e)
         
-        # Disk
         try:
             disk = psutil.disk_usage('/')
             metrics['disk_total_gb'] = disk.total / (1024**3)
@@ -66,7 +54,6 @@ class SystemCollector:
         except Exception as e:
             metrics['disk_error'] = str(e)
         
-        # Load average (Unix only)
         try:
             if hasattr(os, 'getloadavg'):
                 metrics['load_avg'] = list(os.getloadavg())
@@ -75,7 +62,6 @@ class SystemCollector:
         except Exception:
             metrics['load_avg'] = [0, 0, 0]
         
-        # Network I/O
         try:
             net = psutil.net_io_counters()
             metrics['net_bytes_sent'] = net.bytes_sent
@@ -83,7 +69,6 @@ class SystemCollector:
         except Exception:
             pass
         
-        # Boot time
         try:
             metrics['uptime_seconds'] = (psutil.time.time() - psutil.boot_time())
         except Exception:

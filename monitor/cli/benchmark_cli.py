@@ -1,12 +1,3 @@
-
-"""CLI entry for benchmark utilities.
-
-Maintenance:
-- Purpose: provide a small CLI wrapper for running benchmarks from terminal.
-- Debug: use `--help` to see available options; the CLI calls into
-    `monitor.benchmark` modules and forwards configuration.
-"""
-
 import click
 import time
 import threading
@@ -42,7 +33,6 @@ Implementation: see monitor/benchmark/ for the workload implementations and conf
     from health_monitor import BANNER
     console.print(BANNER, style="bold cyan")
 
-    # Create benchmark config
     auto_scale = (mode == 'stress')
     config = BenchmarkConfig(
         mode=mode,
@@ -56,10 +46,8 @@ Implementation: see monitor/benchmark/ for the workload implementations and conf
         target_gpu_util=98,
     )
 
-    # Initialize benchmark
     bench = GPUBenchmark()
 
-    # Get GPU info
     gpu_info = bench.get_gpu_info()
     console.print(f"\n[cyan]GPU:[/cyan] {gpu_info.get('name', 'Unknown')}")
     console.print(f"[cyan]Memory:[/cyan] {gpu_info.get('memory_total_mb', 0):.0f} MB")
@@ -67,7 +55,6 @@ Implementation: see monitor/benchmark/ for the workload implementations and conf
 
     console.print(f"[cyan]Mode:[/cyan] {'STRESS (auto-scaling to push GPU limits)' if auto_scale else 'FIXED (using predefined sizes)'}")
 
-    # Get baseline if comparing
     baseline = None
     if compare_baseline:
         baseline = bench.get_baseline(bench_type)
@@ -92,7 +79,6 @@ Implementation: see monitor/benchmark/ for the workload implementations and conf
     if visualize:
         console.print("[cyan]Visualization enabled - window will open during benchmark[/cyan]")
 
-    # Run benchmark with progress display
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
@@ -121,11 +107,9 @@ Implementation: see monitor/benchmark/ for the workload implementations and conf
         except KeyboardInterrupt:
             console.print('\n[yellow]Keyboard interrupt received, stopping benchmark...[/yellow]')
             try:
-                # Attempt graceful stop
                 if hasattr(bench, 'stop') and callable(bench.stop):
                     bench.stop()
                 else:
-                    # Fallback: flip running flag if present
                     setattr(bench, 'running', False)
             except Exception:
                 pass

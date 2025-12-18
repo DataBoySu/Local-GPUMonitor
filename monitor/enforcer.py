@@ -27,7 +27,6 @@ class Enforcer:
         self._detect_backend()
 
     def _detect_backend(self):
-        # Prefer CuPy
         try:
             import cupy as cp
             self._impl = 'cupy'
@@ -35,7 +34,6 @@ class Enforcer:
             return
         except Exception:
             self._cupy = None
-        # Fall back to PyTorch
         try:
             import torch
             if not torch.cuda.is_available():
@@ -73,7 +71,6 @@ class Enforcer:
                     cp = self._cupy
                     with cp.cuda.Device(int(gpu_index)):
                         arr = cp.empty(nbytes, dtype=cp.uint8)
-                        # touch memory to ensure allocation
                         arr[0] = 0
                         self._reserved[gpu_index] = arr
                         return {'status': 'ok', 'backend': 'cupy', 'gpu_index': gpu_index, 'reserved_mb': cap_mb}
@@ -81,7 +78,6 @@ class Enforcer:
                 elif self._impl == 'torch':
                     torch = self._torch
                     device = torch.device(f'cuda:{int(gpu_index)}')
-                    # create byte tensor
                     numel = nbytes
                     t = torch.empty(numel, dtype=torch.uint8, device=device)
                     t[0] = 0
@@ -89,7 +85,6 @@ class Enforcer:
                     return {'status': 'ok', 'backend': 'torch', 'gpu_index': gpu_index, 'reserved_mb': cap_mb}
 
             except Exception as e:
-                # allocation failed - cleanup if needed
                 try:
                     if gpu_index in self._reserved:
                         del self._reserved[gpu_index]
@@ -122,7 +117,6 @@ class Enforcer:
             return {k: {'reserved_mb': None} for k in self._reserved.keys()}
 
 
-# Module-level singleton
 _enforcer = Enforcer()
 
 def get_enforcer():

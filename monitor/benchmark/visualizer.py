@@ -1,14 +1,3 @@
-"""GPU Particle Simulation Visualizer.
-
-Renders a sampled subset of particles for visual feedback during benchmarking.
-GPU computes millions, screen renders thousands for smooth 60 FPS display.
-    
-        Maintenance:
-        - Purpose: provide a simple, non-GPU visualizer for environments without
-            ModernGL or for debugging rendering issues.
-        - Debug: keep visualization code slow-path and isolated from core logic.
-"""
-
 import time
 import random
 from typing import Optional, Tuple, List
@@ -66,7 +55,6 @@ class ParticleVisualizer:
             'label': 'Max Cap'
         }
         
-        # Toggle button for ball splitting
         self.split_enabled = False  # Start disabled for safety
         self.split_button = {
             'pos': (1020, 700),
@@ -101,14 +89,12 @@ class ParticleVisualizer:
             
             # Pre-generate random colors and sizes for particles
             for _ in range(self.max_render_particles):
-                # Vibrant random colors
                 color = (
                     random.randint(100, 255),
                     random.randint(100, 255),
                     random.randint(100, 255)
                 )
                 self.colors.append(color)
-                # Varying sizes for depth effect
                 self.particle_sizes.append(random.randint(3, 8))
                 
         except ImportError as e:
@@ -154,10 +140,8 @@ class ParticleVisualizer:
         if not self.is_available():
             return
         
-        # Clear screen with dark space background
         self.screen.fill((5, 5, 15))
         
-        # Scale positions to screen coordinates
         scale_x = self.window_size[0] / 1000.0
         scale_y = self.window_size[1] / 800.0
         
@@ -199,16 +183,13 @@ class ParticleVisualizer:
             x = int(positions[i, 0] * scale_x)
             y = int(positions[i, 1] * scale_y)
             
-            # Get GPU-computed values
             mass = masses[i]
             # colors is now RGB array (N, 3)
             if colors is not None and i < len(colors):
                 if len(colors.shape) == 2 and colors.shape[1] == 3:
-                    # RGB color from GPU
                     rgb = colors[i]
                     base_color = (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255))
                 else:
-                    # Fallback to old single-value color_state
                     color_state = colors[i]
                     base_color = (int(180 + 75 * color_state), int(180 - 180 * color_state), int(200 - 200 * color_state))
             else:
@@ -216,13 +197,11 @@ class ParticleVisualizer:
             
             glow_intensity = glows[i] if glows is not None and i < len(glows) else 0.0
             
-            # Determine size by mass
             if mass >= 1000:  # Big balls
                 radius = 36
             else:  # Small balls
                 radius = 8
             
-            # Calculate glow based on base color
             base_glow = (
                 min(255, int(base_color[0] * 1.3)),
                 min(255, int(base_color[1] * 1.3)),
@@ -235,25 +214,19 @@ class ParticleVisualizer:
             glow_g = min(255, int(base_glow[1] * (0.8 + 0.4 * glow_intensity)))
             glow_b = min(255, int(base_glow[2] * (0.8 + 0.4 * glow_intensity)))
             
-            # Draw with dynamic glow
             self.pygame.draw.circle(self.screen, (glow_r, glow_g, glow_b), (x, y), glow_radius)
             self.pygame.draw.circle(self.screen, base_color, (x, y), radius)
         
         # NO on-screen stats - all stats go to console
         
-        # Draw sliders
         self._draw_sliders()
         
-        # Draw text input for max balls
         self._draw_text_input()
         
-        # Draw multiplier button
         self._draw_multiplier_button()
         
-        # Draw toggle button
         self._draw_toggle_button()
         
-        # Update display
         self.pygame.display.flip()
         self.clock.tick()  # Unlimited FPS - no artificial cap
     
@@ -317,12 +290,10 @@ class ParticleVisualizer:
         x = slider['pos'][0]
         width = slider['width']
         
-        # Clamp to slider bounds
         mouse_x = max(x, min(mouse_x, x + width))
         normalized = (mouse_x - x) / width
         value = slider['min'] + normalized * (slider['max'] - slider['min'])
         
-        # Check for NaN or invalid values
         import math
         if math.isnan(value) or math.isinf(value):
             value = slider['min']  # Reset to minimum
@@ -339,7 +310,6 @@ class ParticleVisualizer:
         values = {}
         for key, slider in self.sliders.items():
             val = slider['value']
-            # Protect against NaN
             if math.isnan(val) or math.isinf(val):
                 val = slider['min']  # Reset to safe default
                 slider['value'] = val

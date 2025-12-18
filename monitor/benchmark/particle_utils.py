@@ -1,13 +1,3 @@
-"""Utility functions for particle sampling and visualization.
-
-Maintenance:
-- Purpose: sampling helpers for building a reduced particle set to send
-    over WebSocket for visualization. Keep CPU transfers minimal to avoid
-    blocking the main benchmark loop.
-- Debug: if visualization stalls, check for large CPU transfers from GPU
-    arrays (calls to `.get()`); reduce `max_samples` to limit overhead.
-"""
-
 import numpy as np
 
 
@@ -40,7 +30,6 @@ def get_particle_sample(gpu_arrays, method, max_samples=2000):
             return None, None, None, None
         
         if method == 'cupy':
-            # Get only active particles
             active_mask = active.get()  # Transfer to CPU
             x_all = x.get()
             y_all = y.get()
@@ -74,7 +63,6 @@ def get_particle_sample(gpu_arrays, method, max_samples=2000):
         else:
             return None, None, None, None
         
-        # Sample if too many
         n_active = len(x_active)
         if n_active > max_samples:
             step = n_active // max_samples
@@ -85,7 +73,6 @@ def get_particle_sample(gpu_arrays, method, max_samples=2000):
             glow_active = glow_active[::step]
             ball_color_active = ball_color_active[::step]
         
-        # Stack into Nx2 array
         positions = np.column_stack([x_active, y_active])
         return positions, mass_active, ball_color_active, glow_active
         
@@ -128,7 +115,6 @@ def get_influence_boundaries(gpu_arrays, method, gravity_strength=500.0):
         else:
             return []
         
-        # Find large bodies (mass >= 1000)
         large_mask = (mass_all >= 1000.0) & active_mask
         
         boundaries = []
@@ -194,7 +180,6 @@ def spawn_big_balls(gpu_arrays, method, x, y, count, current_active_count):
             color = torch.tensor([random.uniform(0.3, 1.0), random.uniform(0.3, 1.0), random.uniform(0.3, 1.0)], 
                                 device=gpu_arrays['x'].device, dtype=torch.float32)
             
-            # Set all properties
             gpu_arrays['x'][idx] = final_x
             gpu_arrays['y'][idx] = final_y
             gpu_arrays['vx'][idx] = 0.0

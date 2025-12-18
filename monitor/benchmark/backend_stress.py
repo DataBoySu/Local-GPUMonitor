@@ -1,11 +1,3 @@
-"""Backend stress multiplier for GPU workloads.
-
-Maintenance:
- - Keeps imports lightweight at module import time.
- - Manages offscreen/backend arrays used to increase
-     effective particle counts for GPU stress testing.
-"""
-
 from . import gpu_setup
 
 
@@ -68,10 +60,8 @@ class BackendStressManager:
         
         self._backend_multiplier = new_multiplier
         
-        # Clear old arrays
         self._backend_arrays = []
         
-        # Create new arrays
         if new_multiplier > 1 and self._method and self._library:
             for i in range(new_multiplier - 1):
                 if self._method == 'cupy':

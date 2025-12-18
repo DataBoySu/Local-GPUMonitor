@@ -1,6 +1,3 @@
-"""Event handling for particle visualizer UI."""
-
-
 def handle_events(visualizer, pygame_events):
     """
     Process pygame events for visualizer.
@@ -45,7 +42,6 @@ def handle_events(visualizer, pygame_events):
 def _handle_text_input(visualizer, event):
     """Handle keyboard input for max balls cap text field."""
     if event.key == visualizer.pygame.K_RETURN:
-        # Validate: max_balls_cap must be >= initial_balls
         try:
             max_cap = int(visualizer.max_balls_cap['value']) if visualizer.max_balls_cap['value'] else 1
             initial = int(visualizer.sliders['initial_balls']['value']) if 'initial_balls' in visualizer.sliders else 1
@@ -68,7 +64,6 @@ def _handle_text_input(visualizer, event):
 
 def _handle_mouse_click(visualizer, pos):
     """Handle mouse click events."""
-    # Check text input
     tx, ty = visualizer.max_balls_cap['pos']
     tw, th = visualizer.max_balls_cap['width'], visualizer.max_balls_cap['height']
     text_input_clicked = (tx <= pos[0] <= tx + tw and ty <= pos[1] <= ty + th)
@@ -79,14 +74,12 @@ def _handle_mouse_click(visualizer, pos):
     
     visualizer.max_balls_cap['active'] = False
     
-    # Check multiplier button
     mx, my = visualizer.multiplier_button['pos']
     mw, mh = visualizer.multiplier_button['width'], visualizer.multiplier_button['height']
     if mx <= pos[0] <= mx + mw and my <= pos[1] <= my + mh:
         _handle_multiplier_cycle(visualizer)
         return
     
-    # Check split toggle button
     bx, by = visualizer.split_button['pos']
     bw, bh = visualizer.split_button['width'], visualizer.split_button['height']
     if bx <= pos[0] <= bx + bw and by <= pos[1] <= by + bh:
@@ -94,7 +87,6 @@ def _handle_mouse_click(visualizer, pos):
         visualizer.split_button['label'] = f"Ball Splitting: {'ON' if visualizer.split_enabled else 'OFF'}"
         return
     
-    # Check sliders
     for key, slider in visualizer.sliders.items():
         sx, sy = slider['pos']
         width = slider['width']
@@ -116,7 +108,6 @@ def _handle_multiplier_cycle(visualizer):
     visualizer.slider_multiplier = visualizer.multiplier_levels[next_idx]
     visualizer.multiplier_button['label'] = f'x{visualizer.slider_multiplier}'
     
-    # Rescale initial_balls slider proportionally
     if old_multiplier > 0:
         multiplier_ratio = visualizer.slider_multiplier / old_multiplier
         if 'initial_balls' in visualizer.sliders:

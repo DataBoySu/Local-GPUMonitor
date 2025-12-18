@@ -1,23 +1,29 @@
-"""GPU metrics collector using NVML or nvidia-smi.
-
-Maintenance:
-- Purpose: collect per-GPU metrics and process info. Prefers pynvml when
-    available and falls back to parsing `nvidia-smi` output.
-- Debug: enable `nvidia-smi` and NVML logging to diagnose GPU read failures.
-    The collector tolerates missing tools and returns `error` fields where needed.
-"""
-
 import subprocess
 import os
 import csv
 import io
 from typing import List, Dict, Any
+import importlib
+import importlib.util
+import warnings
 
-try:
-    import pynvml
-    PYNVML_AVAILABLE = True
-except ImportError:
-    PYNVML_AVAILABLE = False
+_pynvml_mod = None
+
+for _name in ('nvidia_ml_py.pynvml', 'nvidia_ml_py'):
+    try:
+        _pynvml_mod = importlib.import_module(_name)
+        break
+    except ModuleNotFoundError:
+        # Not installed, try next candidate
+        continue
+    except Exception:
+        # Any other import error (e.g. runtime error inside module) should not crash import path
+        _pynvml_mod = None
+        break
+
+PYNVML_AVAILABLE = _pynvml_mod is not None
+if PYNVML_AVAILABLE:
+    pynvml = _pynvml_mod
 
 try:
     import psutil
@@ -195,29 +201,24 @@ class GPUCollector:
             try:
                 handle = pynvml.nvmlDeviceGetHandleByIndex(i)
                 
-                # Memory
                 mem = pynvml.nvmlDeviceGetMemoryInfo(handle)
                 
-                # Utilization
                 try:
                     util = pynvml.nvmlDeviceGetUtilizationRates(handle)
                     gpu_util = util.gpu
                 except Exception:
                     gpu_util = 0
                 
-                # Temperature
                 try:
                     temp = pynvml.nvmlDeviceGetTemperature(handle, pynvml.NVML_TEMPERATURE_GPU)
                 except Exception:
                     temp = 0
                 
-                # Power
                 try:
                     power = pynvml.nvmlDeviceGetPowerUsage(handle) / 1000  # mW to W
                 except Exception:
                     power = 0
                 
-                # Processes
                 try:
                     procs = pynvml.nvmlDeviceGetComputeRunningProcesses(handle)
                     num_procs = len(procs)

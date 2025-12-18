@@ -1,12 +1,3 @@
-"""Alert rules engine for evaluating metrics against thresholds.
-
-Maintenance:
-- Purpose: encapsulate alert logic for GPU and system metrics.
-- Debug: if alerts are not firing, verify metric keys (e.g., 'gpus', 'temperature')
-    and the configuration passed to the engine. Alerts are returned as a list
-    of dictionaries and not persisted by this module.
-"""
-
 from datetime import datetime
 from typing import Dict, Any, List
 
@@ -23,14 +14,12 @@ class AlertEngine:
         hostname = metrics.get('hostname', 'unknown')
         timestamp = datetime.now().isoformat()
         
-        # Check GPU alerts
         for gpu in metrics.get('gpus', []):
             if 'error' in gpu:
                 continue
             
             gpu_index = gpu.get('index', 0)
             
-            # Temperature alerts
             temp = gpu.get('temperature', 0)
             temp_critical = self.config.get('gpu_temperature_critical', 90)
             temp_warn = self.config.get('gpu_temperature_warn', 80)
@@ -52,7 +41,6 @@ class AlertEngine:
                     'message': f'GPU {gpu_index} temperature warning: {temp}°C',
                 })
             
-            # Memory usage alerts
             mem_used = gpu.get('memory_used', 0)
             mem_total = gpu.get('memory_total', 1)
             mem_pct = (mem_used / mem_total * 100) if mem_total > 0 else 0
@@ -67,7 +55,6 @@ class AlertEngine:
                     'message': f'GPU {gpu_index} memory usage high: {mem_pct:.0f}%',
                 })
             
-            # Low utilization alert (possibly idle GPU)
             util = gpu.get('utilization', 0)
             util_low = self.config.get('gpu_utilization_low', 10)
             
@@ -80,10 +67,8 @@ class AlertEngine:
                     'message': f'GPU {gpu_index} appears idle: {util}% utilization',
                 })
         
-        # Check system alerts
         sys_metrics = metrics.get('system', {})
         
-        # High CPU usage
         cpu_pct = sys_metrics.get('cpu_percent', 0)
         if cpu_pct >= 95:
             alerts.append({
@@ -94,7 +79,6 @@ class AlertEngine:
                 'message': f'CPU usage very high: {cpu_pct:.0f}%',
             })
         
-        # Low memory
         mem_pct = sys_metrics.get('memory_percent', 0)
         if mem_pct >= 95:
             alerts.append({
@@ -105,7 +89,6 @@ class AlertEngine:
                 'message': f'System memory nearly exhausted: {mem_pct:.0f}%',
             })
         
-        # Low disk space
         disk_pct = sys_metrics.get('disk_percent', 0)
         if disk_pct >= 90:
             alerts.append({

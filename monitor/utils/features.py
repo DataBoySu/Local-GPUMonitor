@@ -1,4 +1,3 @@
-"""Feature detection and caching system."""
 """Feature detection utilities for optional dependencies.
 
 Maintenance:
@@ -71,11 +70,9 @@ def _cupy_info():
     except Exception:
         cuda_major = None
 
-    # Validate device access
     try:
         cp.cuda.Device(0).compute_capability
     except Exception:
-        # present but cannot access device
         return (True, False)
 
     return (True, cuda_major == 12)
@@ -109,7 +106,6 @@ def detect_features(force: bool = False) -> Dict[str, bool]:
     """
     cache_path = Path(CACHE_FILE)
     
-    # Check cache
     if not force and cache_path.exists():
         try:
             with open(cache_path, 'r') as f:
@@ -117,7 +113,6 @@ def detect_features(force: bool = False) -> Dict[str, bool]:
         except Exception:
             pass
     
-    # Detect features
     cupy_present, cupy_ok = _cupy_info()
     torch_present, torch_ok = _torch_info()
 
@@ -136,7 +131,6 @@ def detect_features(force: bool = False) -> Dict[str, bool]:
     # GPU benchmark available if cupy or torch available (with CUDA 12.x)
     features['gpu_benchmark'] = features['cupy'] or features['torch']
     
-    # Cache results
     try:
         with open(cache_path, 'w') as f:
             json.dump(features, f, indent=2)

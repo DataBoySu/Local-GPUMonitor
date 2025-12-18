@@ -12,7 +12,6 @@ def run_particle_physics_cupy(gpu_arrays, params, cp):
     Returns:
         Updated counters (active_count, small_ball_count, drop_timer)
     """
-    # Extract arrays
     x = gpu_arrays['x']
     y = gpu_arrays['y']
     vx = gpu_arrays['vx']
@@ -27,7 +26,6 @@ def run_particle_physics_cupy(gpu_arrays, params, cp):
     split_cooldown = gpu_arrays['split_cooldown']
     ball_color = gpu_arrays['ball_color']
     
-    # Extract parameters
     dt = 0.016
     G = params['gravity_strength']
     small_ball_speed = params['small_ball_speed']
@@ -58,7 +56,6 @@ def run_particle_physics_cupy(gpu_arrays, params, cp):
         else:
             drop_timer -= dt
     
-    # Process active particles
     active_mask = active
     n_active = int(cp.sum(active_mask))
     
@@ -72,10 +69,8 @@ def run_particle_physics_cupy(gpu_arrays, params, cp):
         cooldown_act = bounce_cooldown[active_mask]
         split_cooldown_act = split_cooldown[active_mask]
         
-        # Identify big balls (mass >= 100)
         big_balls = mass_act >= 100.0
         
-        # Initialize accelerations
         ax = cp.zeros_like(vx_act)
         ay = cp.zeros_like(vy_act)
         
@@ -89,17 +84,14 @@ def run_particle_physics_cupy(gpu_arrays, params, cp):
                 y_big = y_act[big_indices]
                 mass_big = mass_act[big_indices]
                 
-                # Distance matrices
                 dx_matrix = x_big[:, cp.newaxis] - x_big[cp.newaxis, :]
                 dy_matrix = y_big[:, cp.newaxis] - y_big[cp.newaxis, :]
                 r2_matrix = dx_matrix**2 + dy_matrix**2 + 10.0
                 r_matrix = cp.sqrt(r2_matrix)
                 
-                # Force matrix
                 force_matrix = G * mass_big[cp.newaxis, :] / (r2_matrix + 1.0)
                 cp.fill_diagonal(force_matrix, 0.0)
                 
-                # Acceleration
                 ax_big = cp.sum(force_matrix * dx_matrix / (r_matrix + 1e-10), axis=1)
                 ay_big = cp.sum(force_matrix * dy_matrix / (r_matrix + 1e-10), axis=1)
                 
@@ -113,14 +105,12 @@ def run_particle_physics_cupy(gpu_arrays, params, cp):
             big_indices = cp.where(big_balls)[0]
             
             if len(small_indices) > 0 and len(big_indices) > 0:
-                # Get positions
                 x_small = x_act[small_indices]
                 y_small = y_act[small_indices]
                 x_big = x_act[big_indices]
                 y_big = y_act[big_indices]
                 mass_big = mass_act[big_indices]
                 
-                # N_small × N_big distance matrices
                 dx_matrix = x_big[cp.newaxis, :] - x_small[:, cp.newaxis]  # [small, big]
                 dy_matrix = y_big[cp.newaxis, :] - y_small[:, cp.newaxis]
                 r2_matrix = dx_matrix**2 + dy_matrix**2 + 10.0
@@ -140,7 +130,6 @@ def run_particle_physics_cupy(gpu_arrays, params, cp):
         vx_act = vx_act + ax * dt
         vy_act = vy_act + ay * dt
         
-        # Normalize small ball velocities
         small_balls_mask = ~big_balls
         if cp.any(small_balls_mask):
             speed = cp.sqrt(vx_act**2 + vy_act**2)
@@ -150,11 +139,8 @@ def run_particle_physics_cupy(gpu_arrays, params, cp):
         x_act = x_act + vx_act * dt
         y_act = y_act + vy_act * dt
         
-        # Decrease bounce cooldown
         cooldown_act = cp.maximum(0.0, cooldown_act - dt)
         
-        # Wall collisions (bounce)
-        # Left/right walls
         hit_left = (x_act < radius_act) & (vx_act < 0) & (cooldown_act == 0)
         hit_right = (x_act > 1000 - radius_act) & (vx_act > 0) & (cooldown_act == 0)
         vx_act = cp.where(hit_left | hit_right, -vx_act, vx_act)
@@ -162,7 +148,6 @@ def run_particle_physics_cupy(gpu_arrays, params, cp):
         x_act = cp.where(hit_right, 1000 - radius_act, x_act)
         cooldown_act = cp.where(hit_left | hit_right, 0.1, cooldown_act)
         
-        # Top/bottom walls
         hit_top = (y_act < radius_act) & (vy_act < 0) & (cooldown_act == 0)
         hit_bottom = (y_act > 800 - radius_act) & (vy_act > 0) & (cooldown_act == 0)
         vy_act = cp.where(hit_top | hit_bottom, -vy_act, vy_act)
@@ -170,14 +155,11 @@ def run_particle_physics_cupy(gpu_arrays, params, cp):
         y_act = cp.where(hit_bottom, 800 - radius_act, y_act)
         cooldown_act = cp.where(hit_top | hit_bottom, 0.1, cooldown_act)
         
-        # Particle-particle collisions
         if n_active > 1:
-            # Distance matrix
             dx_matrix = x_act[:, cp.newaxis] - x_act[cp.newaxis, :]
             dy_matrix = y_act[:, cp.newaxis] - y_act[cp.newaxis, :]
             dist_matrix = cp.sqrt(dx_matrix**2 + dy_matrix**2 + 1e-10)
             
-            # Collision detection
             ri = radius_act[:, cp.newaxis]
             rj = radius_act[cp.newaxis, :]
             collision_matrix = (dist_matrix < ri + rj) & (dist_matrix > 0.1)
@@ -189,18 +171,15 @@ def run_particle_physics_cupy(gpu_arrays, params, cp):
             collision_j = collision_j[mask]
             
             if len(collision_i) > 0:
-                # Get collision parameters
                 dist_col = dist_matrix[collision_i, collision_j]
                 ri = radius_act[collision_i]
                 rj = radius_act[collision_j]
                 mi = mass_act[collision_i]
                 mj = mass_act[collision_j]
                 
-                # Normal vectors
                 nx = dx_matrix[collision_i, collision_j] / dist_col
                 ny = dy_matrix[collision_i, collision_j] / dist_col
                 
-                # Relative velocity
                 vxi = vx_act[collision_i]
                 vxj = vx_act[collision_j]
                 vyi = vy_act[collision_i]
@@ -253,13 +232,11 @@ def run_particle_physics_cupy(gpu_arrays, params, cp):
                 
                 ball_color[active_mask] = ball_color_act
                 
-                # Set color state for visual effect
                 color_state_act = color_state[active_mask]
                 color_state_act[collision_i] = cp.where(small_i, 1.0, color_state_act[collision_i])
                 color_state_act[collision_j] = cp.where(small_j, 1.0, color_state_act[collision_j])
                 color_state[active_mask] = color_state_act
                 
-                # Mark for splitting
                 if split_enabled:
                     should_split_act = should_split[active_mask]
                     is_small_i = mass_act[collision_i] < 100.0
@@ -270,7 +247,6 @@ def run_particle_physics_cupy(gpu_arrays, params, cp):
                     should_split_act[collision_j] = cp.where(is_small_j & can_split_j, True, should_split_act[collision_j])
                     should_split[active_mask] = should_split_act
                 
-                # Separate overlapping balls
                 overlap = ri + rj - dist_col
                 separation = overlap * 0.6
                 cp.add.at(x_act, collision_i, -nx * separation)
@@ -278,27 +254,22 @@ def run_particle_physics_cupy(gpu_arrays, params, cp):
                 cp.add.at(x_act, collision_j, nx * separation)
                 cp.add.at(y_act, collision_j, ny * separation)
         
-        # Write back
         x[active_mask] = x_act
         y[active_mask] = y_act
         vx[active_mask] = vx_act
         vy[active_mask] = vy_act
         bounce_cooldown[active_mask] = cooldown_act
         
-        # GPU-compute glow
         speed = cp.sqrt(vx_act**2 + vy_act**2)
         glow_act = cp.minimum(1.0, speed / 500.0)
         glow_intensity[active_mask] = glow_act
         
-        # Fade color state
         color_state_act = cp.maximum(0.0, color_state[active_mask] - dt * 2.0)
         color_state[active_mask] = color_state_act
         
-        # Decay split cooldown
         split_cooldown_act = cp.maximum(0.0, split_cooldown_act - dt)
         split_cooldown[active_mask] = split_cooldown_act
     
-    # Spawn children from splitting
     if split_enabled and active_count < 50000:
         split_indices = cp.where(should_split & active)[0]
         if len(split_indices) > 0:
@@ -311,7 +282,6 @@ def run_particle_physics_cupy(gpu_arrays, params, cp):
                         child1_idx = inactive_indices[idx * 2]
                         child2_idx = inactive_indices[idx * 2 + 1]
                         
-                        # Child 1
                         x[child1_idx] = x[parent_idx] + cp.random.uniform(-10, 10)
                         y[child1_idx] = y[parent_idx] + cp.random.uniform(-10, 10)
                         angle1 = cp.random.uniform(0, 2 * cp.pi)
@@ -323,7 +293,6 @@ def run_particle_physics_cupy(gpu_arrays, params, cp):
                         split_cooldown[child1_idx] = 5.0
                         ball_color[child1_idx] = ball_color[parent_idx]
                         
-                        # Child 2
                         x[child2_idx] = x[parent_idx] + cp.random.uniform(-10, 10)
                         y[child2_idx] = y[parent_idx] + cp.random.uniform(-10, 10)
                         angle2 = cp.random.uniform(0, 2 * cp.pi)
@@ -342,7 +311,6 @@ def run_particle_physics_cupy(gpu_arrays, params, cp):
             
             should_split[split_indices] = False
     
-    # Enforce max cap
     if small_ball_count > max_balls_cap:
         small_balls = (mass < 100.0) & active
         small_indices = cp.where(small_balls)[0]
@@ -355,7 +323,6 @@ def run_particle_physics_cupy(gpu_arrays, params, cp):
         print(f"\n[SAFETY] Particle count reached {active_count} - disabling splitting")
         split_enabled = False
     
-    # Write back arrays
     gpu_arrays['x'] = x
     gpu_arrays['y'] = y
     gpu_arrays['vx'] = vx

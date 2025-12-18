@@ -1,12 +1,3 @@
-"""GPU array initialization for particle simulation.
-
-Maintenance:
-- Purpose: allocate and initialize arrays/tensors required by particle workloads.
-- Debug: keep allocations centralized—large `n` values allocate GPU memory. If
-    you see OOM errors, reduce `n` or ensure proper device selection before calling.
-"""
-
-
 def setup_cupy_arrays(n, cp):
     """
     Initialize CuPy GPU arrays for particle simulation.
@@ -20,7 +11,6 @@ def setup_cupy_arrays(n, cp):
     """
     gpu_arrays = {}
     
-    # Initialize ALL arrays for target size
     gpu_arrays['x'] = cp.zeros(n, dtype=cp.float32)
     gpu_arrays['y'] = cp.zeros(n, dtype=cp.float32)
     gpu_arrays['vx'] = cp.zeros(n, dtype=cp.float32)
@@ -56,7 +46,6 @@ def setup_cupy_arrays(n, cp):
         gpu_arrays['active'][i] = True
         gpu_arrays['ball_color'][i] = big_ball_colors[i]  # Assign unique color
     
-    # Initial counters
     counters = {
         'active_count': 4,  # Start with 4 big balls
         'small_ball_count': 0,  # No small balls yet
@@ -120,7 +109,6 @@ def setup_torch_arrays(n, torch):
         gpu_arrays['active'][i] = True
         gpu_arrays['ball_color'][i] = big_ball_colors[i]  # Assign unique color
     
-    # Initial counters
     counters = {
         'active_count': 4,
         'small_ball_count': 0,

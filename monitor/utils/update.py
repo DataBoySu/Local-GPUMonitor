@@ -1,4 +1,3 @@
-"""Update mechanism for Local GPU Monitor."""
 """Update helper utilities.
 
 Maintenance:
@@ -34,7 +33,6 @@ def get_latest_version() -> Optional[Dict]:
         version = data.get('tag_name', '').lstrip('v')
         assets = data.get('assets', [])
         
-        # Find ZIP asset
         download_url = None
         for asset in assets:
             if asset['name'].endswith('.zip'):
@@ -101,21 +99,18 @@ def apply_update(zip_path: Path) -> bool:
     Extract update ZIP and replace files.
     """
     try:
-        # Extract to temp directory
         temp_dir = Path("update_temp")
         temp_dir.mkdir(exist_ok=True)
         
         with zipfile.ZipFile(zip_path, 'r') as zf:
             zf.extractall(temp_dir)
         
-        # Find extracted directory
         extracted = list(temp_dir.glob("local-gpu-monitor*"))
         if not extracted:
             return False
         
         src = extracted[0]
         
-        # Copy files (excluding venv, cache, data)
         import shutil
         exclude = {'venv', '__pycache__', '.features_cache', '*.db', 'config.yaml'}
         
@@ -123,7 +118,6 @@ def apply_update(zip_path: Path) -> bool:
             if item.is_file():
                 rel = item.relative_to(src)
                 
-                # Skip excluded patterns
                 skip = False
                 for ex in exclude:
                     if ex in str(rel):
@@ -135,7 +129,6 @@ def apply_update(zip_path: Path) -> bool:
                     dest.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(item, dest)
         
-        # Cleanup
         shutil.rmtree(temp_dir)
         zip_path.unlink()
         
@@ -181,10 +174,8 @@ def perform_update() -> bool:
     if not latest:
         return False
     
-    # Download
     zip_path = Path("update.zip")
     if not download_update(latest['download_url'], zip_path):
         return False
     
-    # Apply
     return apply_update(zip_path)

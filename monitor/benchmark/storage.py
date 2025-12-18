@@ -1,9 +1,3 @@
-"""Baseline storage for benchmark results.
-Maintenance:
-- Purpose: store baseline benchmark results to compare future runs.
-- Debug: check the storage backend (SQLite file) if baseline reads/writes fail.
-"""
-
 import json
 import sqlite3
 from pathlib import Path
@@ -29,15 +23,12 @@ class BaselineStorage:
         table_exists = cursor.fetchone() is not None
         
         if table_exists:
-            # Check if benchmark_type column exists
             cursor = conn.execute("PRAGMA table_info(benchmark_baseline)")
             columns = [row[1] for row in cursor.fetchall()]
             
             if 'benchmark_type' not in columns or 'run_mode' not in columns:
-                # Migrate old table - drop and recreate
                 conn.execute('DROP TABLE IF EXISTS benchmark_baseline')
         
-        # Create table with new schema
         conn.execute('''
             CREATE TABLE IF NOT EXISTS benchmark_baseline (
                 gpu_name TEXT NOT NULL,
