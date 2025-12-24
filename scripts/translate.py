@@ -20,7 +20,7 @@ with open(README_PATH, "r", encoding="utf-8") as f:
 
 prompt = f"""<|im_start|>system
 You are a professional technical translator. 
-Perform a strict 1:1 technical translation of the provided README into German. 
+Perform a strict technical translation of the provided README into professional developer-level German. 
 Maintain a formal tone and preserve technical terminology (e.g., GPU, CLI, vCPU).
 Keep all Markdown/HTML syntax exactly as is. 
 ONLY output the translated German text. No talk, just translation.
