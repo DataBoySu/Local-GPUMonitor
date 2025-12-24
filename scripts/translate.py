@@ -20,7 +20,8 @@ with open(README_PATH, "r", encoding="utf-8") as f:
 
 prompt = f"""<|im_start|>system
 You are a professional technical translator. 
-Translate the provided README to German. 
+Translate the provided README into German. 
+Maintain a formal tone and preserve technical terminology (e.g., GPU, CLI, vCPU).
 Keep all Markdown/HTML syntax. 
 ONLY output the translated German text. No talk, just translation.<|im_end|>
 <|im_start|>user
@@ -38,6 +39,9 @@ response = llm(
 
 translated_content = response['choices'][0]['text'].strip()
 
+# 0. SAFETY: Remove HTML comments if the LLM wrapped the output in them
+translated_content = re.sub(r'^<!--\s*|(?:\s*)?-->$', '', translated_content).strip()
+
 # 1. CLEANUP: Remove markdown code fences if the LLM included them
 if translated_content.startswith("```"):
     lines = translated_content.splitlines()
@@ -47,10 +51,15 @@ if translated_content.startswith("```"):
         lines = lines[:-1]
     translated_content = "\n".join(lines).strip()
 
-# 2. FIX PATHS: Prepend ../ to relative paths since this file lives in /locales/
+# 2. FIX PATHS: Handle relative paths for files in /locales/
+# First, remove "locales/" if the LLM hallucinated it into the path
+translated_content = re.sub(r'(\[.*?\]\()locales/', r'\1', translated_content)
+translated_content = re.sub(r'((?:src|href)=")locales/', r'\1', translated_content)
+
+# Then, prepend ../ to relative paths (ignoring external links, absolute paths, or anchors)
 # This targets Markdown links/images text and HTML src="path"/href="path"
-translated_content = re.sub(r'(\[.*?\]\()(?!(?:http|/|#))', r'\1../', translated_content)
-translated_content = re.sub(r'((?:src|href)=")(?!(?:http|/|#))', r'\1../', translated_content)
+translated_content = re.sub(r'(\[.*?\]\()(?!(?:http|/|#|\.\./))', r'\1../', translated_content)
+translated_content = re.sub(r'((?:src|href)=")(?!(?:http|/|#|\.\./))', r'\1../', translated_content)
 
 with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
     f.write(translated_content)
