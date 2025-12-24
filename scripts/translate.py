@@ -41,8 +41,8 @@ response = llm(
 
 translated_content = response['choices'][0]['text'].strip()
 
-# 0. SAFETY: Remove HTML comments if the LLM wrapped the output in them
-translated_content = re.sub(r'^<!--\s*|(?:\s*)?-->$', '', translated_content).strip()
+# # 0. SAFETY: Remove HTML comments if the LLM wrapped the output in them
+# translated_content = re.sub(r'^<!--\s*|(?:\s*)?-->$', '', translated_content).strip()
 
 # 1. CLEANUP: Remove markdown code fences if the LLM included them
 if translated_content.startswith("```"):
@@ -66,4 +66,4 @@ translated_content = re.sub(r'((?:src|href)=")(?!(?:http|/|#|\.\./))', r'\1../',
 with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
     f.write(translated_content)
 
-print("✅ Translation complete.")
+print("Translation complete.")
