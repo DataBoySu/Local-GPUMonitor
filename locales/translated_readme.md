@@ -134,4 +134,19 @@ Am besten für Entwicklung und Stresstest geeignet.
 
 ### Schnelle Einrichtung
 
-1. **
+1. **Laden** Sie die neueste Version herunter oder klonen Sie das Repository.
+2. **Einrichten**:
+
+   ```powershell
+   .\setup.ps1
+   ```
+
+3. **Starten**:
+
+```powershell
+# Starten Sie das Web-Dashboard (Standard/Vollständig)
+python health_monitor.py web
+
+# Starten Sie die CLI
+python health_monitor.py cli
+```
