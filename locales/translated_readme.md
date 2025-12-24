@@ -2,12 +2,12 @@
   <img src="../monitor/api/static/logo.png" alt="MyGPU Logo"/>
 </div>
 
-> *MyGPU — Leichtgewichtige GPU-Verwaltung: ein kompakter Wrapper um `nvidia-smi` mit einem sauberen Web-Dashboard.*
+> *MyGPU — Leichtgewichtige GPU-Verwaltung: ein kompakter Wrapper um nvidia-smi mit einem sauberen Web-Dashboard.*
 
-![Lizenz](https://img.shields.io/badge/license-MIT-blue.svg)  
-![Python](https://img.shields.io/badge/python-3.10%2B-blue)  
-![Version](https://img.shields.io/badge/version-1.2.3-blue)  
-![Plattform](https://img.shields.io/badge/platform-Windows-lightgrey)  
+![Lizenz](https://img.shields.io/badge/license-MIT-blue.svg)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![Version](https://img.shields.io/badge/version-1.2.3-blue)
+![Plattform](https://img.shields.io/badge/platform-Windows-lightgrey)
 ![CUDA 12.x](https://img.shields.io/badge/CUDA-12.x-0f9d58?logo=nvidia)
 
 ## Galerie
@@ -49,31 +49,30 @@
     <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
       <img src="../monitor/api/static/cli5.png" style="width:100%; height:100%; object-fit:contain;" />
     </div>
-
 </details>
 
-### Warum verwenden Sie dieses Tool?
+### Warum dieses Tool verwenden?
 
-- **Leichtgewichtig**: Minimaler Ressourcenverbrauch. Es stört nicht.
+- **Leichtgewichtig**: Minimaler Ressourcenverbrauch.
 - **Flexibel**: Kann als CLI-Tool, als Hintergrunddienst oder als vollständiges Web-Dashboard verwendet werden.
-- **Admin-orientiert**: Umfasst Funktionen wie **VRAM-Enforcement** (Automatische Beendigung von Prozessen, die Grenzwerte überschreiten) und **Watchlisten**.
-- **Entwicklerfreundlich**: Integrierte Benchmarking- und Stress-Tests (GEMM, Teilchenphysik) zur Validierung der Systemstabilität.
+- **Admin-orientiert**: Funktionen wie **VRAM-Enforcement** (Automatische Beendigung von Prozessen, die Grenzwerte überschreiten) und **Watchlists**.
+- **Entwicklerfreundlich**: Integrierte Benchmarking- und Stress-Test-Tools (GEMM, Teilchenphysik) zur Validierung der Systemstabilität.
 
 ---
 
 ## Funktionen
 
-- **Echtzeitüberwachung**:
+- **Echtzeit-Monitoring**:
   - Ausführliche GPU-Metriken (Ausnutzung, VRAM, Leistung, Temperatur).
   - Systemmetriken (CPU, RAM usw.).
 
 - **Admin- und Kontrollfunktionen**:
-  - **VRAM-Begrenzung**: Festlegung harte Grenzen für die VRAM-Nutzung pro GPU.
-  - **Automatische Beendigung**: Automatische Beendigung von Prozessen, die VRAM-Richtlinien verletzen (nur für Admin).
-  - **Watchlisten**: Überwachung bestimmter PIDs oder Prozessnamen.
+  - **VRAM-Begrenzungen**: Festlegung harte Grenzwerte für die VRAM-Nutzung pro GPU.
+  - **Automatische Beendigung**: Automatische Beendigung von Prozessen, die VRAM-Richtlinien verletzen (nur für Admins).
+  - **Watchlists**: Spezifische PIDs oder Prozessnamen überwachen.
 
 - **Benchmarking und Simulation**:
-  - **Stress-Testing**: Konfigurierbare GEMM-Aufgaben zur Prüfung von thermischer Drosselung und Stabilität.
+  - **Stress-Testing**: Konfigurierbare GEMM-Arbeitslasten zur Prüfung von thermischer Drosselung und Stabilität.
   - **Visuelle Simulation**: Interaktive 3D-Teilchenphysik-Simulation zur Visualisierung der GPU-Last.
 
 ---
@@ -82,12 +81,12 @@
 
 Beiträge sind willkommen! Die wichtigsten zukünftigen Entwicklungen sind:
 
-- **Multi-GPU-Unterstützung**: Verbesserte Behandlung von Multi-Karten-Setups und NVLink-Topologien.
+- **Multi-GPU-Unterstützung**: Verbesserte Behandlung von Mehrkarten-Setups und NVLink-Topologien.
 - **Containerisierung**: Offizielle Docker-Unterstützung für einfache Bereitstellung in containerisierten Umgebungen.
 - **Fernzugriff**: Integration von SSH-Tunneln und sichere Fernverwaltung.
-- **Krossplattform**:
+- **Cross-Plattform**:
   - [ ] Linux-Unterstützung (Ubuntu/Debian-Fokus).
-  - [ ] macOS-Unterstützung (Apple Silicon-Überwachung).
+  - [ ] macOS-Unterstützung (Apple Silicon-Monitoring).
 - **Hardware-ungesetzte Unterstützung**:
   - [ ] AMD ROCm-Unterstützung.
   - [ ] Intel Arc-Unterstützung.
@@ -101,8 +100,8 @@ Weitere Informationen zur Beteiligung finden Sie in [CONTRIBUTING.md](../CONTRIB
 - **Betriebssystem**: Windows 10/11
 - **Python**: 3.10+
 - **Hardware**: NVIDIA-GPU mit installierten Treibern.
-- **CUDA**: Toolkit 12.x (für Benchmarking- und Simulationselemente **strikt erforderlich**).
-  - *Hinweis: Wenn CUDA 12.x nicht erkannt wird, werden GPU-spezifische Benchmark-Funktionen deaktiviert.*
+- **CUDA**: Toolkit 12.x (für Benchmarking- und Simulationselemente strikt erforderlich).
+  - *Hinweis: Wenn CUDA 12.x nicht erkannt wird, werden GPU-spezifische Benchmarking-Funktionen deaktiviert.*
 
 ---
 
@@ -144,7 +143,7 @@ Optimal für Entwicklung und Stress-Tests.
 3. **Starten**:
 
 ```powershell
-# Starte das Web-Dashboard (Standard oder Vollständig)
+# Starte das Web-Dashboard (Standard/Vollständig)
 python health_monitor.py web
 
 # Starte die CLI
