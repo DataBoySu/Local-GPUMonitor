@@ -3,11 +3,16 @@ from llama_cpp import Llama
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 README_PATH = os.path.join(BASE_DIR, "README.md")
-OUTPUT_PATH = os.path.join(BASE_DIR, "translated_readme.md")
-MODEL_PATH = os.path.join(BASE_DIR, "models", "qwen3-1.7b-instruct.gguf")
+OUTPUT_DIR = os.path.join(BASE_DIR, "locales")
+OUTPUT_PATH = os.path.join(OUTPUT_DIR, "translated_readme.md")
+MODEL_PATH = os.path.join(BASE_DIR, "models", "qwen2.5-coder-1.5b-instruct.gguf")
+
+# Ensure output directory exists
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # 1. FIX: Increased n_ctx to 8192 so it sees the whole README + has room to think
-llm = Llama(model_path=MODEL_PATH, n_ctx=8192, verbose=False)
+# Added n_threads=2 to match GitHub Action runner vCPUs
+llm = Llama(model_path=MODEL_PATH, n_ctx=8192, n_threads=2, verbose=False)
 
 with open(README_PATH, "r", encoding="utf-8") as f:
     text_to_translate = f.read()
@@ -26,7 +31,7 @@ ONLY output the translated German text. No talk, just translation.<|im_end|>
 response = llm(
     prompt, 
     max_tokens=4096, 
-    temperature=0.1, 
+    temperature=0, # Set to 0 for maximum determinism in translation
     stop=["<|im_start|>", "<|im_end|>"]
 )
 
