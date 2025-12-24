@@ -27,7 +27,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ./models
-          key: aya-expanse-8b-q4ks-v1
+          key: aya-expanse-8b-q4ks-v2
 
       - name: Install Dependencies
         run: |
@@ -45,6 +45,6 @@ jobs:
       - name: Commit and Push
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "docs: update german translation [skip ci]"
+          commit_message: "docs: update german translation"
           file_pattern: 'locales/translated_readme.md'
           push_options: '--force-with-lease'

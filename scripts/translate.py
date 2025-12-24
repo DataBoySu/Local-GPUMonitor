@@ -31,7 +31,7 @@ Do not add new information, do not summarize, and do not include any conversatio
 <|START_OF_TURN_TOKEN|><|CHATBOT_TOKEN|>
 """
 
-# 2. FIX: High max_tokens (4096) to prevent cut-off and low temperature for accuracy
+# max_tokens must be less than n_ctx (6144). 4096 leaves ~2000 tokens for README input.
 response = llm(
     prompt, 
     max_tokens=6144, 
