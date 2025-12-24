@@ -1,0 +1,45 @@
+name: AI Readme Translator (German)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'README.md'
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Cache Model Weights
+        id: cache-model
+        uses: actions/cache@v4
+        with:
+          path: ./models
+          key: qwen3-1.7b-v1
+
+      - name: Install Dependencies
+        run: |
+          pip install llama-cpp-python
+          mkdir -p models
+
+      - name: Download Model (If not cached)
+        if: steps.cache-model.outputs.cache-hit != 'true'
+        run: |
+          wget -O models/qwen3-1.7b.gguf https://huggingface.co/unsloth/Qwen3-1.7B-GGUF/resolve/main/Qwen3-1.7B-Q4_0.gguf
+
+      - name: Run Translation Script
+        run: python scripts/translate.py
+
+      - name: Commit Translated Readme
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: automated german translation [skip ci]"
+          file_pattern: 'translated_readme.md'
