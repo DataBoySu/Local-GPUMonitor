@@ -6,7 +6,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 README_PATH = os.path.join(BASE_DIR, "README.md")
 OUTPUT_DIR = os.path.join(BASE_DIR, "locales")
 OUTPUT_PATH = os.path.join(OUTPUT_DIR, "translated_readme.md")
-MODEL_PATH = os.path.join(BASE_DIR, "models", "qwen2.5-coder-1.5b-instruct.gguf")
+MODEL_PATH = os.path.join(BASE_DIR, "models", "qwen3-4b-instruct.gguf")
 
 # Ensure output directory exists
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -20,10 +20,11 @@ with open(README_PATH, "r", encoding="utf-8") as f:
 
 prompt = f"""<|im_start|>system
 You are a professional technical translator. 
-Translate the provided README into German. 
+Perform a strict 1:1 technical translation of the provided README into German. 
 Maintain a formal tone and preserve technical terminology (e.g., GPU, CLI, vCPU).
-Keep all Markdown/HTML syntax. 
-ONLY output the translated German text. No talk, just translation.<|im_end|>
+Keep all Markdown/HTML syntax exactly as is. 
+ONLY output the translated German text. No talk, just translation.
+Do not add new information, do not summarize, and do not include any conversational filler or "thinking" process.<|im_end|>
 <|im_start|>user
 {text_to_translate}<|im_end|>
 <|im_start|>assistant

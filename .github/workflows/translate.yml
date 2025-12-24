@@ -27,17 +27,17 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ./models
-          key: qwen2.5-coder-1.5b-v1
+          key: qwen3-4b-instruct-2507-v1
 
       - name: Install Dependencies
         run: |
           pip install llama-cpp-python
           mkdir -p models
 
-      - name: Download Technical Translation Model
+      - name: Download High-Fidelity Translation Model
         run: |
-          # Downloading Qwen2.5-Coder-1.5B which is optimized for technical docs and direct output
-          wget -O models/qwen2.5-coder-1.5b-instruct.gguf https://huggingface.co/unsloth/Qwen2.5-Coder-1.5B-Instruct-GGUF/resolve/main/Qwen2.5-Coder-1.5B-Instruct-Q4_K_M.gguf
+          # Downloading Qwen3-4B-Instruct-2507 for strict 1:1 technical translation
+          wget -O models/qwen3-4b-instruct.gguf https://huggingface.co/unsloth/Qwen3-4B-Instruct-2507-GGUF/resolve/main/Qwen3-4B-Instruct-2507-Q4_K_M.gguf
 
       - name: Run Translation Script
         run: python scripts/translate.py
