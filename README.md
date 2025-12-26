@@ -104,6 +104,7 @@ Contributions are welcome! Main future points to cover would be:
 - **Hardware Agnostic**:
   - [ ] AMD ROCm support.
   - [ ] Intel Arc support.
+- ~~**Multi-Language Documentation**: Supporting most popular GitHub languages.~~
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for how to get involved.
 
