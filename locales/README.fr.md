@@ -1,99 +1,173 @@
-# Moniteur GPU : Un outil de gestion léger des GPU
+<div align="center">
+  <a href="../README.md">🇺🇸 English</a> |
+  <a href="../README.de.md">🇩🇪 Deutsch</a> |
+  <a href="../README.fr.md">🇫🇷 Français</a> |
+  <a href="../README.es.md">🇪🇸 Español</a> |
+  <a href="../README.ja.md">🇯🇵 日本語</a> |
+  <a href="../README.zh.md">🇨🇳 中文</a> |
+  <a href="../README.pt.md">🇵🇹 Português</a> |
+  <a href="../README.ko.md">🇰🇷 한국어</a> |
+  <a href="../README.hi.md">🇮🇳 Hindi</a>
+</div>
 
-![MyGPU](../monitor/api/static/web1.png)
+<div style="text-align:center; margin:18px 0;">
+  <img src="../monitor/api/static/logo.png" alt="MyGPU logo"/>
+</div>
 
-## Présentation
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![Version](https://img.shields.io/badge/version-1.2.3-blue)
+![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
+![cuda 12.x](https://img.shields.io/badge/CUDA-12.x-0f9d58?logo=nvidia)
 
-*MyGPU* est un utilitaire de gestion léger des GPU, offrant une interface web élégante et un wrapper compact pour *nvidia-smi*. Il permet une surveillance et une administration efficaces des ressources GPU, avec une approche agile et flexible.
+## Gallery
 
-## Caractéristiques clés
+<details>
+  <summary>Web Dashboard</summary>
+  <div style="display:flex; overflow-x:auto; gap:10px; padding:12px 0; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;">
+    <!-- Use first image aspect ratio 1624x675 for slide frame; images fit inside using object-fit:contain -->
+    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
+      <img src="../monitor/api/static/web1.png" style="width:100%; height:100%; object-fit:contain;" />
+    </div>
+    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
+      <img src="../monitor/api/static/web2.png" style="width:100%; height:100%; object-fit:contain;" />
+    </div>
+    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
+      <img src="../monitor/api/static/web3.png" style="width:100%; height:100%; object-fit:contain;" />
+    </div>
+    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
+      <img src="../monitor/api/static/web4.png" style="width:100%; height:100%; object-fit:contain;" />
+    </div>
+  </div>
 
-- **Légèreté** : Empreinte système minimale.
-- **Polyvalence** : Disponible en version CLI ou avec une interface web complète.
-- **Administration centrée** : Inclut des fonctionnalités telles que la **restreinte de la VRAM**, la **termination automatique** et les **listes de surveillance**.
-- **Amical pour les développeurs** : Outils intégrés de test et de simulation pour valider la stabilité du système.
+</details>
+<details>
+  <summary>CLI</summary>
+  <div style="display:flex; overflow-x:auto; gap:10px; padding:12px 0; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;">
+
+  <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
+      <img src="../monitor/api/static/cli1.png" style="width:100%; height:100%; object-fit:contain;" />
+  </div>
+  <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
+      <img src="../monitor/api/static/cli2.png" style="width:100%; height:100%; object-fit:contain;" />
+    </div>
+    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
+      <img src="../monitor/api/static/cli3.png" style="width:100%; height:100%; object-fit:contain;" />
+    </div>
+    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
+      <img src="../monitor/api/static/cli4.png" style="width:100%; height:100%; object-fit:contain;" />
+    </div>
+    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
+      <img src="../monitor/api/static/cli5.png" style="width:100%; height:100%; object-fit:contain;" />
+    </div>
+
+</details>
+
+
+*MyGPU : Outil de gestion de GPU léger : un wrapper compact pour `nvidia-smi` avec un tableau de bord web élégant.*
+
+### Pourquoi l'utiliser ?
+
+- **Léger** : empreinte minimale en ressources.
+- **Polyvalent** : fonctionne en tant qu'outil en ligne de commande ou avec un tableau de bord web complet.
+- **Centré administration** : inclut des fonctionnalités telles que **la limitation de la VRAM** (arrêt automatique des processus dépassant les limites) et les **listes de surveillance**.
+- **Amical pour les développeurs** : outils intégrés de benchmark et de test de stress (GEMM, physique des particules) pour valider la stabilité du système.
+
+---
 
 ## Fonctionnalités
 
 - **Surveillance en temps réel** :
-  - Métriques détaillées sur les GPU (Utilisation, VRAM, Puissance, Température).
+  - Métriques GPU détaillées (Utilisation, VRAM, Puissance, Température).
   - Métriques système (CPU, RAM, etc.).
 
-- **Administration et application de politiques** :
-  - **Limites de VRAM** : Définir des limites strictes sur l'utilisation de la VRAM par GPU.
-  - **Terminaison automatique** : Arrêter automatiquement les processus qui violent les politiques de VRAM (réservé aux administrateurs).
-  - **Listes de surveillance** : Surveiller des PIDs ou des noms de processus spécifiques.
+- **Administration et application de règles** :
+  - **Limites de VRAM** : définissez des limites strictes sur l'utilisation de la VRAM par GPU.
+  - **Arrêt automatique** : arrêtez automatiquement les processus qui violent les règles de la VRAM (uniquement pour les administrateurs).
+  - **Listes de surveillance** : surveillez des PIDs ou des noms de processus spécifiques.
 
 - **Benchmarking et simulation** :
-  - **Tests de stress** : Chargements de travail GEMM configurables pour tester la throttling thermique et la stabilité.
-  - **Simulation visuelle** : Simulation interactive de physique de particules pour visualiser la charge GPU.
+  - **Tests de stress** : charges de travail GEMM configurables pour tester le throttage thermique et la stabilité.
+  - **Simulation visuelle** : simulation interactive de physique des particules pour visualiser la charge GPU.
+
+---
 
 ## Roadmap et travaux futurs
 
-Les contributions sont les bienvenues ! Les points principaux à aborder dans un futur proche :
+Les contributions sont les bienvenues ! Les points principaux à couvrir dans le futur seraient :
 
-- **Prise en charge multi-GPU** : Amélioration de la gestion pour les configurations multi-cartes et les topologies NVLink.
-- **Containerisation** : Prise en charge officielle de Docker pour un déploiement facile dans des environnements conteneurisés.
-- **Accès à distance** : Intégration du tunnel SSH pour une gestion sécurisée à distance.
-- **Prise en charge multi-plateforme** :
-  - Prise en charge de Linux (focussé sur Ubuntu/Debian).
-  - Prise en charge d'Apple Silicon pour la surveillance macOS.
-- **Indépendance matérielle** :
-  - Prise en charge de ROCm d'AMD.
-  - Prise en charge d'Intel Arc.
-- **Documentation multi-langues** (en cours).
+- **Prise en charge multi-GPU** : gestion améliorée des configurations multi-cartes et des topologies NVLink.
+- **Conteneurisation** : prise en charge officielle de Docker pour un déploiement facile dans des environnements conteneurisés.
+- **Accès à distance** : intégration du tunnel SSH et de la gestion à distance sécurisée.
+- **Cross-plateforme** :
+  - [ ] Prise en charge de Linux (focalisation sur Ubuntu/Debian).
+  - [ ] Prise en charge d'Apple Silicon sur macOS.
+- **Indépendant de l'hardware** :
+  - [ ] Prise en charge de ROCm d'AMD.
+  - [ ] Prise en charge d'Intel Arc.
+- ~~**Documentation multi-langues** : prise en charge des principales langues GitHub.~~
 
-Consultez [CONTRIBUTING.md](../CONTRIBUTING.md) pour savoir comment contribuer.
+Consultez [CONTRIBUTING.md](../CONTRIBUTING.md) pour savoir comment participer.
+
+---
 
 ## Exigences
 
 - **Système d'exploitation** : Windows 10/11
 - **Python** : 3.10+
-- **Matériel** : GPU NVIDIA avec pilotes installés.
-- **CUDA** : Toolkit 12.x (strictement requis pour les fonctionnalités de benchmarking/simulation).
-  - *Note : Si CUDA 12.x n'est pas détecté, les fonctionnalités de benchmarking GPU seront désactivées.*
+- **Hardware** : GPU NVIDIA avec pilotes installés.
+- **CUDA** : Toolkit 12.x (strictement requis pour les fonctionnalités de benchmark/simulation).
+  - *Note : Si CUDA 12.x n'est pas détecté, les fonctionnalités de benchmark GPU seront désactivées.*
+
+---
 
 ## Installation
 
-L'outil offre plusieurs options d'installation pour répondre à vos besoins :
+L'outil prend en charge une installation modulaire pour répondre à vos besoins :
 
-### 1. Minimal (CLI uniquement)
+### 1. Minimal (seule l'interface en ligne de commande)
 
 Idéal pour les serveurs sans tête ou la surveillance en arrière-plan.
 
 - Interface en ligne de commande.
-- Métriques système et GPU de base.
+- Métriques système/GPU de base.
 
-### 2. Standard (CLI + Interface web)
+### 2. Standard (interface en ligne de commande + tableau de bord web)
 
 Idéal pour la plupart des utilisateurs.
 
-- Inclut l'interface web.
-- Points de terminaison API REST.
+- Inclut le tableau de bord web.
+- Points de terminaison d'API REST.
 - Graphiques en temps réel.
 
-### 3. Complet (Standard + Simulation)
+### 3. Complet (Standard + visualisation)
 
 Idéal pour le développement et les tests de stress.
 
 - Inclut la simulation de particules.
-- Dépendances PyTorch/CuPy pour le benchmarking.
+- Dépendances PyTorch/CuPy pour le benchmark.
 
 ### Démarrage rapide
 
-1. **Télécharger** la dernière version ou cloner le dépôt.
-2. **Exécuter l'installation** :
+1. **Téléchargez** la dernière version ou clonez le dépôt.
+2. **Exécutez l'installation** :
 
    ```powershell
    .\setup.ps1
    ```
 
-3. **Lancer** :
+3. **Démarrez** :
 
 ```powershell
-# Démarrer l'interface web (Standard/Complet)
+# Démarrez le tableau de bord web (Standard/Complet)
 python health_monitor.py web
 
-# Lancer l'interface CLI
+# Démarrez l'interface en ligne de commande
 python health_monitor.py cli
 ```
+
+---
+
+## Licence
+
+Licence MIT. Veuillez consulter le fichier [LICENSE](../LICENSE) pour plus de détails.
