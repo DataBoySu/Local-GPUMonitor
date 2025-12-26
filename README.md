@@ -1,4 +1,3 @@
-<!--b-->
 <div align="center">
   <a href="README.md">🇺🇸 English</a> |
   <a href="locales/README.de.md">🇩🇪 Deutsch</a> |
@@ -14,16 +13,15 @@
 <div style="text-align:center; margin:18px 0;">
   <img src="monitor/api/static/logo.png" alt="MyGPU logo"/>
 </div>
-<!--e-->
+
 > *MyGPU: Lightweight GPU Management Utility: a compact `nvidia-smi` wrapper with an elegant web dashboard.*
-<!-- b-->
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![Version](https://img.shields.io/badge/version-1.2.3-blue)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
 ![cuda 12.x](https://img.shields.io/badge/CUDA-12.x-0f9d58?logo=nvidia)
-<!--e-->
+
 ## Gallery
 
 <details>

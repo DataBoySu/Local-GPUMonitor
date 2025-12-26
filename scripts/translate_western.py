@@ -28,28 +28,33 @@ with open(README_PATH, "r", encoding="utf-8") as f:
     original_text = f.read()
 
 # --- PRE-PROCESSING ---
+# --- UNIVERSAL PRE-PROCESSING ---
 protected_blocks = []
 
 def protect_match(match):
-    placeholder = f"__PB_{len(protected_blocks)}__"
+    placeholder = f"[[PB_{len(protected_blocks)}]]"
     protected_blocks.append(match.group(0))
     return placeholder
 
 text_to_translate = original_text
-text_to_translate = re.sub(r'(<!--\s*b\s*-->.*?<!--\s*e\s*-->)', protect_match, text_to_translate, flags=re.DOTALL)
 
+# 1. Protect ALL Code Blocks (Triple Backticks)
+text_to_translate = re.sub(r'(```.*?```)', protect_match, text_to_translate, flags=re.DOTALL)
+
+# 2. Protect ALL HTML tags (e.g., <div...>, <img...>, <a...>)
+text_to_translate = re.sub(r'(<[^>]+>)', protect_match, text_to_translate)
+
+# 3. Protect ALL Markdown Images and Badges
+text_to_translate = re.sub(r'(!\[[^\]]*\]\([^\)]+\))', protect_match, text_to_translate)
+
+# --- REFINED AGNOSTIC PROMPT ---
 prompt = f"""<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>
-You are a professional technical {target_lang_name} translator.
-Your task is to translate the README into {target_lang_name}.
-Keep the markdown format and HTML tags the same.
-CRITICAL INSTRUCTIONS:
-1. **Placeholders**: Keep `__PB_0__`, `__PB_1__` etc. exactly as is. These are protected blocks.
-2. **Preserve HTML**: Do NOT translate or modify any HTML tags (lines starting with `<`). Output them exactly as they are in the source.
-3. **Preserve Images**: Do NOT translate or modify any Markdown images or badges (lines starting with `![`). Output them exactly as they are in the source.
-4. **Translation**: Translate only the text content (paragraphs, headers, lists) into {target_lang_name}.
-5. **Technical Terms**: Keep terms like GPU, CLI, VRAM, SSH, Docker, API, CUDA in English.
-6. **No Conversational Text**: Output only the final Markdown file content. No code fences.
-<|END_OF_TURN_TOKEN|>
+You are a professional technical translator. Translate the provided text into professional {target_lang_name}.
+RULES:
+1. **Technical Preservation**: Keep all product names and technical jargon in English.
+2. **System Tags**: Return any text like [[PB_X]] exactly as is. Do not translate or change brackets.
+3. **Accuracy**: Maintain 100% technical context.
+4. **No Talk**: Output ONLY the translated Markdown.<|END_OF_TURN_TOKEN|>
 <|START_OF_TURN_TOKEN|><|USER_TOKEN|>
 {text_to_translate}<|END_OF_TURN_TOKEN|>
 <|START_OF_TURN_TOKEN|><|CHATBOT_TOKEN|>"""
@@ -66,11 +71,6 @@ if translated_content.startswith("```"):
     if lines and lines[-1].strip().startswith("```"):
         lines = lines[:-1]
     translated_content = "\n".join(lines).strip()
-
-# Restore Protected Blocks
-for i, block in enumerate(protected_blocks):
-    placeholder = f"__PB_{i}__"
-    translated_content = translated_content.replace(placeholder, block)
 
 # 2. Path Correction
 # Prepend ../ to relative paths
