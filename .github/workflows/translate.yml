@@ -28,10 +28,11 @@ jobs:
           python-version: '3.10'
 
       - name: Cache Model Weights
+        id: cache-model
         uses: actions/cache@v4
         with:
           path: ./models
-          key: aya-expanse-8b-q4ks-v2
+          key: aya-expanse-8b-q4ks-v3
 
       - name: Install Dependencies
         run: |
@@ -39,6 +40,7 @@ jobs:
           mkdir -p models
 
       - name: Download Aya Expanse Translation Model
+        if: steps.cache-model.outputs.cache-hit != 'true'
         run: |
           # Downloading Aya Expanse 8B (Q4_K_S) for multilingual technical translation
           wget -O models/aya-expanse-8b-q4_k_s.gguf https://huggingface.co/matrixportalx/aya-expanse-8b-Q4_K_S-GGUF/resolve/main/aya-expanse-8b-q4_k_s.gguf
