@@ -38,7 +38,7 @@ llm = Llama(model_path=MODEL_PATH, n_ctx=6144, n_threads=2, verbose=False)
 with open(README_PATH, "r", encoding="utf-8") as f:
     text_to_translate = f.read()
 
-# Aya Expanse uses a specific header format for system/user/chatbot turns
+# Aya Expanse specific header format system/user/chatbot turns
 prompt = f"""<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>
 You are a professional technical translator specializing in software documentation (GitHub READMEs).
 Translate the provided README into professional developer-level {target_lang_name}.
