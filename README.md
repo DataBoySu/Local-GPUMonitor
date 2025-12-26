@@ -13,7 +13,7 @@
   <img src="monitor/api/static/logo.png" alt="MyGPU logo"/>
 </div>
 
-> *MyGPU: Lightweight GPU Management Utility: a compact `nvidia-smi` wrapper with a clean web dashboard.*
+> *MyGPU: Lightweight GPU Management Utility: a compact `nvidia-smi` wrapper with an elegant web dashboard.*
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
