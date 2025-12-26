@@ -32,12 +32,12 @@ text_to_translate = original_text
 # Specialized Prompt for CJK/Eastern Languages
 prompt = f"""<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>
 You are a professional technical {target_lang_name} translator.
-Task: Translate the README content into {target_lang_name} while preserving the exact layout, HTML, and badges.
+Task: Translate the README content into {target_lang_name}.
 
 STRICT RULES:
-1. **Navigation Bar**: The first block `<div align="center">...</div>` is IMMUTABLE. Copy it exactly. Do NOT translate "English", "Deutsch", etc.
+1. **Navigation Bar**: The first block `<div align="center">...</div>` is IMMUTABLE CODE. Copy it exactly. Do NOT translate the language names (e.g., keep "English", "Deutsch").
 2. **Logo**: The block `<div style="text-align:center...` is IMMUTABLE. Copy it exactly.
-3. **Badges**: Lines starting with `![` are IMMUTABLE CODE. Copy them character-for-character. Do NOT translate text inside `[...]` or `(...)`. Do NOT add spaces inside brackets.
+3. **Badges**: Lines starting with `![` are IMMUTABLE CODE. Copy them character-for-character. Do NOT translate text inside `[...]` or `(...)`. Do NOT add spaces inside the URL parentheses (Critical for Hindi).
 4. **Formatting**: Keep all HTML tags, markdown links, and emojis exactly as is.
 5. **Terminology**: Keep English technical terms (GPU, CLI, VRAM, Docker, CUDA) in English.
 6. **Context**: 
