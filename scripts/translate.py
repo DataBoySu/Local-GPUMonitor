@@ -46,6 +46,8 @@ def protect_match(match):
 
 text_to_translate = original_text
 
+# 0. Protect Explicit Blocks (<!-- b --> ... <!-- e -->)
+text_to_translate = re.sub(r'(<!--\s*b\s*-->.*?<!--\s*e\s*-->)', protect_match, text_to_translate, flags=re.DOTALL)
 # 1. Protect Navigation Bar (Robust regex for attributes and whitespace)
 text_to_translate = re.sub(r'(<div\s+[^>]*align=["\']center["\'][^>]*>.*?</div>)', protect_match, text_to_translate, flags=re.DOTALL | re.IGNORECASE)
 # 2. Protect Logo Block (Robust regex for style attribute)
