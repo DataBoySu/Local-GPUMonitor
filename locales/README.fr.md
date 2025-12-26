@@ -1,8 +1,8 @@
-# MyGPU: Outil de gestion de GPU léger
+# MyGPU : Outil de gestion de GPU léger
 
-*MyGPU : Un utilitaire de gestion de GPU léger, un wrapper compact pour `nvidia-smi` avec un tableau de bord web élégant.*
+*MyGPU est un utilitaire de gestion de GPU léger, un wrapper compact pour `nvidia-smi` avec un tableau de bord web élégant.*
 
-<!-- Ne pas traduire la section des badges.io, conserver comme elle est -->
+<!-- Ne pas traduire la section de badges suivante, la copier telle quelle -->
 ![Licence](https://img.shields.io/badge/licence-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![Version](https://img.shields.io/badge/version-1.2.3-blue)
@@ -14,7 +14,7 @@
 <details>
   <summary>Tableau de bord web</summary>
   <div style="display:flex; overflow-x:auto; gap:10px; padding:12px 0; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;">
-    <!-- Utiliser la première image pour le cadre de diaporama avec un rapport de 1624x675; les autres images s'ajustent automatiquement -->
+    <!-- Utiliser la première image pour le cadre de diaporama, respecter le rapport d'aspect 1624/675 et remplir avec `object-fit: contain` -->
     <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
       <img src="../monitor/api/static/web1.png" style="width:100%; height:100%; object-fit:contain;" />
     </div>
@@ -49,15 +49,14 @@
       <img src="../monitor/api/static/cli5.png" style="width:100%; height:100%; object-fit:contain;" />
     </div>
   </div>
-
 </details>
 
 ### Pourquoi utiliser MyGPU ?
 
-- **Légèreté** : Empreinte ressource minimale.
-- **Flexibilité** : Disponible en outil CLI ou tableau de bord web.
-- **Administration centrée** : Inclut des fonctionnalités telles que **l'enforcement de la mémoire VRAM** (arrêt automatique des processus dépassant les limites) et les **listes de surveillance**.
-- **Amical pour les développeurs** : Outils intégrés de test de stabilité et de stress (GEMM, physique des particules) pour valider la stabilité du système.
+- **Léger** : Empreinte ressource minimale.
+- **Polyvalent** : Exécutable en tant qu'outil CLI ou avec un tableau de bord web complet.
+- **Orienté administration** : Inclut des fonctionnalités telles que **l'enforcement de la mémoire VRAM** (arrêt automatique des processus dépassant les limites) et les **listes de surveillance**.
+- **Amical pour les développeurs** : Outils intégrés de test et de simulation (GEMM, physique des particules) pour valider la stabilité du système.
 
 ---
 
@@ -69,12 +68,12 @@
 
 - **Administration et application de règles** :
   - **Limites de VRAM** : Définir des limites strictes sur l'utilisation de la VRAM par GPU.
-  - **Arrêt automatique** : Arrêter automatiquement les processus qui violent les règles de VRAM (uniquement pour les administrateurs).
+  - **Arrêt automatique** : Arrêter automatiquement les processus qui violent les règles de VRAM (seul l'administrateur a accès).
   - **Listes de surveillance** : Surveiller des PIDs ou des noms de processus spécifiques.
 
 - **Benchmarking et simulation** :
-  - **Tests de stress** : Configurer des charges de travail GEMM pour tester la throttling thermique et la stabilité.
-  - **Simulation visuelle** : Simulation interactive de physique des particules pour visualiser la charge GPU.
+  - **Tests de stress** : Configurer des charges de travail GEMM pour tester la thermolage et la stabilité.
+  - **Simulation visuelle** : Simulation interactive de physique des particules pour visualiser la charge de travail du GPU.
 
 ---
 
@@ -82,18 +81,18 @@
 
 Les contributions sont les bienvenues ! Les points principaux à couvrir seraient :
 
-- **Support multi-GPU** : Gestion améliorée des configurations multi-cartes et des topologies NVLink.
+- **Prise en charge multi-GPU** : Gestion améliorée des configurations multi-cartes et des topologies NVLink.
 - **Conteneurisation** : Support officiel pour Docker pour un déploiement facile dans des environnements conteneurisés.
-- **Accès à distance** : Intégration du tunnel SSH et gestion à distance sécurisée.
-- **Compatibilité multiplateforme** :
-  - [ ] Support Ubuntu/Debian pour Linux.
-  - [ ] Support Apple Silicon pour la surveillance.
+- **Accès à distance** : Intégration du tunnel SSH et de la gestion à distance sécurisée.
+- **Prise en charge multiplateforme** :
+  - [ ] Prise en charge d'Ubuntu/Debian pour Linux.
+  - [ ] Prise en charge d'Apple Silicon pour la surveillance macOS.
 - **Indépendance matérielle** :
-  - [ ] Support AMD ROCm.
-  - [ ] Support Intel Arc.
+  - [ ] Prise en charge de ROCm d'AMD.
+  - [ ] Prise en charge d'Intel Arc.
 - ~~**Documentation multilingue** : Prise en charge des principales langues GitHub.~~
 
-Voir [CONTRIBUTING.md](../CONTRIBUTING.md) pour savoir comment contribuer.
+Consultez [CONTRIBUTING.md](../CONTRIBUTING.md) pour savoir comment contribuer.
 
 ---
 
@@ -103,13 +102,13 @@ Voir [CONTRIBUTING.md](../CONTRIBUTING.md) pour savoir comment contribuer.
 - **Python** : 3.10+
 - **Matériel** : GPU NVIDIA avec pilotes installés.
 - **CUDA** : Version 12.x (strictement requise pour les fonctionnalités de benchmarking/simulation).
-  - *Note : Si CUDA 12.x n'est pas détecté, les fonctionnalités de benchmarking seront désactivées.*
+  - *Remarque : Si CUDA 12.x n'est pas détecté, les fonctionnalités de benchmarking seront désactivées.*
 
 ---
 
 ## Installation
 
-L'outil offre plusieurs options d'installation pour répondre à vos besoins :
+L'outil offre plusieurs options d'installation :
 
 ### 1. Installation minimale (CLI uniquement)
 
@@ -123,7 +122,7 @@ Idéale pour les serveurs sans tête ou la surveillance en arrière-plan.
 Idéale pour la plupart des utilisateurs.
 
 - Inclut le tableau de bord web.
-- Endpoints API REST.
+- API REST.
 - Graphiques en temps réel.
 - Mais sans simulation ou benchmarking.
 

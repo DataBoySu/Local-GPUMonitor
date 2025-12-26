@@ -1,52 +1,54 @@
 # MyGPU: Ein leichtgewichtiges GPU-Verwaltungstool: Ein kompakter Wrapper für `nvidia-smi` mit einer eleganten Web-Dashboard-Schnittstelle
 
-> *MyGPU: Ein leichtgewichtiges GPU-Verwaltungstool: ein kompakter Wrapper für `nvidia-smi` mit einer eleganten Web-Dashboard-Schnittstelle.*
+*MyGPU ist ein leichtgewichtiges GPU-Verwaltungstool, das eine kompakte Verpackung von `nvidia-smi` mit einer ansprechenden Web-Dashboard-Schnittstelle bietet.*
+
+<!-- Badges bleiben unverändert -->
 
 ## Galerie
 
 <details>
   <summary>Web-Dashboard</summary>
-  <div style="display:flex; overflow-x:auto; gap:10px; padding:12px 0; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;">
-    <!-- Verwenden Sie das erste Bild mit einem Seitenverhältnis von 1624x675 für den Slide-Rahmen; die Bilder passen sich mit `object-fit: contain` innerhalb an -->
-    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
-      <img src="../monitor/api/static/web1.png" style="width:100%; height:100%; object-fit:contain;" />
+  <div style="display: flex; overflow-x: auto; gap: 10px; padding: 12px 0; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;">
+    <!-- Bilder werden mit einem Aspektverhältnis von 1624:675 angezeigt und passen sich innerhalb des Rahmens mit "object-fit: contain" an -->
+    <div style="flex: 0 0 100%; scroll-snap-align: center; aspect-ratio: 1624/675; display: flex; align-items: center; justify-content: center;">
+      <img src="../monitor/api/static/web1.png" style="width: 100%; height: 100%; object-fit: contain;" />
     </div>
-    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
-      <img src="../monitor/api/static/web2.png" style="width:100%; height:100%; object-fit:contain;" />
+    <div style="flex: 0 0 100%; scroll-snap-align: center; aspect-ratio: 1624/675; display: flex; align-items: center; justify-content: center;">
+      <img src="../monitor/api/static/web2.png" style="width: 100%; height: 100%; object-fit: contain;" />
     </div>
-    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
-      <img src="../monitor/api/static/web3.png" style="width:100%; height:100%; object-fit:contain;" />
+    <div style="flex: 0 0 100%; scroll-snap-align: center; aspect-ratio: 1624/675; display: flex; align-items: center; justify-content: center;">
+      <img src="../monitor/api/static/web3.png" style="width: 100%; height: 100%; object-fit: contain;" />
     </div>
-    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
-      <img src="../monitor/api/static/web4.png" style="width:100%; height:100%; object-fit:contain;" />
+    <div style="flex: 0 0 100%; scroll-snap-align: center; aspect-ratio: 1624/675; display: flex; align-items: center; justify-content: center;">
+      <img src="../monitor/api/static/web4.png" style="width: 100%; height: 100%; object-fit: contain;" />
     </div>
   </div>
 </details>
+
 <details>
   <summary>CLI</summary>
-  <div style="display:flex; overflow-x:auto; gap:10px; padding:12px 0; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;">
-    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
-      <img src="../monitor/api/static/cli1.png" style="width:100%; height:100%; object-fit:contain;" />
+  <div style="display: flex; overflow-x: auto; gap: 10px; padding: 12px 0; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;">
+    <div style="flex: 0 0 100%; scroll-snap-align: center; aspect-ratio: 1624/675; display: flex; align-items: center; justify-content: center;">
+      <img src="../monitor/api/static/cli1.png" style="width: 100%; height: 100%; object-fit: contain;" />
     </div>
-    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
-      <img src="../monitor/api/static/cli2.png" style="width:100%; height:100%; object-fit:contain;" />
+    <div style="flex: 0 0 100%; scroll-snap-align: center; aspect-ratio: 1624/675; display: flex; align-items: center; justify-content: center;">
+      <img src="../monitor/api/static/cli2.png" style="width: 100%; height: 100%; object-fit: contain;" />
     </div>
-    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
-      <img src="../monitor/api/static/cli3.png" style="width:100%; height:100%; object-fit:contain;" />
+    <div style="flex: 0 0 100%; scroll-snap-align: center; aspect-ratio: 1624/675; display: flex; align-items: center; justify-content: center;">
+      <img src="../monitor/api/static/cli3.png" style="width: 100%; height: 100%; object-fit: contain;" />
     </div>
-    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
-      <img src="../monitor/api/static/cli4.png" style="width:100%; height:100%; object-fit:contain;" />
+    <div style="flex: 0 0 100%; scroll-snap-align: center; aspect-ratio: 1624/675; display: flex; align-items: center; justify-content: center;">
+      <img src="../monitor/api/static/cli4.png" style="width: 100%; height: 100%; object-fit: contain;" />
     </div>
-    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
-      <img src="../monitor/api/static/cli5.png" style="width:100%; height:100%; object-fit:contain;" />
+    <div style="flex: 0 0 100%; scroll-snap-align: center; aspect-ratio: 1624/675; display: flex; align-items: center; justify-content: center;">
+      <img src="../monitor/api/static/cli5.png" style="width: 100%; height: 100%; object-fit: contain;" />
     </div>
-  </div>
-</details>
+  </details>
 
-## Warum dieses Tool?
+## Warum MyGPU?
 
 - **Leichtgewichtig**: Minimale Ressourcenbelastung.
-- **Flexibel**: Als CLI-Tool oder Web-Dashboard ausführbar.
+- **Flexibel**: Als CLI-Tool oder mit einer voll ausgestatteten Web-Dashboard-Schnittstelle verfügbar.
 - **Admin-zentriert**: Enthält Funktionen wie **VRAM-Enforcement** (Automatische Beendigung von Prozessen, die VRAM-Richtlinien verletzen) und **Watchlists**.
 - **Entwicklerfreundlich**: Integrierte Benchmarking- und Stresstest-Tools (GEMM, Teilchenphysik) zur Validierung der Systemstabilität.
 
@@ -54,28 +56,28 @@
 
 ## Funktionen
 
-- **Echtzeit-Überwachung**:
-  - Detaillierte GPU-Metriken (Nutzung, VRAM, Leistung, Temperatur).
+- **Echtzeitüberwachung**:
+  - Detaillierte GPU-Metriken (Auslastung, VRAM, Leistung, Temperatur).
   - Systemmetriken (CPU, RAM usw.).
 
 - **Admin- und Durchsetzungsfunktionen**:
-  - **VRAM-Grenzen**: Legen Sie harte Grenzen für die VRAM-Nutzung pro GPU fest.
+  - **VRAM-Limits**: Legen Sie harte Grenzen für die VRAM-Nutzung pro GPU fest.
   - **Automatische Beendigung**: Automatisch beenden Sie Prozesse, die VRAM-Richtlinien verletzen (nur für Administratoren).
-  - **Watchlists**: Überwachen Sie spezifische PIDs oder Prozessnamen.
+  - **Watchlists**: Überwachen Sie bestimmte PIDs oder Prozessnamen.
 
 - **Benchmarking und Simulation**:
-  - **Stresstest**: Konfigurierbare GEMM-Lasten (Thermalthrotting und Stabilitätstests).
-  - **Visuelle Simulation**: Interaktive 3D-Teilchenphysik-Simulation zur Visualisierung der GPU-Belastung.
+  - **Stresstest**: Konfigurierbare GEMM-Lasten für die Thermisch-Throttling- und Stabilitätstests.
+  - **Visuelle Simulation**: Interaktive 3D-Teilchenphysik-Simulation zur Visualisierung der GPU-Last.
 
 ---
 
 ## Roadmap und zukünftige Arbeiten
 
-Beiträge sind willkommen! Die Hauptpunkte, die in der Zukunft abgedeckt werden sollen, sind:
+Beiträge sind willkommen! Die wichtigsten zukünftigen Punkte umfassen:
 
-- **Multi-GPU-Unterstützung**: Verbesserte Handhabung für Multi-Card-Setups und NVLink-Topologien.
+- **Multi-GPU-Unterstützung**: Verbesserte Handhabung für Multi-Karten-Setups und NVLink-Topologien.
 - **Containerisierung**: Offizielle Docker-Unterstützung für eine einfache Bereitstellung in Containerumgebungen.
-- **Remote-Zugriff**: SSH-Tunnel-Integration und sicherer Remote-Management.
+- **Remote-Zugriff**: SSH-Tunnel-Integration und sichere Remote-Verwaltung.
 - **Plattformübergreifend**:
   - [ ] Linux-Unterstützung (Ubuntu/Debian-Fokus).
   - [ ] macOS-Unterstützung (Apple Silicon-Überwachung).
@@ -84,7 +86,7 @@ Beiträge sind willkommen! Die Hauptpunkte, die in der Zukunft abgedeckt werden 
   - [ ] Intel Arc-Unterstützung.
 - ~~**Mehrsprachige Dokumentation**: Unterstützung der beliebtesten GitHub-Sprachen.~~
 
-Siehe [CONTRIBUTING.md](../CONTRIBUTING.md) für Hinweise, wie Sie sich einbringen können.
+Siehe [CONTRIBUTING.md](../CONTRIBUTING.md), um herauszufinden, wie du dich einbringen kannst.
 
 ---
 
@@ -100,7 +102,7 @@ Siehe [CONTRIBUTING.md](../CONTRIBUTING.md) für Hinweise, wie Sie sich einbring
 
 ## Installation
 
-Das Tool unterstützt eine modulare Installation, um Ihren Bedürfnissen gerecht zu werden:
+Das Tool bietet eine modulare Installation, um Ihren Bedürfnissen gerecht zu werden:
 
 ### 1. Minimal (CLI nur)
 
@@ -113,28 +115,28 @@ Am besten für Headless-Server oder Hintergrundüberwachung geeignet.
 
 Am besten für die meisten Benutzer geeignet.
 
-- Enthält Web-Dashboard.
+- Enthält die Web-Dashboard-Schnittstelle.
 - REST-API-Endpunkte.
-- Echtzeit-Diagramme.
+- Echtzeitdiagramme.
 - Aber keine Simulation oder Benchmarking.
 
 ### 3. Vollständig (Standard + Visualisierung)
 
 Am besten für Entwicklung und Stresstest geeignet.
 
-- Enthält Simulation.
+- Enthält die Simulation.
 - Abhängigkeiten für PyTorch/CuPy für Benchmarking.
 
 ### Schnelle Startanleitung
 
-1. **Herunterladen** der neuesten Version oder Klonen des Repos.
-2. **Setup ausführen**:
+1. **Laden** Sie die neueste Version herunter oder klonen Sie das Repository.
+2. **Einrichten**:
 
-  ```powershell
-  .\setup.ps1
-  ```
+   ```powershell
+   .\setup.ps1
+   ```
 
-3. **Ausführen**:
+3. **Starten**:
 
 ```powershell
 # Starten Sie das Web-Dashboard (Standard/Vollständig)
