@@ -1,4 +1,6 @@
-# MyGPU — Ein leichtgewichtiges GPU-Verwaltungstool: Ein kompakter Wrapper für `nvidia-smi` mit einer sauberen Web-Dashboard-Schnittstelle
+# MyGPU: Ein leichtgewichtiges GPU-Verwaltungstool
+
+**MyGPU** ist ein kompaktes `nvidia-smi`-Wrapper mit einem sauberen Web-Dashboard.
 
 ![Lizenz](https://img.shields.io/badge/Lizenz-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
@@ -12,69 +14,67 @@
 
 <details>
   <summary>Web-Dashboard</summary>
-  <div style="display:flex; overflow-x:auto; gap:10px; padding:12px 0; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;">
-    <!-- Verwenden Sie das erste Bild mit einem Seitenverhältnis von 1624x675 für den Folienrahmen; die Bilder passen sich mit `object-fit: contain` innerhalb an -->
-    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
-      <img src="../monitor/api/static/web1.png" style="width:100%; height:100%; object-fit:contain;" />
+  <div style="display: flex; overflow-x: auto; gap: 10px; padding: 12px 0; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;">
+    <!-- Verwenden Sie das erste Bild mit einem Seitenverhältnis von 1624x675 für den Folienrahmen; Bilder passen sich mit object-fit: contain innerhalb an -->
+    <div style="flex: 0 0 100%; scroll-snap-align: center; aspect-ratio: 1624/675; display: flex; align-items: center; justify-content: center;">
+      <img src="../monitor/api/static/web1.png" style="width: 100%; height: 100%; object-fit: contain;" />
     </div>
-    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
-      <img src="../monitor/api/static/web2.png" style="width:100%; height:100%; object-fit:contain;" />
+    <div style="flex: 0 0 100%; scroll-snap-align: center; aspect-ratio: 1624/675; display: flex; align-items: center; justify-content: center;">
+      <img src="../monitor/api/static/web2.png" style="width: 100%; height: 100%; object-fit: contain;" />
     </div>
-    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
-      <img src="../monitor/api/static/web3.png" style="width:100%; height:100%; object-fit:contain;" />
+    <div style="flex: 0 0 100%; scroll-snap-align: center; aspect-ratio: 1624/675; display: flex; align-items: center; justify-content: center;">
+      <img src="../monitor/api/static/web3.png" style="width: 100%; height: 100%; object-fit: contain;" />
     </div>
-    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
-      <img src="../monitor/api/static/web4.png" style="width:100%; height:100%; object-fit:contain;" />
+    <div style="flex: 0 0 100%; scroll-snap-align: center; aspect-ratio: 1624/675; display: flex; align-items: center; justify-content: center;">
+      <img src="../monitor/api/static/web4.png" style="width: 100%; height: 100%; object-fit: contain;" />
     </div>
   </div>
 </details>
-
-### CLI
 
 <details>
   <summary>CLI</summary>
-  <div style="display:flex; overflow-x:auto; gap:10px; padding:12px 0; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;">
-    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
-      <img src="../monitor/api/static/cli1.png" style="width:100%; height:100%; object-fit:contain;" />
+  <div style="display: flex; overflow-x: auto; gap: 10px; padding: 12px 0; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;">
+    <div style="flex: 0 0 100%; scroll-snap-align: center; aspect-ratio: 1624/675; display: flex; align-items: center; justify-content: center;">
+      <img src="../monitor/api/static/cli1.png" style="width: 100%; height: 100%; object-fit: contain;" />
     </div>
-    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
-      <img src="../monitor/api/static/cli2.png" style="width:100%; height:100%; object-fit:contain;" />
+    <div style="flex: 0 0 100%; scroll-snap-align: center; aspect-ratio: 1624/675; display: flex; align-items: center; justify-content: center;">
+      <img src="../monitor/api/static/cli2.png" style="width: 100%; height: 100%; object-fit: contain;" />
     </div>
-    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
-      <img src="../monitor/api/static/cli3.png" style="width:100%; height:100%; object-fit:contain;" />
+    <div style="flex: 0 0 100%; scroll-snap-align: center; aspect-ratio: 1624/675; display: flex; align-items: center; justify-content: center;">
+      <img src="../monitor/api/static/cli3.png" style="width: 100%; height: 100%; object-fit: contain;" />
     </div>
-    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
-      <img src="../monitor/api/static/cli4.png" style="width:100%; height:100%; object-fit:contain;" />
+    <div style="flex: 0 0 100%; scroll-snap-align: center; aspect-ratio: 1624/675; display: flex; align-items: center; justify-content: center;">
+      <img src="../monitor/api/static/cli4.png" style="width: 100%; height: 100%; object-fit: contain;" />
     </div>
-    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
-      <img src="../monitor/api/static/cli5.png" style="width:100%; height:100%; object-fit:contain;" />
+    <div style="flex: 0 0 100%; scroll-snap-align: center; aspect-ratio: 1624/675; display: flex; align-items: center; justify-content: center;">
+      <img src="../monitor/api/static/cli5.png" style="width: 100%; height: 100%; object-fit: contain;" />
     </div>
   </div>
 </details>
 
-### Warum diese Nutzung?
+### Warum dies verwenden?
 
-- **Leichtgewichtig**: Minimaler Ressourcenbedarf.
+- **Leichtgewichtig**: Minimale Ressourcenbelastung.
 - **Flexibel**: Als CLI-Tool, Hintergrunddienst oder voll ausgestattetes Web-Dashboard ausführbar.
-- **admin-zentriert**: Enthält Funktionen wie **VRAM-Enforcement** (Automatische Beendigung von Prozessen, die Grenzwerte überschreiten) und **Watchlists**.
-- **entwicklerfreundlich**: Integrierte Benchmarking- und Stresstest-Tools (GEMM, Teilchenphysik) zur Validierung der Systemstabilität.
+- **admin-zentriert**: Enthält Funktionen wie **VRAM-Enforcement** (Automatische Beendigung von Prozessen, die VRAM-Richtlinien verletzen) und **Watchlists**.
+- **entwicklerfreundlich**: Integrierte Benchmarking- und Stresstestwerkzeuge (GEMM, Teilchenphysik) zur Validierung der Systemstabilität.
 
 ---
 
 ## Funktionen
 
-- **Echtzeit-Überwachung**:
+- **Echtzeitüberwachung**:
   - Detaillierte GPU-Metriken (Nutzung, VRAM, Leistung, Temperatur).
   - Systemmetriken (CPU, RAM usw.).
 
 - **Admin- und Durchsetzungsfunktionen**:
-  - **VRAM-Grenzen**: Legen Sie harte Grenzen für die VRAM-Nutzung pro GPU fest.
-  - **Automatische Beendigung**: Automatisch Prozesse beenden, die VRAM-Richtlinien verletzen (nur für Administratoren).
+  - **VRAM-Grenzen**: Legen Sie harte VRAM-Nutzungsgrenzen für jede GPU fest.
+  - **Automatische Beendigung**: Automatisch beenden Sie Prozesse, die VRAM-Richtlinien verletzen (nur für Administratoren).
   - **Watchlists**: Überwachen Sie bestimmte PIDs oder Prozessnamen.
 
 - **Benchmarking und Simulation**:
-  - **Stresstest**: Konfigurierbare GEMM-Lasten zur Tests der thermischen Throtting und Stabilität.
-  - **Visuelle Simulation**: Interaktive 3D-Teilchenphysik-Simulation zur Visualisierung der GPU-Last.
+  - **Stresstest**: Konfigurierbare GEMM-Lasten zum Testen der thermischen Throttling und Stabilität.
+  - **Visuelle Simulation**: Interaktive 3D-Teilchenphysiksimulation zur Visualisierung der GPU-Last.
 
 ---
 
@@ -92,7 +92,7 @@ Beiträge sind willkommen! Die Hauptpunkte, die in der Zukunft abgedeckt werden 
   - [ ] AMD ROCm-Unterstützung.
   - [ ] Intel Arc-Unterstützung.
 
-Siehe [CONTRIBUTING.md](../CONTRIBUTING.md) für Hinweise zum Einbringen.
+Siehe [CONTRIBUTING.md](../CONTRIBUTING.md), um herauszufinden, wie du dich einbringen kannst.
 
 ---
 
@@ -110,7 +110,7 @@ Siehe [CONTRIBUTING.md](../CONTRIBUTING.md) für Hinweise zum Einbringen.
 
 Das Tool unterstützt eine modulare Installation, um Ihren Bedürfnissen gerecht zu werden:
 
-### 1. Minimale Installation (CLI nur)
+### 1. Minimale Installation (nur CLI)
 
 Am besten für Headless-Server oder Hintergrundüberwachung geeignet.
 
@@ -123,16 +123,16 @@ Am besten für die meisten Benutzer geeignet.
 
 - Enthält Web-Dashboard.
 - REST-API-Endpunkte.
-- Echtzeit-Diagramme.
+- Echtzeitdiagramme.
 
 ### 3. Vollständige Installation (Standard + Visualisierung)
 
 Am besten für Entwicklung und Stresstest geeignet.
 
-- Enthält Teilchenphysik-Simulation.
+- Enthält Teilchenphysiksimulation.
 - Abhängigkeiten für PyTorch/CuPy-Benchmarking.
 
-### Schnelle Einrichtung
+### Schnelle Startanleitung
 
 1. **Laden** Sie die neueste Version herunter oder klonen Sie das Repository.
 2. **Einrichten**:
