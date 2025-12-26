@@ -48,7 +48,7 @@ jobs:
           wget -O models/aya-expanse-8b-q4_k_s.gguf https://huggingface.co/matrixportalx/aya-expanse-8b-Q4_K_S-GGUF/resolve/main/aya-expanse-8b-q4_k_s.gguf
 
       - name: Run Translation Script
-        run: python scripts/translate.py --lang ${{ matrix.lang }}
+        run: python scripts/translate_western.py --lang ${{ matrix.lang }}
 
       - name: Upload Translation Artifact
         uses: actions/upload-artifact@v4
@@ -120,7 +120,7 @@ jobs:
           wget -O models/aya-expanse-8b-q4_k_s.gguf https://huggingface.co/matrixportalx/aya-expanse-8b-Q4_K_S-GGUF/resolve/main/aya-expanse-8b-q4_k_s.gguf
       
       - name: Run Translation Script
-        run: python scripts/translate.py --lang ${{ matrix.lang }}
+        run: python scripts/translate_eastern.py --lang ${{ matrix.lang }}
 
       - name: Upload Translation Artifact
         uses: actions/upload-artifact@v4
