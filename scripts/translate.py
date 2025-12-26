@@ -12,6 +12,7 @@ LANG_MAP = {
     "ru": "Russian", 
     "pt": "Portuguese", 
     "ko": "Korean",
+    "hi": "Hindi",
 }
 
 parser = argparse.ArgumentParser()
@@ -36,32 +37,38 @@ with open(README_PATH, "r", encoding="utf-8") as f:
 # We replace complex blocks with placeholders so the LLM cannot mangle them.
 protected_blocks = []
 
+# Change this in your translate.py
 def protect_match(match):
-    placeholder = f"[PROTECTED_BLOCK_{len(protected_blocks)}]"
+    # Use something clearly non-linguistic
+    placeholder = f"[[PB_{len(protected_blocks)}]]" 
     protected_blocks.append(match.group(0))
     return placeholder
 
 text_to_translate = original_text
 
-# 1. Protect Navigation Bar (<div align="center">...</div>)
-text_to_translate = re.sub(r'(<div align="center">.*?</div>)', protect_match, text_to_translate, flags=re.DOTALL)
-# 2. Protect Logo Block (<div style="text-align:center...>)
-text_to_translate = re.sub(r'(<div style="text-align:center; margin:18px 0;">.*?</div>)', protect_match, text_to_translate, flags=re.DOTALL)
-# 3. Protect Badges (![...](https://img.shields.io/...)) - Prevents URL translation
-text_to_translate = re.sub(r'(!\[.*?\]\(https://img\.shields\.io/.*?\))', protect_match, text_to_translate)
+# 1. Protect Navigation Bar (Robust regex for attributes and whitespace)
+text_to_translate = re.sub(r'(<div\s+[^>]*align=["\']center["\'][^>]*>.*?</div>)', protect_match, text_to_translate, flags=re.DOTALL | re.IGNORECASE)
+# 2. Protect Logo Block (Robust regex for style attribute)
+text_to_translate = re.sub(r'(<div\s+[^>]*style=["\'][^"\']*text-align:\s*center[^"\']*["\'][^>]*>.*?</div>)', protect_match, text_to_translate, flags=re.DOTALL | re.IGNORECASE)
+# 3. Protect Badges (Robust regex for shields.io URLs)
+text_to_translate = re.sub(r'(!\[[^\]]*\]\(https?://img\.shields\.io/[^\)]+\))', protect_match, text_to_translate, flags=re.IGNORECASE)
 
 # Refined Prompt for CJK and Technical Nuance
 prompt = f"""<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>
-You are a professional technical translator. Translate this GitHub README into {target_lang_name}.
+You are a professional technical translator. Translate the provided README into professional developer-level {target_lang_name}.
 CRITICAL RULES:
-1. **Badges**: Do NOT translate text inside `![...]` or `(...)` for image badges.
-2. **Standard Terms**: Keep terms like GPU, VRAM, CLI, API, CUDA, and Docker in English.
-3. **Context**: 
+1. **Badges**: Do NOT translate Markdown image syntax. Specifically, do NOT translate text inside square brackets ![...] or parentheses (...) for badge lines (e.g., license, python).
+2. **Navigation**: Do NOT modify the top-level HTML navigation bar (`<div align="center">`).
+3. **Context**: Treat 'Enforcement' as 'System policy restriction' and 'Headless' as 'server without GUI'.
+4. **Technical Integrity**: Preserve industry-standard terms (GPU, CLI, VRAM, SSH, Docker, API, CUDA) exactly as they appear in English.
+5. **Formatting**: Preserve all emojis and HTML/Markdown tags exactly.
+6. **No Talk**: Output ONLY the translated text. Do not include markdown code fences (```) around the entire output.<|END_OF_TURN_TOKEN|> 
+7. **Context**: 
    - 'Enforcement' = Policy restriction/application (JA: 制限/強制, ZH: 强制执行).
    - 'Headless' = Servers without a display (JA: ヘッドレス, ZH: 无头).
    - 'Agnostic' = Independence (JA: 非依存, ZH: 无关性).
-4. **Placeholders**: Return any text like '[PROTECTED_BLOCK_X]' exactly as is.
-5. **Output**: ONLY the translation. No conversational filler.<|END_OF_TURN_TOKEN|>
+8. **System Tags**: Return any text in the format [[PB_X]] exactly as is. These are code identifiers, NOT text. Do NOT translate the word 'PB' or change the brackets.
+
 <|START_OF_TURN_TOKEN|><|USER_TOKEN|>
 {text_to_translate}<|END_OF_TURN_TOKEN|>
 <|START_OF_TURN_TOKEN|><|CHATBOT_TOKEN|>"""
@@ -73,13 +80,27 @@ translated_content = response['choices'][0]['text'].strip()
 
 # 1. Restore Protected Blocks
 for i, block in enumerate(protected_blocks):
-    translated_content = translated_content.replace(f"[PROTECTED_BLOCK_{i}]", block)
+    # This regex looks for common translations or variations of your placeholder
+    # It catches [[PB_0]], [[pb_0]], [ [PB_0] ], etc.
+    tag_pattern = rf"\[\s*\[\s*PB_{i}\s*\]\s*\]"
+    
+    # Check if the tag exists. If not, look for localized versions like [[BLOQUE_0]]
+    if not re.search(tag_pattern, translated_content):
+        # Fallback regex to find localized "Block" or "PB" followed by your index i
+        # Use [^\]]* to avoid greedily matching across multiple tags if they appear on one line
+        tag_pattern = rf"\[\s*\[\s*[^\]]*_{i}\s*\]\s*\]"
+    
+    # Use lambda to avoid backslash escaping issues if the block content contains them
+    translated_content = re.sub(tag_pattern, lambda m: block, translated_content)
 
 # 2. Path Correction (Support single and double quotes)
-translated_content = re.sub(r'(\[.*?\]\()(?!(?:http|/|#|\.\./|locales/))', r'\1../', translated_content)
-translated_content = re.sub(r'((?:src|href)=["\'])(?!(?:http|/|#|\.\./|locales/))', r'\1../', translated_content)
+# First, remove 'locales/' prefix if the LLM hallucinated it (so we can correctly prepend ../ later)
 translated_content = re.sub(r'(\[.*?\]\()locales/', r'\1', translated_content)
 translated_content = re.sub(r'((?:src|href)=["\'])locales/', r'\1', translated_content)
+
+# Then, prepend ../ to relative paths
+translated_content = re.sub(r'(\[.*?\]\()(?!(?:http|/|#|\.\./))', r'\1../', translated_content)
+translated_content = re.sub(r'((?:src|href)=["\'])(?!(?:http|/|#|\.\./))', r'\1../', translated_content)
 
 with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
     f.write(translated_content)
