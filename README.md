@@ -138,6 +138,7 @@ Best for most users.
 - Includes Web Dashboard.
 - REST API endpoints.
 - Real-time charts.
+- But no Simulation or benchmarking.
 
 ### 3. Full (Standard + Visualization)
 
