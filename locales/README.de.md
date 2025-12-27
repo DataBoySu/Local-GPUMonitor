@@ -23,7 +23,7 @@
 <details>
   <summary>Web-Dashboard</summary>
   <div style="display:flex; overflow-x:auto; gap:10px; padding:12px 0; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;">
-    <!-- Verwenden Sie das erste Bild mit einem Seitenverhältnis von 1624x675 für den Slide-Rahmen; Bilder passen sich mithilfe von `object-fit:contain` innerhalb an. -->
+    <!-- Verwenden Sie das erste Bild mit einem Seitenverhältnis von 1624x675 für den Folienrahmen; Bilder passen sich mithilfe von `object-fit:contain` automatisch an -->
     <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
       <img src="../monitor/api/static/web1.png" style="width:100%; height:100%; object-fit:contain;" />
     </div>
@@ -58,11 +58,11 @@
     </div>
   </details>
 
-## Warum diese Nutzung?
+## Warum dies verwenden?
 
 - **Leichtgewichtig**: Minimale Ressourcenbelastung.
-- **Flexibel**: Als CLI-Tool oder als vollständiges Web-Dashboard einsetzbar.
-- **Admin-zentriert**: Enthält Funktionen wie **VRAM-Enforcement** (Automatische Beendigung von Prozessen, die VRAM-Richtlinien verletzen) und **Watchlists**.
+- **Flexibel**: Als CLI-Tool oder als vollständige Web-Dashboard verfügbar.
+- **Admin-zentriert**: Enthält Funktionen wie **VRAM-Begrenzung** (Automatisches Beenden von Prozessen, die VRAM-Richtlinien verletzen) und **Watchlisten**.
 - **Entwicklerfreundlich**: Integrierte Benchmarking- und Stresstestwerkzeuge (GEMM, Teilchenphysik) zur Validierung der Systemstabilität.
 
 ---
@@ -73,28 +73,28 @@
   - Detaillierte GPU-Metriken (Auslastung, VRAM, Leistung, Temperatur).
   - Systemmetriken (CPU, RAM usw.).
 
-- **Admin- und Durchsetzungsfunktionen**:
-  - **VRAM-Grenzen**: Legen Sie harte Grenzen für die VRAM-Nutzung pro GPU fest.
-  - **Automatische Beendigung**: Automatisch beenden Sie Prozesse, die VRAM-Richtlinien verletzen (nur für Administratoren).
-  - **Watchlists**: Überwachen Sie bestimmte PIDs oder Prozessnamen.
+- **Admin & Durchsetzung**:
+  - **VRAM-Begrenzungen**: Legen Sie harte Grenzen für die VRAM-Nutzung pro GPU fest.
+  - **Automatisches Beenden**: Automatisch beenden Sie Prozesse, die VRAM-Richtlinien verletzen (nur für Administratoren).
+  - **Watchlisten**: Überwachen Sie bestimmte PIDs oder Prozessnamen.
 
-- **Benchmarking und Simulation**:
+- **Benchmarking & Simulation**:
   - **Stresstest**: Konfigurierbare GEMM-Lastarbeiten zur Tests der thermischen Throttling und Stabilität.
   - **Visuelle Simulation**: Interaktive 3D-Teilchenphysiksimulation zur Visualisierung der GPU-Belastung.
 
 ---
 
-## Roadmap & zukünftige Arbeiten
+## Roadmap & zukünftige Arbeit
 
-Beiträge sind willkommen! Die Hauptpunkte, die in Zukunft abgedeckt werden sollen, wären:
+Beiträge sind willkommen! Die Hauptpunkte, die in Zukunft abgedeckt werden sollten, wären:
 
 - **Multi-GPU-Unterstützung**: Verbesserte Handhabung für Multi-Karten-Einrichtungen und NVLink-Topologien.
 - **Containerisierung**: Offizielle Docker-Unterstützung für eine einfache Bereitstellung in Containerumgebungen.
-- **Remotezugriff**: SSH-Tunneling-Integration und sichere Remoteverwaltung.
+- **Remotezugriff**: SSH-Tunneling-Integration und sicherer Remote-Management.
 - **Plattformübergreifend**:
   - [ ] Linux-Unterstützung (Ubuntu/Debian-Fokus).
   - [ ] macOS-Unterstützung (Apple Silicon-Überwachung).
-- **Hardware-agnostisch**:
+- **Hardwareagnostisch**:
   - [ ] AMD ROCm-Unterstützung.
   - [ ] Intel Arc-Unterstützung.
 - ~~**Mehrsprachige Dokumentation**: Unterstützung der beliebtesten GitHub-Sprachen.~~
@@ -108,14 +108,14 @@ Siehe [CONTRIBUTING.md](../CONTRIBUTING.md), um herauszufinden, wie du dich einb
 - **OS**: Windows 10/11
 - **Python**: 3.10+
 - **Hardware**: NVIDIA-GPU mit installierten Treibern.
-- **CUDA**: Toolkit 12.x (Streng erforderlich für Benchmarking-/Simulationsfunktionen).
-  - *Hinweis: Wenn CUDA 12.x nicht erkannt wird, werden GPU-spezifische Benchmarkingfunktionen deaktiviert.*
+- **CUDA**: Toolkit 12.x (Streng erforderlich für Benchmarking-/Simulation-Funktionen).
+  - *Hinweis: Wenn CUDA 12.x nicht erkannt wird, werden GPU-spezifische Benchmarking-Funktionen deaktiviert.*
 
 ---
 
 ## Installation
 
-Das Tool unterstützt modulare Installationen, um Ihren Bedürfnissen gerecht zu werden:
+Das Tool unterstützt eine modulare Installation, um Ihren Bedürfnissen gerecht zu werden:
 
 ### 1. Minimal (CLI nur)
 
@@ -138,18 +138,18 @@ Am besten für die meisten Benutzer geeignet.
 Am besten für Entwicklung und Stresstest geeignet.
 
 - Enthält Simulation.
-- Abhängigkeiten für PyTorch/CuPy für Benchmarking.
+- Abhängigkeiten für PyTorch/CuPy für das Benchmarking.
 
 ### Schnelle Startanleitung
 
 1. **Laden** Sie die neueste Version herunter oder klonen Sie das Repository.
-2. **Einrichten**:
+2. **Führen Sie Setup aus**:
 
   ```powershell
   .\setup.ps1
   ```
 
-3. **Starten**:
+3. **Starten** Sie:
 
 ```powershell
 # Starten Sie das Web-Dashboard (Standard/Vollständig)
