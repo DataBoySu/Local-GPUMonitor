@@ -1,0 +1,179 @@
+<!-- HTML_BLOCK:1... -->
+
+<div align="center">
+  <a href="../README.md">🇺🇸 English</a> |
+  <a href="../locales/README.de.md">🇩🇪 Deutsch</a> |
+  <a href="../locales/README.ru.md">🇷🇺 Русский</a> |
+  <a href="../locales/README.fr.md">🇫🇷 Français</a> |
+  <a href="../locales/README.es.md">🇪🇸 Español</a> |
+  <a href="../locales/README.ja.md">🇯🇵 日本語</a> |
+  <a href="../locales/README.zh.md">🇨🇳 中文</a> |
+  <a href="../locales/README.pt.md">🇵🇹 Português</a> |
+  <a href="../locales/README.ko.md">🇰🇷 한국어</a> |
+  <a href="../locales/README.hi.md">🇮🇳 हिंदी</a>
+</div>
+
+<!-- HTML_BLOCK:2... -->
+
+<div style="text-align:center; margin:18px 0;">
+  <img src="../monitor/api/static/logo.png" alt="MyGPU logo"/>
+</div>
+
+<!-- HTML_BLOCK:... -->
+
+> *MyGPU: Lightweight GPU Management Utility: a compact `nvidia-smi` wrapper with an elegant web dashboard.*
+<!-- HTML_BLOCK: no change to url; output entire as it is... -->
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![Version](https://img.shields.io/badge/version-1.2.3-blue)
+![Platform](https://img.shields.io/badge/platform-Windows10/11-lightgrey)
+![cuda 12.x](https://img.shields.io/badge/CUDA-12.x-0f9d58?logo=nvidia)
+
+## Galeria
+
+<details>
+
+  <summary>
+    Dashboard Web
+  </summary>
+
+  <div style="display:flex; overflow-x:auto; gap:10px; padding:12px 0; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;">
+    <!-- Utilize a primeira imagem com proporção 1624x675 como quadro da apresentação; as imagens se ajustam usando object-fit:contain -->
+    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
+      <img src="../monitor/api/static/web1.png" style="width:100%; height:100%; object-fit:contain;" />
+    </div>
+    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
+      <img src="../monitor/api/static/web2.png" style="width:100%; height:100%; object-fit:contain;" />
+    </div>
+    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
+      <img src="../monitor/api/static/web3.png" style="width:100%; height:100%; object-fit:contain;" />
+    </div>
+    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
+      <img src="../monitor/api/static/web4.png" style="width:100%; height:100%; object-fit:contain;" />
+    </div>
+  </div>
+
+</details>
+
+<details>
+  <summary>CLI</summary>
+  <div style="display:flex; overflow-x:auto; gap:10px; padding:12px 0; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;">
+
+  <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
+      <img src="../monitor/api/static/cli1.png" style="width:100%; height:100%; object-fit:contain;" />
+  </div>
+  <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
+      <img src="../monitor/api/static/cli2.png" style="width:100%; height:100%; object-fit:contain;" />
+    </div>
+    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
+      <img src="../monitor/api/static/cli3.png" style="width:100%; height:100%; object-fit:contain;" />
+    </div>
+    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
+      <img src="../monitor/api/static/cli4.png" style="width:100%; height:100%; object-fit:contain;" />
+    </div>
+    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
+      <img src="../monitor/api/static/cli5.png" style="width:100%; height:100%; object-fit:contain;" />
+    </div>
+</details>
+
+### Por que usá-lo?
+
+- **Leve**: Consumo mínimo de recursos.
+- **Flexível**: Funciona como uma ferramenta de linha de comando (CLI) ou como um painel web completo.
+- **Focado no administrador**: Inclui recursos como **aplicação de políticas de VRAM** (desligar processos que excedam limites automaticamente) e **listas de observação**.
+- **Amigável para desenvolvedores**: Ferramentas de benchmarking e teste de estresse embutidas (GEMM, Física de Partículas) para validar a estabilidade do sistema.
+
+## Recursos
+
+- **Monitoramento em Tempo Real**:
+  - Métricas detalhadas de GPU (Utilização, VRAM, Potência, Temperatura).
+  - Métricas do sistema (CPU, RAM, etc.).
+
+- **Administração e Aplicação de Políticas**:
+  - **Limites de VRAM**: Defina limites rígidos no uso de VRAM por GPU.
+  - **Terminação Automática**: Termine automaticamente processos que violem as políticas de VRAM (apenas administrador).
+  - **Listas de Observação**: Monitore PIDs específicos ou nomes de processos.
+
+- **Benchmarking e Simulação**:
+  - **Testes de Estresse**: Carga de trabalho configurável GEMM para testar o throttling térmico e a estabilidade.
+  - **Simulação Visual**: Simulação interativa de física de partículas 3D para visualizar a carga na GPU.
+
+## Roadmap & Trabalhos Futuros
+
+Contribuições são bem-vindas! Os principais pontos futuros a serem abordados incluem:
+
+- **Suporte Multi-GPU**: Melhoria no manuseio de configurações multi-cartão e topologias NVLink.
+- **Containerização**: Suporte oficial para Docker para implantação fácil em ambientes containerizados.
+- **Acesso Remoto**: Integração de túnel SSH e gerenciamento remoto seguro.
+- **Cross-Platform**:
+
+  - [ ] Suporte a Linux (foco em Ubuntu/Debian).
+  - [ ] Suporte a macOS (monitoramento de Apple Silicon).
+
+- **Agnóstico de Hardware**:
+
+  - [ ] Suporte a AMD ROCm.
+  - [ ] Suporte a Intel Arc.
+
+- **Documentação Multi-Linguagem**: (Removido)
+
+Consulte o [CONTRIBUTING.md](../CONTRIBUTING.md) para saber como participar.
+
+## Requisitos
+
+- **Sistema Operacional**: Windows 10/11
+- **Python**: 3.10+
+- **Hardware**: Placa de vídeo NVIDIA com drivers instalados.
+- **CUDA**: Toolkit 12.x (Estritamente necessário para recursos de Benchmarking/Simulação).
+  - *Observação: Se o CUDA 12.x não for detectado, as funcionalidades de benchmarking específicas para GPU serão desativadas.*
+
+## Instalação
+
+A ferramenta suporta instalação modular para atender às suas necessidades:
+
+### 1. Mínimo (Interface de Linha de Comando Apenas)
+
+Ideal para servidores sem interface gráfica ou monitoramento em segundo plano.
+
+- Interface de linha de comando.
+- Métricas básicas de sistema/GPU.
+
+### 2. Padrão (CLI + Interface Web)
+
+O ideal para a maioria dos usuários.
+
+- Inclui Dashboard Web.
+- Pontos de extremidade de API REST.
+- Gráficos em tempo real.
+- Sem Simulação ou benchmarking.
+
+### 3. Completa (Padrão + Visualização)
+
+Ideal para desenvolvimento e testes de estresse.
+
+- Inclui Simulação.
+- Dependências PyTorch/CuPy para benchmarking.
+
+### Início Rápido
+
+1. **Baixe** a última versão ou clone o repositório.
+2. **Execute a Configuração**:
+
+```powershell
+  .\setup.ps1
+  ```
+
+3. **Inicialização**:
+
+```powershell
+# Inicie o dashboard web (Padrão/Completo)
+python health_monitor.py web
+
+# Inicie o CLI
+python health_monitor.py cli
+```
+
+## Licença
+
+**Licença MIT. Veja o arquivo [LICENSE](../LICENSE) para detalhes.**
+
