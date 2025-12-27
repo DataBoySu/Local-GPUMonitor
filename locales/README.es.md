@@ -2,6 +2,7 @@
 <div align="center">
   <a href="../README.md">🇺🇸 Inglés</a> |
   <a href="../locales/README.de.md">🇩🇪 Alemán</a> |
+  <a href="../locales/README.ru.md">🇷🇺 Ruso</a> |
   <a href="../locales/README.fr.md">🇫🇷 Francés</a> |
   <a href="../locales/README.es.md">🇪🇸 Español</a> |
   <a href="../locales/README.ja.md">🇯🇵 Japonés</a> |
@@ -18,6 +19,13 @@
 
 > *MyGPU: Utilidad de gestión de GPU ligera: un envoltorio compacto de `nvidia-smi` con un elegante tablero web.*
 
+<!-- HTML_BLOCK: no change to url; output entire as it is... -->
+![Licencia](https://img.shields.io/badge/licencia-MIT-blue.svg)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![Versión](https://img.shields.io/badge/versión-1.2.3-blue)
+![Plataforma](https://img.shields.io/badge/plataforma-Windows-lightgrey)
+![cuda 12.x](https://img.shields.io/badge/CUDA-12.x-0f9d58?logo=nvidia)
+
 ## Galería
 
 <details>
@@ -27,7 +35,7 @@
   </summary>
 
   <div style="display:flex; overflow-x:auto; gap:10px; padding:12px 0; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;">
-    <!-- Utilizar la primera imagen con relación de aspecto 1624x675 para el marco de diapositivas; las imágenes se ajustan automáticamente usando object-fit:contain -->
+    <!-- Utilizar la relación de aspecto 1624x675 para el marco de la diapositiva; las imágenes se ajustan automáticamente con object-fit:contain -->
     <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
       <img src="../monitor/api/static/web1.png" style="width:100%; height:100%; object-fit:contain;" />
     </div>
@@ -66,10 +74,10 @@
 
 ### ¿Por qué usar esto?
 
-- **Ligero**: Pie de recursos mínimo.
-- **Flexible**: Funciona como una herramienta CLI o un tablero web completo.
-- **Administrativo-centrado**: Incluye características como **límites de VRAM** (auto-terminación de procesos que superen los límites) y **listas de vigilancia**.
-- **Amigable con el desarrollador**: Herramientas integradas de prueba y estrés (GEMM, física de partículas) para validar la estabilidad del sistema.
+- **Ligero**: Bajo consumo de recursos.
+- **Versátil**: Funciona como herramienta de línea de comandos, o como un completo tablero web.
+- **Orientado a la administración**: Incluye características como **límites de VRAM** (cierre automático de procesos que excedan los límites) y **listas de vigilancia**.
+- **Amigable con el desarrollador**: Incorporado en herramientas de prueba y simulación (GEMM, física de partículas) para validar la estabilidad del sistema.
 
 ---
 
@@ -81,12 +89,12 @@
 
 - **Administración y aplicación de políticas**:
   - **Límites de VRAM**: Establecer límites duros de uso de VRAM por GPU.
-  - **Terminación automática**: Terminar automáticamente los procesos que violen las políticas de VRAM (solo para administradores).
+  - **Cierre automático**: Automatizar el cierre de procesos que violen las políticas de VRAM (solo para administradores).
   - **Listas de vigilancia**: Monitorear PIDs o nombres de procesos específicos.
 
 - **Pruebas y simulación**:
-  - **Pruebas de estrés**: Configurar cargas de trabajo GEMM para probar el throtting térmico y la estabilidad.
-  - **Simulación visual**: Simulación interactiva de física de partículas para visualizar la carga de trabajo de la GPU.
+  - **Pruebas de estrés**: Configurar cargas de trabajo GEMM para probar el rendimiento térmico y la estabilidad.
+  - **Simulación visual**: Simulación interactiva de física de partículas para visualizar la carga de GPU.
 
 ---
 
@@ -94,16 +102,16 @@
 
 Las contribuciones son bienvenidas. Los puntos principales a cubrir serían:
 
-- **Soporte multi-GPU**: Manejo mejorado para configuraciones multi-tarjeta y topologías NVLink.
-- **Contenedorización**: Soporte oficial de Docker para un despliegue fácil en entornos contenedorizados.
+- **Soporte multi-GPU**: Mejorar el manejo de configuraciones multi-tarjeta y topologías NVLink.
+- **Contenedorización**: Soporte oficial para Docker para una fácil implementación en entornos contenedorizados.
 - **Acceso remoto**: Integración de túneles SSH y gestión remota segura.
 - **Plataforma cruzada**:
   - [ ] Soporte para Ubuntu/Debian (foco en Linux).
-  - [ ] Soporte para Apple Silicon (monitoreo de temperatura).
-- **Hardware Agnóstico**:
+  - [ ] Soporte para Apple Silicon (monitoreo).
+- **Independencia de hardware**:
   - [ ] Soporte para AMD ROCm.
   - [ ] Soporte para Intel Arc.
-- ~~**Documentación multilingüe**: Apoyo a los lenguajes más populares de GitHub.~~
+- ~~**Documentación multilingüe**: Apoyar los lenguajes de documentación más populares de GitHub.~~
 
 Consulte [CONTRIBUTING.md](../CONTRIBUTING.md) para saber cómo involucrarse.
 
@@ -114,7 +122,7 @@ Consulte [CONTRIBUTING.md](../CONTRIBUTING.md) para saber cómo involucrarse.
 - **OS**: Windows 10/11
 - **Python**: 3.10+
 - **Hardware**: GPU NVIDIA con controladores instalados.
-- **CUDA**: Versión 12.x (requerida estrictamente para las características de benchmarking/simulación).
+- **CUDA**: Versión 12.x (Requerida estrictamente para las características de benchmarking/simulación).
   - *Nota: Si CUDA 12.x no se detecta, las características de benchmarking se desactivarán.*
 
 ---
@@ -128,7 +136,7 @@ La herramienta admite una instalación modular para adaptarse a sus necesidades:
 Ideal para servidores sin cabeza o monitoreo en segundo plano.
 
 - Interfaz de línea de comandos.
-- Métricas básicas del sistema y la GPU.
+- Métricas básicas del sistema y GPU.
 
 ### 2. Estándar (CLI + Tablero web)
 
@@ -143,7 +151,7 @@ Ideal para la mayoría de los usuarios.
 
 Ideal para el desarrollo y las pruebas de estrés.
 
-- Incluye la simulación.
+- Incluye simulación.
 - Dependencias de PyTorch/CuPy para benchmarking.
 
 ### Inicio rápido

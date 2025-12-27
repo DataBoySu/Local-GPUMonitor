@@ -2,6 +2,7 @@
 <div align="center">
   <a href="../README.md">🇺🇸 English</a> |
   <a href="../locales/README.de.md">🇩🇪 Deutsch</a> |
+  <a href="../locales/README.ru.md">🇷🇺 Русский</a> |
   <a href="../locales/README.fr.md">🇫🇷 Français</a> |
   <a href="../locales/README.es.md">🇪🇸 Español</a> |
   <a href="../locales/README.ja.md">🇯🇵 日本語</a> |
@@ -16,7 +17,7 @@
 </div>
 <!-- HTML_BLOCK:... -->
 
-> *MyGPU: Ein leichtgewichtiges GPU-Verwaltungstool: Ein kompakter Wrapper für `nvidia-smi` mit einer eleganten Web-Dashboard-Schnittstelle.*
+> *MyGPU: Ein leichtgewichtiges GPU-Verwaltungstool: ein kompakter `nvidia-smi`-Wrapper mit einer eleganten Web-Dashboard-Schnittstelle.*
 
 ## Galerie
 
@@ -67,30 +68,30 @@
 ### Warum diese Nutzung?
 
 - **Leichtgewichtig**: Minimale Ressourcenbelastung.
-- **Flexibel**: Als CLI-Tool oder als Web-Dashboard verfügbar.
+- **Flexibel**: Als CLI-Tool, oder als vollständige Web-Dashboard-Schnittstelle verfügbar.
 - **Admin-zentriert**: Enthält Funktionen wie **VRAM-Enforcement** (Automatische Beendigung von Prozessen, die VRAM-Richtlinien verletzen) und **Watchlists**.
 - **Entwicklerfreundlich**: Integrierte Benchmarking- und Stresstest-Tools (GEMM, Teilchenphysik) zur Validierung der Systemstabilität.
 
 ---
 
-### Funktionen
+### Warum MyGPU?
 
 - **Echtzeit-Überwachung**:
   - Detaillierte GPU-Metriken (Nutzung, VRAM, Temperatur).
-  - Systemmetriken (CPU, RAM usw.).
+  - Systemmetriken (CPU, RAM, usw.).
 
 - **Admin- und Durchsetzungsfunktionen**:
-  - **VRAM-Limits**: Legen Sie harte VRAM-Nutzungsgrenzen für jede GPU fest.
+  - **VRAM-Limits**: Legen Sie harte Grenzen für die VRAM-Nutzung pro GPU fest.
   - **Automatische Beendigung**: Automatisch beenden Sie Prozesse, die VRAM-Richtlinien verletzen (nur für Administratoren).
-  - **Watchlists**: Überwachen Sie bestimmte PIDs oder Prozessnamen.
+  - **Watchlists**: Überwachen Sie spezifische PIDs oder Prozessnamen.
 
 - **Benchmarking & Simulation**:
-  - **Stresstest**: Konfigurierbare GEMM-Lasten zur Tests der thermischen Throttling und Stabilität.
+  - **Stresstest**: Konfigurierbare GEMM-Lasten zum Testen der thermischen Throttling und Stabilität.
   - **Visuelle Simulation**: Interaktive 3D-Teilchenphysik-Simulation zur Visualisierung der GPU-Last.
 
 ---
 
-### Roadmap & zukünftige Arbeit
+## Roadmap & zukünftige Arbeiten
 
 Beiträge sind willkommen! Die Hauptpunkte, die in der Zukunft abgedeckt werden sollen, sind:
 
@@ -109,7 +110,7 @@ Siehe [CONTRIBUTING.md](../CONTRIBUTING.md), um herauszufinden, wie du dich einb
 
 ---
 
-### Anforderungen
+## Anforderungen
 
 - **OS**: Windows 10/11
 - **Python**: 3.10+
@@ -119,18 +120,18 @@ Siehe [CONTRIBUTING.md](../CONTRIBUTING.md), um herauszufinden, wie du dich einb
 
 ---
 
-### Installation
+## Installation
 
 Das Tool unterstützt eine modulare Installation, um Ihren Bedürfnissen gerecht zu werden:
 
-### 1. Minimal (CLI nur)
+### 1. Minimale Installation (nur CLI)
 
 Am besten für Headless-Server oder Hintergrundüberwachung geeignet.
 
 - Befehlszeileninterface.
 - Grundlegende System-/GPU-Metriken.
 
-### 2. Standard (CLI + Web-UI)
+### 2. Standardinstallation (CLI + Web-UI)
 
 Am besten für die meisten Benutzer geeignet.
 
@@ -139,7 +140,7 @@ Am besten für die meisten Benutzer geeignet.
 - Echtzeit-Diagramme.
 - Aber keine Simulation oder Benchmarking.
 
-### 3. Vollständig (Standard + Visualisierung)
+### 3. Vollständige Installation (Standard + Visualisierung)
 
 Am besten für Entwicklung und Stresstest geeignet.
 
@@ -164,3 +165,9 @@ python health_monitor.py web
 # Starten Sie die CLI
 python health_monitor.py cli
 ```
+
+---
+
+## Lizenz
+
+MIT-Lizenz. Siehe [LICENSE](../LICENSE) für Details.

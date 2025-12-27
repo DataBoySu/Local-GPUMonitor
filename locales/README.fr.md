@@ -2,6 +2,7 @@
 <div align="center">
   <a href="../README.md">🇺🇸 Anglais</a> |
   <a href="../locales/README.de.md">🇩🇪 Allemand</a> |
+  <a href="../locales/README.ru.md">🇷🇺 Russe</a> |
   <a href="../locales/README.fr.md">🇫🇷 Français</a> |
   <a href="../locales/README.es.md">🇪🇸 Espagnol</a> |
   <a href="../locales/README.ja.md">🇯🇵 Japonais</a> |
@@ -34,7 +35,7 @@
   </summary>
 
   <div style="display:flex; overflow-x:auto; gap:10px; padding:12px 0; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;">
-    <!-- Utilisez le rapport d'aspect 1624/675 pour la première image afin de créer un cadre de diaporama; les images s'ajustent automatiquement avec object-fit:contain -->
+    <!-- Utilisez le rapport d'aspect 1624/675 pour la première image afin de créer un cadre de diapositive; les images s'ajustent automatiquement avec `object-fit:contain` -->
     <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
       <img src="../monitor/api/static/web1.png" style="width:100%; height:100%; object-fit:contain;" />
     </div>
@@ -73,22 +74,22 @@
 
 ### Pourquoi l'utiliser ?
 
-- **Légèreté** : empreinte ressource minimale.
-- **Flexibilité** : disponible en version CLI, ou avec un tableau de bord web complet.
-- **Administration centrée** : inclut des fonctionnalités comme **l'enforcement de la VRAM** (arrêt automatique des processus dépassant les limites) et les **listes de surveillance**.
-- **Amical pour les développeurs** : intégration de tests de stabilité et de simulation physique (GEMM, physique des particules) pour valider la stabilité du système.
+- **Léger** : empreinte ressource minimale.
+- **Polyvalent** : disponible en version CLI, ou avec un tableau de bord web complet.
+- **Administratif** : inclut des fonctionnalités comme **la limitation de VRAM** (arrêt automatique des processus dépassant les limites) et les **listes de surveillance**.
+- **Amical pour le développeur** : intégration de tests de performance et de simulation physique (GEMM, physique des particules) pour valider la stabilité du système.
 
 ---
 
 ## Fonctionnalités
 
 - **Surveillance en temps réel** :
-  - Métriques détaillées sur les GPU (Utilisation, VRAM, Puissance, Température).
+  - Métriques détaillées sur les GPU (Utilisation, VRAM, Température).
   - Métriques système (CPU, RAM, etc.).
 
 - **Administration et application de règles** :
   - **Limites de VRAM** : définissez des limites de VRAM par GPU.
-  - **Arrêt automatique** : arrêtez automatiquement les processus qui violent les règles de VRAM (administrateur uniquement).
+  - **Arrêt automatique** : arrêtez automatiquement les processus qui violent les règles de politique VRAM (administrateur uniquement).
   - **Listes de surveillance** : surveillez des PIDs ou des noms de processus spécifiques.
 
 - **Tests et simulation** :
@@ -97,22 +98,22 @@
 
 ---
 
-## Roadmap et travail futur
+## Roadmap et travaux futurs
 
 Les contributions sont les bienvenues ! Les points principaux à couvrir seraient :
 
-- **Support multi-GPU** : gestion améliorée des configurations multi-cartes et des topologies NVLink.
-- **Conteneurisation** : support officiel pour Docker afin de faciliter le déploiement dans des environnements conteneurisés.
+- **Prise en charge multi-GPU** : gestion améliorée des configurations multi-cartes et des topologies NVLink.
+- **Conteneurisation** : prise en charge officielle de Docker pour un déploiement facile dans des environnements conteneurisés.
 - **Accès à distance** : intégration du tunnel SSH et de la gestion à distance sécurisée.
-- **Compatibilité multi-plateforme** :
-  - [ ] Support Ubuntu/Debian pour Linux.
-  - [ ] Support Apple Silicon pour la surveillance de la température.
-- **Support matériel agnostique** :
-  - [ ] Support AMD ROCm.
-  - [ ] Support Intel Arc.
-- ~~**Documentation multi-langues** : prise en charge des langues les plus populaires sur GitHub.~~
+- **Prise en charge multiplateforme** :
+  - [ ] Linux (focalisation sur Ubuntu/Debian).
+  - [ ] macOS (surveillance de la thermolage Apple Silicon).
+- **Indépendance matérielle** :
+  - [ ] Prise en charge d'AMD ROCm.
+  - [ ] Prise en charge d'Intel Arc.
+- ~~**Documentation multilingue** : prise en charge des langues les plus populaires sur GitHub.~~
 
-Consultez [CONTRIBUTING.md](../CONTRIBUTING.md) pour savoir comment contribuer.
+Consultez [CONTRIBUTING.md](../CONTRIBUTING.md) pour savoir comment participer.
 
 ---
 
@@ -122,7 +123,7 @@ Consultez [CONTRIBUTING.md](../CONTRIBUTING.md) pour savoir comment contribuer.
 - **Python** : 3.10+
 - **Matériel** : GPU NVIDIA avec pilotes installés.
 - **CUDA** : Version 12.x (strictement requise pour les tests de performance/simulation).
-  - *Remarque : Si CUDA 12.x n'est pas détecté, les fonctionnalités de test et de simulation seront désactivées.*
+  - *Note : Si CUDA 12.x n'est pas détecté, les fonctionnalités de test et de simulation seront désactivées.*
 
 ---
 
@@ -135,14 +136,14 @@ L'outil offre plusieurs options d'installation :
 Idéale pour les serveurs sans tête ou la surveillance en arrière-plan.
 
 - Interface en ligne de commande.
-- Surveillance et métriques système/GPU de base.
+- Surveillance de base du système et des GPU.
 
 ### 2. Installation standard (CLI + Tableau de bord web)
 
 Idéale pour la plupart des utilisateurs.
 
 - Inclut le tableau de bord web.
-- API REST.
+- Endpoints API REST.
 - Graphiques en temps réel.
 - Mais sans simulation ni tests de performance.
 
@@ -156,7 +157,7 @@ Idéale pour le développement et les tests de performance.
 ### Démarrage rapide
 
 1. **Téléchargez** la dernière version ou clonez le dépôt.
-2. **Configuration** :
+2. **Installation** :
 
   ```powershell
   .\setup.ps1

@@ -2,6 +2,7 @@
 <div align="center">
   <a href="../README.md">🇺🇸 English</a> |
   <a href="../locales/README.de.md">🇩🇪 Deutsch</a> |
+  <a href="../locales/README.ru.md">🇷🇺 Русский</a> |
   <a href="../locales/README.fr.md">🇫🇷 Français</a> |
   <a href="../locales/README.es.md">🇪🇸 Español</a> |
   <a href="../locales/README.ja.md">🇯🇵 日本語</a> |
@@ -46,11 +47,10 @@
 <details>
   <summary>CLI</summary>
   <div style="display:flex; overflow-x:auto; gap:10px; padding:12px 0; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;">
-
-  <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
+    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
       <img src="../monitor/api/static/cli1.png" style="width:100%; height:100%; object-fit:contain;" />
-  </div>
-  <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
+    </div>
+    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
       <img src="../monitor/api/static/cli2.png" style="width:100%; height:100%; object-fit:contain;" />
     </div>
     <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
@@ -62,14 +62,15 @@
     <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
       <img src="../monitor/api/static/cli5.png" style="width:100%; height:100%; object-fit:contain;" />
     </div>
+  </div>
 </details>
 
 ### Por que usar isso?
 
 - **Leveza**: Pés no chão em termos de uso de recursos.
-- **Flexibilidade**: Funciona como uma ferramenta CLI, ou um Dashboard Web completo.
-- **Orientado a Administradores**: Inclui recursos como **Limites de VRAM** (desligar processos que excedem limites) e **Listas de Observação**.
-- **Amigável ao Desenvolvedor**: Ferramentas de teste de desempenho e simulação (GEMM, Física de Partículas) integradas para validar a estabilidade do sistema.
+- **Flexibilidade**: Funciona como uma ferramenta CLI, ou um dashboard web completo.
+- **Orientado a Administrador**: Inclui recursos como **Limites de VRAM** (desabilitação automática de processos que excedem políticas) e **Listas de Observação**.
+- **Amigável ao Desenvolvedor**: Inclui ferramentas de teste de desempenho integradas (GEMM, Física de Partículas) para validar a estabilidade do sistema.
 
 ---
 
@@ -81,12 +82,12 @@
 
 - **Admin e Aplicação de Políticas**:
   - **Limites de VRAM**: Defina limites rígidos de uso de VRAM por GPU.
-  - **Desligamento Automático**: Desligue automaticamente processos que violem as políticas de VRAM (apenas para administradores).
+  - **Desabilitação Automática**: Termine automaticamente processos que violem políticas de VRAM (apenas para administradores).
   - **Listas de Observação**: Monitore PIDs ou nomes de processos específicos.
 
 - **Testes e Simulação**:
-  - **Testes de Estresse**: Configure cargas de trabalho GEMM configuráveis para testar a sobrecarga térmica e a estabilidade.
-  - **Simulação Visual**: Simulação interativa de física de partículas para visualizar a carga de trabalho da GPU.
+  - **Testes de Estresse**: Configure cargas de trabalho GEMM configuráveis para testar o throttling térmico e a estabilidade.
+  - **Simulação Interativa**: Visualize a carga de trabalho da GPU usando uma simulação de física de partículas 3D.
 
 ---
 
@@ -94,7 +95,7 @@
 
 Contribuições são bem-vindas! Os principais pontos futuros a serem abordados seriam:
 
-- **Suporte Multi-GPU**: Melhor suporte para configurações multi-cartão e topologias NVLink.
+- **Suporte Multi-GPU**: Melhor suporte para configurações multi-card e topologias NVLink.
 - **Containerização**: Suporte oficial do Docker para implantação fácil em ambientes de contêiner.
 - **Acesso Remoto**: Integração de túnel SSH e gerenciamento remoto seguro.
 - **Plataforma Cruzada**:
@@ -103,7 +104,7 @@ Contribuições são bem-vindas! Os principais pontos futuros a serem abordados 
 - **Hardware Agnóstico**:
   - [ ] Suporte AMD ROCm.
   - [ ] Suporte Intel Arc.
-- ~~**Documentação Multilíngue**: Suporte aos idiomas mais populares do GitHub.~~
+- **Documentação Multilíngue**: Suporte aos idiomas mais populares do GitHub.
 
 Veja [CONTRIBUTING.md](../CONTRIBUTING.md) para saber como contribuir.
 
@@ -114,8 +115,8 @@ Veja [CONTRIBUTING.md](../CONTRIBUTING.md) para saber como contribuir.
 - **OS**: Windows 10/11
 - **Python**: 3.10+
 - **Hardware**: GPU NVIDIA com drivers instalados.
-- **CUDA**: Versão 12.x (estritamente necessária para recursos de teste e simulação).
-  - *Observação: Se a CUDA 12.x não for detectada, os recursos de teste e simulação serão desabilitados.*
+- **CUDA**: Versão 12.x (estritamente necessária para recursos de teste de desempenho/simulação).
+  - *Observação: Se a CUDA 12.x não for detectada, os recursos de teste de desempenho serão desabilitados.*
 
 ---
 
@@ -123,7 +124,7 @@ Veja [CONTRIBUTING.md](../CONTRIBUTING.md) para saber como contribuir.
 
 A ferramenta suporta instalação modular para atender às suas necessidades:
 
-### 1. Instalação Mínima (apenas CLI)
+### 1. Instalação Mínima (CLI apenas)
 
 Ideal para servidores sem cabeça ou monitoramento em segundo plano.
 
@@ -137,9 +138,9 @@ Ideal para a maioria dos usuários.
 - Inclui o Dashboard Web.
 - Endpoints de API REST.
 - Gráficos em tempo real.
-- Mas sem recursos de simulação ou teste.
+- Mas sem recursos de simulação ou teste de desempenho.
 
-### 3. Instalação Completa (Padrão + Visualização)
+### 3. Instalação Completa (Padrão + Simulação)
 
 Ideal para desenvolvimento e testes de estresse.
 
