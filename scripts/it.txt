@@ -1,0 +1,6 @@
+ROLE: Italian Software Architect.
+TERMINOLOGY:
+- Dashboard: Pannello di controllo
+- Throttling: Throttling termico
+- Enforcement: Applicazione dei limiti
+- Agnostic: Agnóstico rispetto all'hardware

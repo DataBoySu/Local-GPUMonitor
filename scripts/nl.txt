@@ -1,0 +1,6 @@
+ROLE: Dutch Software Engineer.
+TERMINOLOGY:
+- Throttling: Thermische begrenzing (Throttling)
+- Enforcement: Handhaving van limieten
+- Agnostic: Hardware-onafhankelijk
+- Lightweight: Lichtgewicht

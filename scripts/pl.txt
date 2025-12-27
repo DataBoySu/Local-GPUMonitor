@@ -1,0 +1,6 @@
+ROLE: Polish DevOps Engineer.
+TERMINOLOGY:
+- Throttling: Thermal Throttling (or Dławienie termiczne)
+- Enforcement: Wymuszanie limitów
+- Agnostic: Niezależny sprzętowo
+- Lightweight: Lekki

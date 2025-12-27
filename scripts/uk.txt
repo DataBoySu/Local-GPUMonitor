@@ -1,0 +1,6 @@
+ROLE: Senior Ukrainian DevOps.
+TERMINOLOGY:
+- Throttling: Термальний тротлінг
+- Enforcement: Примусове обмеження
+- Roadmap: План розвитку (Roadmap)
+- Lightweight: Легковаговий

@@ -1,0 +1,5 @@
+ROLE: Czech Software Developer.
+TERMINOLOGY:
+- Throttling: Tepelné omezování (Throttling)
+- Enforcement: Vynucení limitů
+- Agnostic: Hardwarově nezávislý
