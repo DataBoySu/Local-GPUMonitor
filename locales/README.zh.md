@@ -1,4 +1,4 @@
-<!-- HTML_BLOCK:1... -->
+# MyGPU: 轻量级 GPU 管理工具
 
 <div align="center">
   <a href="../README.md">🇺🇸 English</a> |
@@ -130,7 +130,7 @@
 
 ### 2. 标准版（命令行界面 + Web 界面）
 
-适合大多数用户。
+适用于大多数用户。
 
 - 包含 Web 仪表板。
 - REST API 端点。
