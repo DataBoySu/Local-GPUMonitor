@@ -7,8 +7,13 @@ from openai import OpenAI
 # 1. Config
 LANG_MAP = {
     "de": "German", "fr": "French", "es": "Spanish", "ja": "Japanese",
-    "zh": "Chinese(Simplified)", "ru": "Russian", "pt": "Portuguese",
-    "ko": "Korean", "hi": "Hindi"
+    "zh": "Chinese(Simplified)", "zh-tw": "Chinese(Traditional)",
+    "ru": "Russian", "pt": "Portuguese", "ko": "Korean", "hi": "Hindi",
+    # Added languages
+    "ar": "Arabic", "cs": "Czech", "nl": "Dutch", "en": "English",
+    "el": "Greek", "he": "Hebrew", "id": "Indonesian", "it": "Italian",
+    "fa": "Persian", "pl": "Polish", "ro": "Romanian", "tr": "Turkish",
+    "uk": "Ukrainian", "vi": "Vietnamese"
 }
 
 parser = argparse.ArgumentParser()
@@ -107,31 +112,22 @@ pattern = r'(' \
 FORBIDDEN = [
     # English
     "This section", "In this", "In this section", "means", "explains",
-
     # Chinese (Simplified)
     "以下", "说明", "本节", "在这里", "意味着", "解释",
-
     # German
     "Dieser Abschnitt", "In diesem", "In diesem Abschnitt", "bedeutet", "erklärt",
-
     # French
     "Cette section", "Dans cette", "Dans cette section", "signifie", "explique",
-
     # Spanish
     "Esta sección", "En esta", "En esta sección", "significa", "explica",
-
     # Japanese
     "このセクション", "この中で", "このセクションでは", "意味する", "説明する",
-
     # Russian
-    "Этот раздел", "В этом", "В этом разделе", "означает", "объясняет",
-
+    "Этот раздел", "В этом", "В этом разделе", "означает", "объясняет", "ниже",
     # Portuguese
     "Esta seção", "Nesta seção", "significa", "explica",
-
     # Korean
     "이 섹션", "이 안에서", "이 섹션에서는", "의미한다", "설명한다",
-
     # Hindi
     "यह अनुभाग", "इसमें", "इस अनुभाग में", "का अर्थ है", "समझाता है",
 ]
@@ -155,6 +151,7 @@ SYSTEM_PROSE = (
     "- NEVER modify HTML tags, attributes (href, src), or CSS styles.\n"
     "- Keep technical terms (GPU, VRAM, CLI, Docker, GEMM, PIDs, NVLink) in English.\n"
     "- Preserve all Markdown symbols (#, **, `, -, [link](url)) exactly."
+    "If the section is a License notice (e.g., MIT License), DO NOT explain it. Simply translate the phrase 'MIT License. See LICENSE for details' as a single, short sentence."
 )
 
 # 4. Main
@@ -214,7 +211,7 @@ def main():
 
             # Dynamic length check
             # Adjust multiplier for Japanese "Nyan" expansion
-            multiplier = 5.5 if args.lang in ["ja", "hi"] else 2.5
+            multiplier = 5.5 if args.lang in ["ja", "hi", "ru"] else 2.5
 
             if len(translated) > multiplier * len(ctext):
                 print(f"\n[WARN] Output too long ({len(translated)} chars) — aborting.")
