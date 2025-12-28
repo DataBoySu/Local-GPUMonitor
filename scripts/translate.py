@@ -77,7 +77,11 @@ def get_smart_chunks(text):
         else:
             chunks.append(("prose", p))
 
-    return chunks
+        # Ensure any struct chunks containing blockquotes are split
+    try:
+        return split_struct_blockquotes(chunks)
+    except NameError:
+        return chunks
 
 
 def merge_small_chunks(chunks, min_chars=400):
@@ -100,6 +104,90 @@ def merge_small_chunks(chunks, min_chars=400):
             i += 1
     return merged
 
+def _classify_text_as_struct_or_prose(text):
+    t = text.strip()
+    if (
+        t.startswith(('<div', '<details', '```')) or
+        t.startswith('<!--') or t.endswith('-->') or
+        re.match(r'!\[.*?\]\(.*?\)', t) or
+        re.match(r'\[.*?\]\(.*?\)', t)
+    ):
+        return 'struct'
+    return 'prose'
+
+
+def split_struct_blockquotes(chunks):
+    """Split any `struct` chunk that contains a markdown blockquote into
+    a `struct` part before the quote, a `prose` blockquote part, and an
+    optional tail (struct/prose) after. This handles cases where placeholders
+    like <!-- HTML_BLOCK --> are adjacent to a quoted one-line description.
+    """
+    out = []
+    for ctype, ctext in chunks:
+        if ctype != 'struct' or not re.search(r'^\s*>', ctext, flags=re.MULTILINE):
+            out.append((ctype, ctext))
+            continue
+
+        # Work with original lines to preserve spacing
+        lines = ctext.splitlines(True)
+
+        # find first line that starts with '>' (block quote)
+        start = None
+        for idx, line in enumerate(lines):
+            if line.lstrip().startswith('>'):
+                start = idx
+                break
+
+        if start is None:
+            out.append((ctype, ctext))
+            continue
+
+        # find end of contiguous blockquote region, include adjacent blank lines
+        end = start
+        while end + 1 < len(lines):
+            nxt = lines[end + 1]
+            if nxt.lstrip().startswith('>'):
+                end += 1
+                continue
+            # include a single blank line immediately after blockquote
+            if nxt.strip() == '':
+                # only include if followed by another blockquote line
+                if end + 2 < len(lines) and lines[end + 2].lstrip().startswith('>'):
+                    end += 1
+                    continue
+                # otherwise, treat blank as separator and stop
+                break
+            break
+
+        before = ''.join(lines[:start]).strip()
+        block = ''.join(lines[start:end+1]).strip()
+        after = ''.join(lines[end+1:]).strip()
+
+        if before:
+            out.append(('struct', before))
+        out.append(('prose', block))
+        if after:
+            out.append((_classify_text_as_struct_or_prose(after), after))
+
+    return out
+
+
+def fix_relative_paths(text):
+    # Matches Markdown links [text](path)
+    # Ignores http, /, #, and already existing ../
+    text = re.sub(r'(\[.*?\]\()(?!(?:http|/|#|\.\./))', r'\1../', text) 
+    
+    # Matches HTML attributes src="path" or href="path"
+    text = re.sub(r'((?:src|href)=["\'])(?!(?:http|/|#|\.\./))', r'\1../', text)
+    
+    return text
+
+# The regex used to capture complex "tree" structures (div/details) as single chunks
+pattern = r'(' \
+          r'```[\s\S]*?```|' \
+          r'<(div|details|section|table)\b[^>]*>[\s\S]*?<\/\2>|' \
+          r'^#{1,6} .*' \
+          r')'
 
 # 3. Quality Control
 
@@ -229,7 +317,11 @@ def main():
     with open(README_PATH, "r", encoding="utf-8") as f:
         content = f.read()
 
-    chunks = merge_small_chunks(get_smart_chunks(content))
+    # Compute raw chunks, then split any struct chunks that contain blockquotes
+    chunks = get_smart_chunks(content)
+    chunks = split_struct_blockquotes(chunks)
+    chunks = merge_small_chunks(chunks)
+    
     print(f"[INFO] Processing {len(chunks)} chunks...")
 
     final_output = []

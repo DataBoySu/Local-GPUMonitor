@@ -57,6 +57,10 @@ def get_smart_chunks(text):
 
         p = part.strip()
 
+        if p.startswith('>') or p.startswith('*') or p.endswith('*') or p.startswith('> *') or p.startswith(' *'):
+            chunks.append(("prose", p))
+            continue
+        
         if (
             p.startswith(('<div', '<details', '```')) or
             p.startswith('<!--') or p.endswith('-->') or
@@ -67,7 +71,12 @@ def get_smart_chunks(text):
         else:
             chunks.append(("prose", p))
 
-    return chunks
+        # Ensure any struct chunks containing blockquotes are split
+    try:
+        return split_struct_blockquotes(chunks)
+    except NameError:
+        return chunks
+
 
 
 def merge_small_chunks(chunks, min_chars=400):
@@ -88,6 +97,73 @@ def merge_small_chunks(chunks, min_chars=400):
             merged.append((ctype, ctext))
             i += 1
     return merged
+
+def _classify_text_as_struct_or_prose(text):
+    t = text.strip()
+    if (
+        t.startswith(('<div', '<details', '```')) or
+        t.startswith('<!--') or t.endswith('-->') or
+        re.match(r'!\[.*?\]\(.*?\)', t) or
+        re.match(r'\[.*?\]\(.*?\)', t)
+    ):
+        return 'struct'
+    return 'prose'
+
+
+def split_struct_blockquotes(chunks):
+    """Split any `struct` chunk that contains a markdown blockquote into
+    a `struct` part before the quote, a `prose` blockquote part, and an
+    optional tail (struct/prose) after. This handles cases where placeholders
+    like <!-- HTML_BLOCK --> are adjacent to a quoted one-line description.
+    """
+    out = []
+    for ctype, ctext in chunks:
+        if ctype != 'struct' or not re.search(r'^\s*>', ctext, flags=re.MULTILINE):
+            out.append((ctype, ctext))
+            continue
+
+        # Work with original lines to preserve spacing
+        lines = ctext.splitlines(True)
+
+        # find first line that starts with '>' (block quote)
+        start = None
+        for idx, line in enumerate(lines):
+            if line.lstrip().startswith('>'):
+                start = idx
+                break
+
+        if start is None:
+            out.append((ctype, ctext))
+            continue
+
+        # find end of contiguous blockquote region, include adjacent blank lines
+        end = start
+        while end + 1 < len(lines):
+            nxt = lines[end + 1]
+            if nxt.lstrip().startswith('>'):
+                end += 1
+                continue
+            # include a single blank line immediately after blockquote
+            if nxt.strip() == '':
+                # only include if followed by another blockquote line
+                if end + 2 < len(lines) and lines[end + 2].lstrip().startswith('>'):
+                    end += 1
+                    continue
+                # otherwise, treat blank as separator and stop
+                break
+            break
+
+        before = ''.join(lines[:start]).strip()
+        block = ''.join(lines[start:end+1]).strip()
+        after = ''.join(lines[end+1:]).strip()
+
+        if before:
+            out.append(('struct', before))
+        out.append(('prose', block))
+        if after:
+            out.append((_classify_text_as_struct_or_prose(after), after))
+
+    return out
 
 
 def fix_relative_paths(text):
@@ -180,7 +256,8 @@ SYSTEM_HEADER = (
     "- The input is a single section header. Translate it 1:1.\n"
     "- DO NOT generate any content, lists, or descriptions under the header.\n"
     "- Preserve the '#' symbols exactly.\n"
-    "- Output ONLY the translated header."
+    "- Output ONLY the translated header.\n"
+    "- Preserve original formatting, punctuation, whitespace, and markdown/code symbols exactly; do NOT normalize, reflow, or 'fix' the input."
 )
 
 SYSTEM_PROSE = (
@@ -191,7 +268,9 @@ SYSTEM_PROSE = (
     "- Translate human text inside HTML tags (e.g., <summary>Source</summary> -> <summary>Translation</summary>).\n"
     "- NEVER modify HTML tags, attributes (href, src), or CSS styles.\n"
     "- Keep technical terms (GPU, VRAM, CLI, Docker, GEMM, PIDs, NVLink) in English.\n"
-    "- Preserve all Markdown symbols (#, **, `, -, [link](url)) exactly."
+    "- Preserve all Markdown symbols (#, > *, **, `, -, [link](url)) exactly.\n"
+    "- Do NOT modify formatting, whitespace, punctuation, code fences, list markers, or emphasis markers; translate only the human-visible text and leave surrounding symbols unchanged.\n"
+    "- Preserve original formatting, punctuation, whitespace, and markdown/code symbols exactly; do NOT normalize, reflow, or 'fix' the input."
 )
 
 # 4. Main
@@ -200,7 +279,10 @@ def main():
     with open("README.md", "r", encoding="utf-8") as f:
         content = f.read()
 
-    chunks = merge_small_chunks(get_smart_chunks(content))
+    # Compute raw chunks, then split any struct chunks that contain blockquotes
+    chunks = get_smart_chunks(content)
+    chunks = split_struct_blockquotes(chunks)
+    chunks = merge_small_chunks(chunks)
 
     final_output = []
 

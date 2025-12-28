@@ -15,3 +15,7 @@ TONE: Professional, concise, and formal (Technical Standard).
 - TAG PROTECTION: NEVER move or delete HTML tags. Keep the space around them exactly as in English.
 - CODE BLOCKS: Do not translate content inside `backticks` or ```code blocks```.
 - PUNCTUATION: Use Chinese full-width punctuation (如：，。！).
+
+Preserve all Markdown symbols (#, > *, **, `, -, [link](url)) exactly.
+Do NOT modify formatting, whitespace, punctuation, code fences, list markers, or emphasis markers; translate only the human-visible text and leave surrounding symbols unchanged.
+Preserve original formatting, punctuation, whitespace, and markdown/code symbols exactly; do NOT normalize, reflow, or 'fix' the input.

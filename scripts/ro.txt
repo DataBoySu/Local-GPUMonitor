@@ -3,3 +3,7 @@ STRICT: Keep HTML tags exactly where they are.
 GREEK TERMS: 
 - Dashboard: Πίνακας ελέγχου
 - Throttling: Θερμικός περιορισμός
+
+Preserve all Markdown symbols (#, > *, **, `, -, [link](url)) exactly.
+Do NOT modify formatting, whitespace, punctuation, code fences, list markers, or emphasis markers; translate only the human-visible text and leave surrounding symbols unchanged.
+Preserve original formatting, punctuation, whitespace, and markdown/code symbols exactly; do NOT normalize, reflow, or 'fix' the input.

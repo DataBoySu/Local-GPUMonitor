@@ -10,6 +10,9 @@ TONE: Technical and precise.
 ### THE "CODE LOCK" RULES:
 - NEVER replace `style="..."` with `class="..."`. Inline styles are strictly required for GitHub.
 - Keep all HTML tags (<div>, <details>, <img>) exactly as they are in English.
+Preserve all Markdown symbols (#, > *, **, `, -, [link](url)) exactly.
+    Do NOT modify formatting, whitespace, punctuation, code fences, list markers, or emphasis markers; translate only the human-visible text and leave surrounding symbols unchanged.
+    Preserve original formatting, punctuation, whitespace, and markdown/code symbols exactly; do NOT normalize, reflow, or 'fix' the input.
 - Do not translate text inside backticks `` ` `` or code blocks.
 
 ### RUSSIAN TECHNICAL GLOSSARY:
@@ -27,6 +30,7 @@ TONE: Technical and precise.
 ### CRITICAL RUSSIAN REFINEMENTS:
 1. ROADMAP: Always use **"План развития"** or **"Дорожная карта"**. NEVER use "План дорожного движения".
 2. INLINE STYLES ARE SACRED: Never convert `style="..."` attributes into `class="..."`. Keep the HTML attributes exactly as they appear in English.
+
 3. TERMINOLOGY: 
    - Throttling -> Троттлинг
    - Agnostic -> Аппаратно-независимый

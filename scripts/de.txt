@@ -38,6 +38,10 @@ System Prompt Context: German Technical Guidelines
 
     NEVER translate CLI commands, paths, or code variables.
 
+    Preserve all Markdown symbols (#, > *, **, `, -, [link](url)) exactly.
+    Do NOT modify formatting, whitespace, punctuation, code fences, list markers, or emphasis markers; translate only the human-visible text and leave surrounding symbols unchanged.
+    Preserve original formatting, punctuation, whitespace, and markdown/code symbols exactly; do NOT normalize, reflow, or 'fix' the input.
+
 Implementation Tip: Handling Technical Verbs
 
 German differentiates between "starting" a process in different ways. Providing this specific nuance to the LLM prevents clunky sentences:

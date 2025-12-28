@@ -21,7 +21,8 @@
 
 <!-- HTML_BLOCK:... -->
 
-> *MyGPU: Lightweight GPU Management Utility: a compact `nvidia-smi` wrapper with an elegant web dashboard.*
+> *MyGPU: Leichtgewichtiges GPU-Verwaltungstool: ein kompakter Wrapper für `nvidia-smi` mit einem eleganten Web-Dashboard.*
+
 <!-- HTML_BLOCK: no change to url; output entire as it is... -->
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
@@ -37,30 +38,33 @@
   Web-Dashboard
   </summary>
 
-  <div style="display:flex; overflow-x:auto; gap:10px; padding:12px 0; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;">
-    <!-- Verwende das erste Bild mit dem Seitenverhältnis 1624x675 als Rahmen für die Folie; Bilder passen sich mit object-fit:contain automatisch an -->
-    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
-      <img src="../monitor/api/static/web1.png" style="width:100%; height:100%; object-fit:contain;" />
+  <div class="galerie">
+    <!-- Bilder werden in einem flexiblen Container mit Scroll-Snap-Funktionalität angezeigt -->
+    <div class="slide" style="flex: 0 0 calc(25% - 10px); scroll-snap-align: center; aspect-ratio: 1624/675; display: flex; align-items: center; justify-content: center;">
+      <img src="../monitor/api/static/web1.png" alt="Web-Dashboard Bild 1" style="width: 100%; height: 100%; object-fit: contain;" />
     </div>
-    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
-      <img src="../monitor/api/static/web2.png" style="width:100%; height:100%; object-fit:contain;" />
+    <div class="slide" style="flex: 0 0 calc(25% - 10px); scroll-snap-align: center; aspect-ratio: 1624/675; display: flex; align-items: center; justify-content: center;">
+      <img src="../monitor/api/static/web2.png" alt="Web-Dashboard Bild 2" style="width: 100%; height: 100%; object-fit: contain;" />
     </div>
-    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
-      <img src="../monitor/api/static/web3.png" style="width:100%; height:100%; object-fit:contain;" />
+    <div class="slide" style="flex: 0 0 calc(25% - 10px); scroll-snap-align: center; aspect-ratio: 1624/675; display: flex; align-items: center; justify-content: center;">
+      <img src="../monitor/api/static/web3.png" alt="Web-Dashboard Bild 3" style="width: 100%; height: 100%; object-fit: contain;" />
     </div>
-    <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
-      <img src="../monitor/api/static/web4.png" style="width:100%; height:100%; object-fit:contain;" />
+    <div class="slide" style="flex: 0 0 calc(25% - 10px); scroll-snap-align: center; aspect-ratio: 1624/675; display: flex; align-items: center; justify-content: center;">
+      <img src="../monitor/api/static/web4.png" alt="Web-Dashboard Bild 4" style="width: 100%; height: 100%; object-fit: contain;" />
     </div>
   </div>
 
 </details>
 
 <details>
-  <summary>CLI</summary>
+  <summary>
+  CLI
+  </summary>
   <div style="display:flex; overflow-x:auto; gap:10px; padding:12px 0; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;">
 
   <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
-      <img src="../monitor/api/static/cli1.png" style="width:100%; height:100%; object-fit:contain;" />
+  
+  <img src="../monitor/api/static/cli1.png" style="width:100%; height:100%; object-fit:contain;" />
   </div>
   <div style="flex:0 0 100%; scroll-snap-align:center; aspect-ratio:1624/675; display:flex; align-items:center; justify-content:center;">
       <img src="../monitor/api/static/cli2.png" style="width:100%; height:100%; object-fit:contain;" />
@@ -76,63 +80,63 @@
     </div>
 </details>
 
-### Warum dies nutzen?
+### Warum sollte man dies nutzen?
 
-- **Leichtgewichtig**: Minimale Ressourcenanforderungen.
+- **Leichtgewichtig**: Minimale Ressourcenbelastung.
 - **Flexibel**: Als CLI-Tool oder als umfassendes Web-Dashboard ausführbar.
-- **admin-zentriert**: Enthält Funktionen wie **VRAM-Erzwingung** (Automatische Beendigung von Prozessen, die die Grenzen überschreiten) und **Watchlists**.
-- **Entwicklerfreundlich**: Integrierte Leistungsanalyse- und Stress-Test-Tools (GEMM, Teilchenphysik) zur Überprüfung der Systemstabilität.
+- **admin-zentriert**: Enthält Funktionen wie **VRAM-Durchsetzung** (automatische Beendigung von Prozessen, die die Grenzen überschreiten) und **Watchlists**.
+- **entwicklerfreundlich**: Integrierte Benchmarking- und Stress-Test-Tools (GEMM, Teilchenphysik) zur Überprüfung der Systemstabilität.
 
 ## Funktionen
 
 - **Echtzeitüberwachung**:
-  - Detaillierte GPU-Metriken (Auslastung, VRAM, Stromverbrauch, Temperatur).
+  - Detaillierte GPU-Metriken (Nutzung, VRAM, Stromverbrauch, Temperatur).
   - Systemmetriken (CPU, RAM usw.).
 
 - **Verwaltung und Durchsetzung**:
   - **VRAM-Begrenzung**: Setze harte Obergrenzen für den VRAM-Verbrauch pro GPU.
-  - **Automatische Beendigung**: Beende automatisch Prozesse, die VRAM-Richtlinien verletzen (nur für Administratoren).
-  - **Watchlisten**: Überwache spezifische PIDs oder Prozessnamen.
+  - **Automatische Beendigung**: Automatische Beendigung von Prozessen, die gegen VRAM-Richtlinien verstoßen (nur Administrator).
+  - **Watchlists**: Überwache spezifische PIDs oder Prozessnamen.
 
-- **Leistungsanalyse und Simulation**:
-  - **Stresstests**: Konfigurierbare GEMM-Lasten, um thermische Drosselung und Stabilität zu testen.
-  - **Visualisierung**: Interaktive 3D-Partikelphysik-Simulation zur Visualisierung der GPU-Belastung.
+- **Benchmarking und Simulation**:
+  - **Stresstests**: Konfigurierbare GEMM-Lasttests zur Prüfung der thermischen Drosselung und Stabilität.
+  - **Visualisierungssimulation**: Interaktive 3D-Partikelphysiksimulation zur Visualisierung der GPU-Belastung.
 
-## Roadmap und zukünftige Arbeiten
+## Roadmap & Zukunftsplanung
 
-Beiträge sind willkommen! Die Hauptpunkte, die in Zukunft angegangen werden sollen, sind:
+Deine Beiträge sind willkommen! Die wichtigsten zukünftigen Schwerpunkte umfassen:
 
 - **Mehrfach-GPU-Unterstützung**: Verbesserte Handhabung von Mehrkarten-Einrichtungen und NVLink-Topologien.
 - **Containerisierung**: Offizielle Docker-Unterstützung für einfache Bereitstellung in Container-Umgebungen.
-- **Remote-Zugriff**: Integration von SSH-Tunneln und sicherem Remote-Management.
-- **Plattformübergreifend**:
-  - [ ] Linux-Unterstützung (Ubuntu/Debian-Fokus).
-  - [ ] macOS-Unterstützung (Apple Silicon im Blick).
+- **Fernzugriff**: Integration von SSH-Tunneling und sicherem Fernmanagement.
+- **Cross-Platform**:
+  - [ ] Linux-Unterstützung (Ubuntu/Debian Fokus).
+  - [ ] macOS-Unterstützung (Apple Silicon Überwachung).
 - **Hardwareunabhängig**:
-  - [ ] AMD ROCm-Unterstützung.
-  - [ ] Intel Arc-Unterstützung.
+  - [ ] AMD ROCm Unterstützung.
+  - [ ] Intel Arc Unterstützung.
 - ~~**Mehrsprachige Dokumentation**: Unterstützung der beliebtesten GitHub-Sprachen.~~
 
-Siehe [CONTRIBUTING.md](../CONTRIBUTING.md) für Informationen, wie du dich einbringen kannst.
+Sieh [CONTRIBUTING.md](../CONTRIBUTING.md) für Hinweise, wie du dich einbringen kannst.
 
 ## Anforderungen
 
 - **Betriebssystem**: Windows 10/11
-- **Python**: 3.10+
+- **Python**: Version 3.10 oder höher
 - **Hardware**: NVIDIA-GPU mit installierten Treibern.
-- **CUDA**: Toolkit 12.x (Streng erforderlich für Leistungsanalyse/Simulationsfunktionen).
-  - *Hinweis: Wird CUDA 12.x nicht erkannt, werden die GPU-spezifischen Leistungsanalysefunktionen deaktiviert.*
+- **CUDA**: Toolkit 12.x (Für die Benutzerung der Benchmarking-/Simulationsfunktionen zwingend erforderlich).
+  - *Hinweis: Wird CUDA 12.x nicht erkannt, werden die GPU-spezifischen Benchmarking-Funktionen deaktiviert.*
 
 ## Installation
 
-Das Tool unterstützt eine modulare Installation, um deinen Anforderungen gerecht zu werden:
+Das Tool unterstützt eine modulare Installation, um sich an deine Anforderungen anzupassen:
 
 ### 1. Minimal (CLI Nur)
 
-Ideal für Headless-Server oder Hintergrundüberwachung.
+Am besten für Headless-Server oder Hintergrundüberwachung geeignet.
 
-- Befehlszeileninterface.
-- Grundlegende System- und GPU-Metriken.
+- Befehlszeilen-Schnittstelle.
+- Grundlegende System-/GPU-Metriken.
 
 ### 2. Standard (CLI + Web-Benutzeroberfläche)
 
@@ -143,14 +147,14 @@ Am besten für die meisten Benutzer geeignet.
 - Echtzeit-Diagramme.
 - Ohne Simulation oder Leistungsanalyse.
 
-### 3. Vollständig (Standard + Visualisierung)
+### 3. Vollständige Konfiguration (Standard + Visualisierung)
 
 Am besten für Entwicklung und Stresstests geeignet.
 
-- Enthält Simulation.
-- PyTorch/CuPy-Abhängigkeiten für Leistungsanalysen.
+- Enthält Simulationen.
+- Abhängigkeiten von PyTorch/CuPy für Leistungsanalysen.
 
-### Schnelle Einführung
+### Schnellstart
 
 1. **Lade** die neueste Version herunter oder klone das Repository.
 2. **Führe die Einrichtung aus**:
@@ -162,14 +166,16 @@ Am besten für Entwicklung und Stresstests geeignet.
 ## 3. **Starten**:
 
 ```powershell
-# Starten Sie die Web-Benutzeroberfläche (Standard/Vollständig)
+# Web-Dashboard starten (Standard/Vollständig)
 python health_monitor.py web
 
-# Starten Sie die CLI-Schnittstelle
+# CLI starten
 python health_monitor.py cli
 ```
 
-## Lizenz
+---
 
-**MIT-Lizenz. Details finden Sie unter [LICENSE](../LICENSE).**
+## License
+
+Siehe die [Lizenz](../LICENSE) für Details.
 
