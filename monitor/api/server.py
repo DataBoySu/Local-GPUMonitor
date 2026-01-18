@@ -7,6 +7,7 @@ import io
 import asyncio
 import threading
 
+import psutil
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, StreamingResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -259,7 +260,6 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
                                         # collect processes and terminate those on this GPU and in watchlist
                                         try:
                                             proc_list = collector.collect_processes()
-                                            import psutil
                                             for proc in proc_list:
                                                 try:
                                                     pid = int(proc.get('pid'))
@@ -527,6 +527,7 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
 
         return {
             'status': 'healthy' if not alerts else 'warning',
+            'is_admin': getattr(app.state, 'is_admin', False),
             'metrics': metrics,
             'alerts': alerts,
             'benchmark_status': bench_status if 'bench_status' in locals() else None,
@@ -598,6 +599,78 @@ def create_app(config: Dict[str, Any]) -> FastAPI:
 
         JSON: { "pid": 1234, "action": "add"|"remove" }
         """
+        if not getattr(app.state, 'is_admin', False):
+            return {"status": "error", "message": "Admin privileges required"}
+        
+        pid = payload.get('pid')
+        action = payload.get('action')
+        if not pid:
+            return {"status": "error", "message": "PID required"}
+            
+        wl = set(getattr(app.state, 'vram_watchlist', []) or [])
+        if action == 'add':
+            wl.add(int(pid))
+        elif action == 'remove':
+            wl.discard(int(pid))
+        
+        app.state.vram_watchlist = list(wl)
+        _save_vram_watchlist(list(wl))
+        return {'status': 'success', 'watchlist': list(wl)}
+
+    @app.get("/api/ports")
+    async def get_ports():
+        sc = SystemCollector()
+        return {'ports': sc.collect_ports()}
+
+    @app.post("/api/processes/terminate")
+    async def terminate_process(payload: Dict[str, Any]):
+        """Terminate a process by PID (Admin only)."""
+        if not getattr(app.state, 'is_admin', False):
+            return {"status": "error", "message": "Admin privileges required"}
+        
+        pid = payload.get('pid')
+        action = payload.get('action', 'kill') # 'free' (soft) or 'kill' (full)
+        if not pid:
+            return {"status": "error", "message": "PID required"}
+            
+        try:
+            p = psutil.Process(int(pid))
+            
+            if action == 'free':
+                # "Free Port" - softer approach, targeting specifically the process holding it
+                # We'll just use terminate() which is a SIGTERM (graceful)
+                p.terminate()
+                try:
+                    p.wait(timeout=2)
+                    return {"status": "success", "message": f"Port freed: Process {pid} terminated gracefully."}
+                except psutil.TimeoutExpired:
+                    # If it doesn't die gracefully, we don't force it in 'free' mode unless requested?
+                    # The user said "decouple the process from the port", 
+                    # usually that means killing it. I'll stick to a softer terminate.
+                    return {"status": "warning", "message": f"Process {pid} received terminate signal but is still active."}
+            else:
+                # "Terminate" - full kill including tree if possible
+                try:
+                    parent = p.parent()
+                    # If it's a child process, maybe kill parent too if it's a worker?
+                    # Actually, usually users want to kill THE app.
+                    p.kill() # SIGKILL
+                    if parent and parent.pid > 0:
+                        # Optional: also kill parent if requested? 
+                        # The user said "preferably specific child of process holding the port" for free,
+                        # and "terminate should kill the process itself".
+                        pass
+                    return {"status": "success", "message": f"Terminated PID {pid}."}
+                except Exception as e:
+                    p.kill()
+                    return {"status": "success", "message": f"Killed PID {pid}."}
+                    
+        except psutil.NoSuchProcess:
+            return {"status": "error", "message": f"Process {pid} not found."}
+        except psutil.AccessDenied:
+            return {"status": "error", "message": f"Access denied for PID {pid}. System process?"}
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
         try:
             pid = int(payload.get('pid'))
         except Exception:

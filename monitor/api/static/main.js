@@ -32,8 +32,8 @@ function ensureZoomPlugin() {
 function showRestartSuccessPage() {
     try {
         // stop intervals
-        try { if (refreshInterval) clearInterval(refreshInterval); } catch (e) {}
-        try { if (benchmarkPollInterval) clearInterval(benchmarkPollInterval); } catch (e) {}
+        try { if (refreshInterval) clearInterval(refreshInterval); } catch (e) { }
+        try { if (benchmarkPollInterval) clearInterval(benchmarkPollInterval); } catch (e) { }
 
         document.documentElement.style.height = '100%';
         document.body.style.margin = '0';
@@ -77,8 +77,8 @@ async function shutdownServer() {
 
             // Server accepted shutdown request — update modal then proceed
             modal.setText('Server is shutting down...');
-            try { await waitMs(600); } catch (e) {}
-            try { modal.remove(); } catch (e) {}
+            try { await waitMs(600); } catch (e) { }
+            try { modal.remove(); } catch (e) { }
 
             try { showServerShutdownPage(); } catch (e) { console.debug('showServerShutdownPage error', e); }
             const stopped = await waitForServerStop(60, 1000);
@@ -91,7 +91,7 @@ async function shutdownServer() {
         } catch (postErr) {
             // Network error when posting — server may have terminated before sending a response.
             // Immediately proceed to the final page rather than showing an intermediate "waiting" message.
-            try { modal.remove(); } catch (e) {}
+            try { modal.remove(); } catch (e) { }
             // Show final stopped page (assume server is stopping/has stopped)
             try { showServerStoppedPage(true); } catch (e) { console.debug('showServerStoppedPage error', e); }
             return;
@@ -155,7 +155,7 @@ function createShutdownModal(initialText) {
 
     return {
         setText: (t) => { msg.textContent = t; },
-        remove: () => { try { if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay); } catch (e) {} }
+        remove: () => { try { if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay); } catch (e) { } }
     };
 }
 
@@ -205,7 +205,7 @@ function showConfirmShutdownDialog() {
         cancelBtn.style.border = '1px solid var(--border-color)';
         cancelBtn.style.background = 'transparent';
         cancelBtn.style.color = 'var(--text-primary)';
-        cancelBtn.onclick = () => { try { overlay.remove(); } catch (e){}; resolve(false); };
+        cancelBtn.onclick = () => { try { overlay.remove(); } catch (e) { }; resolve(false); };
 
         const shutdownBtn = document.createElement('button');
         shutdownBtn.textContent = 'Shutdown Server';
@@ -214,7 +214,7 @@ function showConfirmShutdownDialog() {
         shutdownBtn.style.border = 'none';
         shutdownBtn.style.background = 'var(--accent-red)';
         shutdownBtn.style.color = '#fff';
-        shutdownBtn.onclick = () => { try { overlay.remove(); } catch (e){}; resolve(true); };
+        shutdownBtn.onclick = () => { try { overlay.remove(); } catch (e) { }; resolve(true); };
 
         actions.appendChild(cancelBtn);
         actions.appendChild(shutdownBtn);
@@ -230,9 +230,9 @@ function showConfirmShutdownDialog() {
 // Show a full-page server shutdown message (used after server accepts the shutdown)
 function showServerShutdownPage() {
     // Stop periodic refresh and benchmark polling
-    try { if (refreshInterval) clearInterval(refreshInterval); } catch (e) {}
-    try { if (benchmarkPollInterval) clearInterval(benchmarkPollInterval); } catch (e) {}
-    try { if (typeof stopBenchmark === 'function') stopBenchmark(); } catch (e) {}
+    try { if (refreshInterval) clearInterval(refreshInterval); } catch (e) { }
+    try { if (benchmarkPollInterval) clearInterval(benchmarkPollInterval); } catch (e) { }
+    try { if (typeof stopBenchmark === 'function') stopBenchmark(); } catch (e) { }
 
     document.documentElement.style.height = '100%';
     document.body.style.margin = '0';
@@ -279,9 +279,9 @@ async function waitForServerStop(timeoutSeconds = 60, intervalMs = 1000) {
 // Show final page when server is confirmed stopped (or timed out waiting)
 function showServerStoppedPage(serverStopped = true) {
     try {
-        try { if (refreshInterval) clearInterval(refreshInterval); } catch (e) {}
-        try { if (benchmarkPollInterval) clearInterval(benchmarkPollInterval); } catch (e) {}
-        try { if (typeof stopBenchmark === 'function') stopBenchmark(); } catch (e) {}
+        try { if (refreshInterval) clearInterval(refreshInterval); } catch (e) { }
+        try { if (benchmarkPollInterval) clearInterval(benchmarkPollInterval); } catch (e) { }
+        try { if (typeof stopBenchmark === 'function') stopBenchmark(); } catch (e) { }
 
         document.documentElement.style.height = '100%';
         document.body.style.margin = '0';
@@ -304,11 +304,11 @@ function showServerStoppedPage(serverStopped = true) {
 function showShutdownSequence() {
     try {
         // Stop periodic refresh and benchmark polling
-        try { if (refreshInterval) clearInterval(refreshInterval); } catch (e) {}
-        try { if (benchmarkPollInterval) clearInterval(benchmarkPollInterval); } catch (e) {}
+        try { if (refreshInterval) clearInterval(refreshInterval); } catch (e) { }
+        try { if (benchmarkPollInterval) clearInterval(benchmarkPollInterval); } catch (e) { }
 
         // Attempt to stop any running benchmark gracefully via existing handler
-        try { if (typeof stopBenchmark === 'function') stopBenchmark(); } catch (e) {}
+        try { if (typeof stopBenchmark === 'function') stopBenchmark(); } catch (e) { }
 
         // Replace entire body with shutdown message (client-only)
         document.documentElement.style.height = '100%';
@@ -331,8 +331,8 @@ function showShutdownSequence() {
 }
 
 function zoomIn() { adjustZoom(1.5); }
-function zoomOut() { adjustZoom(1/1.5); }
-function resetZoom() { historyVisibleStart = 0; historyVisibleEnd = historyOriginalLabels.length-1; renderHistoryView(); }
+function zoomOut() { adjustZoom(1 / 1.5); }
+function resetZoom() { historyVisibleStart = 0; historyVisibleEnd = historyOriginalLabels.length - 1; renderHistoryView(); }
 
 function adjustZoom(factor) {
     const len = historyOriginalLabels.length;
@@ -340,10 +340,10 @@ function adjustZoom(factor) {
     const curLen = historyVisibleEnd - historyVisibleStart + 1;
     let newLen = Math.max(10, Math.round(curLen / factor));
     if (newLen >= len) { resetZoom(); return; }
-    const center = Math.floor((historyVisibleStart + historyVisibleEnd)/2);
-    let start = Math.max(0, center - Math.floor(newLen/2));
-    let end = Math.min(len-1, start + newLen -1);
-    if (end - start + 1 < newLen) start = Math.max(0, end - newLen +1);
+    const center = Math.floor((historyVisibleStart + historyVisibleEnd) / 2);
+    let start = Math.max(0, center - Math.floor(newLen / 2));
+    let end = Math.min(len - 1, start + newLen - 1);
+    if (end - start + 1 < newLen) start = Math.max(0, end - newLen + 1);
     historyVisibleStart = start; historyVisibleEnd = end; renderHistoryView();
 }
 
@@ -353,7 +353,7 @@ function highlightSelectedDay(val) {
     renderHistoryView();
 }
 
-function renderHistoryView(){
+function renderHistoryView() {
     if (!historyChart) return;
     // With time-scale charts we keep the full dataset on the chart and let
     // the zoom/pan plugin control the visible window. For highlight changes
@@ -368,9 +368,10 @@ document.querySelectorAll('.tab').forEach(tab => {
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         tab.classList.add('active');
         document.getElementById(tab.dataset.tab).classList.add('active');
-        
+
         if (tab.dataset.tab === 'history') loadHistory();
         if (tab.dataset.tab === 'processes') loadProcesses();
+        if (tab.dataset.tab === 'ports') loadPorts();
         if (tab.dataset.tab === 'benchmark') { loadBenchmarkResults(); loadBaseline(); }
     });
 });
@@ -392,11 +393,11 @@ async function fetchStatus() {
         console.log('Fetching status from /api/status...');
         const response = await fetch('/api/status');
         console.log('Response status:', response.status);
-        
+
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const data = await response.json();
         console.log('Received data:', data);
         updateDashboard(data);
@@ -424,15 +425,15 @@ function updateDashboard(data) {
     } else {
         badge.setAttribute('data-hover', 'All systems operational');
     }
-    
+
     const gpuList = document.getElementById('gpu-list');
     gpuList.innerHTML = data.metrics.gpus.map(gpu => {
         if (gpu.error) return `<div class="gpu-card">Error: ${gpu.error}</div>`;
-        
+
         const util = gpu.utilization || 0;
         const memPct = gpu.memory_total > 0 ? (gpu.memory_used / gpu.memory_total * 100) : 0;
         const temp = gpu.temperature || 0;
-        
+
         return `
             <div class="gpu-card">
                 <div class="gpu-header">
@@ -448,7 +449,7 @@ function updateDashboard(data) {
                 </div>
                 <div class="metric-row">
                     <span class="metric-label">Memory</span>
-                    <span class="metric-value">${(gpu.memory_used/1024).toFixed(1)}/${(gpu.memory_total/1024).toFixed(1)} GB</span>
+                    <span class="metric-value">${(gpu.memory_used / 1024).toFixed(1)}/${(gpu.memory_total / 1024).toFixed(1)} GB</span>
                 </div>
                 <div class="progress-bar">
                     <div class="progress-fill ${memPct > 90 ? 'crit' : memPct > 70 ? 'warn' : ''}" style="width: ${memPct}%"></div>
@@ -460,7 +461,7 @@ function updateDashboard(data) {
             </div>
         `;
     }).join('');
-    
+
     const sys = data.metrics.system;
     document.getElementById('system-info').innerHTML = `
         <div class="metric-row"><span class="metric-label">Hostname</span><span class="metric-value">${sys.hostname || 'N/A'}</span></div>
@@ -471,14 +472,14 @@ function updateDashboard(data) {
         <div class="metric-row"><span class="metric-label">Disk</span><span class="metric-value">${(sys.disk_used_gb || 0).toFixed(1)}/${(sys.disk_total_gb || 0).toFixed(1)} GB</span></div>
         <div class="progress-bar"><div class="progress-fill" style="width: ${sys.disk_percent || 0}%"></div></div>
     `;
-    
+
     const alertsList = document.getElementById('alerts-list');
     if (data.alerts && data.alerts.length > 0) {
         alertsList.innerHTML = data.alerts.map(a => `<div class="alert-item"><strong>${a.severity.toUpperCase()}</strong>: ${a.message}</div>`).join('');
     } else {
         alertsList.innerHTML = '<div style="color: var(--accent-green);">No active alerts</div>';
     }
-    
+
     document.getElementById('last-update').textContent = 'Last update: ' + new Date().toLocaleTimeString();
 }
 
@@ -518,8 +519,8 @@ async function loadHistory() {
 
         // Determine if multi-day range
         const firstTs = points.length ? points[0].t : Date.now();
-        const lastTs = points.length ? points[points.length-1].t : Date.now();
-        const rangeHours = (lastTs - firstTs) / (1000*60*60);
+        const lastTs = points.length ? points[points.length - 1].t : Date.now();
+        const rangeHours = (lastTs - firstTs) / (1000 * 60 * 60);
         const multiDay = rangeHours >= 24;
 
         // y axis options
@@ -544,7 +545,7 @@ async function loadHistory() {
 
         const dayBandPlugin = {
             id: 'dayBands',
-            beforeDatasetsDraw: function(chart) {
+            beforeDatasetsDraw: function (chart) {
                 if (!multiDay) return;
                 try {
                     const xScale = chart.scales.x;
@@ -553,15 +554,15 @@ async function loadHistory() {
                     if (dataLen === 0) return;
                     for (let j = 0; j < dayStarts.length; j++) {
                         const startIdx = dayStarts[j];
-                        const endIdx = (j+1 < dayStarts.length) ? dayStarts[j+1]-1 : dataLen-1;
+                        const endIdx = (j + 1 < dayStarts.length) ? dayStarts[j + 1] - 1 : dataLen - 1;
                         const startTs = historyOriginalLabels[startIdx];
                         const endTs = historyOriginalLabels[endIdx];
                         const left = xScale.getPixelForValue(startTs);
                         const right = xScale.getPixelForValue(endTs + 1);
                         const bandColor = (j % 2 === 0) ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.03)';
-                        ctx.save(); ctx.fillStyle = bandColor; ctx.fillRect(left, chart.chartArea.top, Math.max(1, right-left), chart.chartArea.bottom - chart.chartArea.top); ctx.restore();
+                        ctx.save(); ctx.fillStyle = bandColor; ctx.fillRect(left, chart.chartArea.top, Math.max(1, right - left), chart.chartArea.bottom - chart.chartArea.top); ctx.restore();
                     }
-                } catch(e) { console.debug('dayBandPlugin error', e); }
+                } catch (e) { console.debug('dayBandPlugin error', e); }
             }
         };
 
@@ -575,7 +576,7 @@ async function loadHistory() {
         // plugin: highlight selected day (uses historySelectedDay and historyDayStarts)
         const highlightPlugin = {
             id: 'highlightDay',
-            beforeDatasetsDraw: function(chart) {
+            beforeDatasetsDraw: function (chart) {
                 if (historySelectedDay === null) return;
                 try {
                     const xScale = chart.scales.x;
@@ -584,15 +585,15 @@ async function loadHistory() {
                     const sel = historySelectedDay;
                     if (sel < 0 || sel >= historyDayStarts.length) return;
                     const globalStartIdx = historyDayStarts[sel];
-                    const globalEndIdx = (sel+1 < historyDayStarts.length) ? historyDayStarts[sel+1]-1 : len-1;
+                    const globalEndIdx = (sel + 1 < historyDayStarts.length) ? historyDayStarts[sel + 1] - 1 : len - 1;
                     const globalStartTs = historyOriginalLabels[globalStartIdx];
                     const globalEndTs = historyOriginalLabels[globalEndIdx];
                     const left = xScale.getPixelForValue(globalStartTs);
                     const right = xScale.getPixelForValue(globalEndTs + 1);
                     // check overlap with chart area
                     if (right < chart.chartArea.left || left > chart.chartArea.right) return;
-                    ctx.save(); ctx.fillStyle = 'rgba(0,160,255,0.12)'; ctx.fillRect(left, chart.chartArea.top, Math.max(1, right-left), chart.chartArea.bottom - chart.chartArea.top); ctx.restore();
-                } catch(e) { console.debug('highlightPlugin error', e); }
+                    ctx.save(); ctx.fillStyle = 'rgba(0,160,255,0.12)'; ctx.fillRect(left, chart.chartArea.top, Math.max(1, right - left), chart.chartArea.bottom - chart.chartArea.top); ctx.restore();
+                } catch (e) { console.debug('highlightPlugin error', e); }
             }
         };
 
@@ -630,7 +631,7 @@ async function loadHistory() {
         });
         // add click handler to highlight the day/hour of the nearest datapoint
         const canvas = document.getElementById('historyChart');
-        canvas.onclick = function(evt) {
+        canvas.onclick = function (evt) {
             try {
                 const pointsFound = historyChart.getElementsAtEventForMode(evt, 'nearest', { intersect: false }, true);
                 if (!pointsFound || pointsFound.length === 0) return;
@@ -657,7 +658,7 @@ async function loadProcesses() {
 
         const response = await fetch('/api/processes');
         const data = await response.json();
-        
+
         // Render per-GPU VRAM bars and controls (fetch current caps)
         try {
             const vramWrapper = document.getElementById('vram-bars-wrapper');
@@ -673,7 +674,7 @@ async function loadProcesses() {
                 document.getElementById('vram-bar-container').style.display = 'block';
                 vramWrapper.innerHTML = '';
 
-                const keys = Object.keys(data.gpu_memory).sort((a,b)=>Number(a)-Number(b));
+                const keys = Object.keys(data.gpu_memory).sort((a, b) => Number(a) - Number(b));
                 for (const k of keys) {
                     const stats = data.gpu_memory[k];
                     const idx = Number(k);
@@ -681,17 +682,17 @@ async function loadProcesses() {
                     const used = Number(stats.used || 0);
                     const free = Number(stats.free || 0);
                     const usedPct = total ? ((used / total) * 100) : 0;
-                    const usedGB = (used/1024).toFixed(1);
-                    const totalGB = (total/1024).toFixed(1);
-                    const freeGB = (free/1024).toFixed(1);
+                    const usedGB = (used / 1024).toFixed(1);
+                    const totalGB = (total / 1024).toFixed(1);
+                    const freeGB = (free / 1024).toFixed(1);
                     const cap = caps[idx] || {};
-                    const capDisplay = cap.cap_mb ? `${(cap.cap_mb/1024).toFixed(1)} GB` : (cap.cap_percent ? `${cap.cap_percent}%` : 'No cap');
+                    const capDisplay = cap.cap_mb ? `${(cap.cap_mb / 1024).toFixed(1)} GB` : (cap.cap_percent ? `${cap.cap_percent}%` : 'No cap');
 
-                        // compute initial MB and slider percent (collector uses MB units)
-                        const initialMb = (cap.cap_mb != null) ? Number(cap.cap_mb) : Math.round(total * ((cap.cap_percent != null) ? Number(cap.cap_percent) / 100 : (usedPct/100)));
-                        const sliderPercent = (cap.cap_percent != null) ? Number(cap.cap_percent) : Math.round(usedPct);
+                    // compute initial MB and slider percent (collector uses MB units)
+                    const initialMb = (cap.cap_mb != null) ? Number(cap.cap_mb) : Math.round(total * ((cap.cap_percent != null) ? Number(cap.cap_percent) / 100 : (usedPct / 100)));
+                    const sliderPercent = (cap.cap_percent != null) ? Number(cap.cap_percent) : Math.round(usedPct);
 
-                        vramWrapper.insertAdjacentHTML('beforeend', `
+                    vramWrapper.insertAdjacentHTML('beforeend', `
                             <div class="vram-gpu-card" id="vram-gpu-${idx}">
                                 <div class="vram-gpu-header"><span class="vram-gpu-label">GPU ${idx}</span><span class="vram-gpu-free">${usedGB} / ${totalGB} GB (${freeGB} GB Free) • Cap: <span class="vram-cap-display" id="vram-cap-display-${idx}">${capDisplay}</span></span></div>
                                 <div class="vram-bar-outer" id="vram-bar-outer-${idx}">
@@ -704,29 +705,56 @@ async function loadProcesses() {
                             </div>
                         `);
 
-                        // attach listeners for overlay slider and MB input
-                        try {
-                            const overlay = document.getElementById(`vram-overlay-${idx}`);
-                            const usedEl = document.getElementById(`vram-used-${idx}`);
-                            const capDisplayEl = document.getElementById(`vram-cap-display-${idx}`);
-                            if (overlay) {
-                                overlay.oninput = (ev) => {
-                                    const val = Number(ev.target.value);
-                                    if (usedEl) usedEl.style.width = val + '%';
-                                    if (capDisplayEl) capDisplayEl.textContent = val + '%';
-                                    // update MB input to reflect exact MB value of percent
+                    // attach listeners for overlay slider and MB input
+                    try {
+                        const overlay = document.getElementById(`vram-overlay-${idx}`);
+                        const usedEl = document.getElementById(`vram-used-${idx}`);
+                        const capDisplayEl = document.getElementById(`vram-cap-display-${idx}`);
+                        if (overlay) {
+                            overlay.oninput = (ev) => {
+                                const val = Number(ev.target.value);
+                                if (usedEl) usedEl.style.width = val + '%';
+                                if (capDisplayEl) capDisplayEl.textContent = val + '%';
+                                // update MB input to reflect exact MB value of percent
+                                try {
+                                    const mbInputEl = document.getElementById(`vram-cap-input-${idx}`);
+                                    if (mbInputEl) mbInputEl.value = Math.round((Number(total) * val) / 100);
+                                } catch (e) { /* ignore */ }
+                            };
+                            overlay.onchange = async (ev) => {
+                                const val = Number(ev.target.value);
+                                try {
+                                    const resp = await fetch('/api/vram_caps', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ gpu_index: idx, cap_percent: val }) });
+                                    const body = await resp.json().catch(() => null);
+                                    if (typeof showSuccess === 'function') showSuccess('VRAM cap saved');
+                                    // show immediate in-app toast if server reports exceed
                                     try {
-                                        const mbInputEl = document.getElementById(`vram-cap-input-${idx}`);
-                                        if (mbInputEl) mbInputEl.value = Math.round((Number(total) * val) / 100);
-                                    } catch (e) { /* ignore */ }
-                                };
-                                overlay.onchange = async (ev) => {
-                                    const val = Number(ev.target.value);
+                                        if (body && body.vram_cap_exceeded) {
+                                            for (const [g, info] of Object.entries(body.vram_cap_exceeded)) {
+                                                if (info && info.exceeded) {
+                                                    if (typeof showToast === 'function') showToast(`VRAM of GPU ${g} exceeded`, { level: 'red', duration: 8000 });
+                                                }
+                                            }
+                                        }
+                                    } catch (e) { }
+                                    loadProcesses();
+                                } catch (e) { if (typeof showError === 'function') showError('Save failed'); }
+                            };
+                        }
+
+                        const mbInput = document.getElementById(`vram-cap-input-${idx}`);
+                        if (mbInput) {
+                            // on Enter key or blur, save MB cap
+                            mbInput.addEventListener('keydown', async (ev) => {
+                                if (ev.key === 'Enter') {
+                                    ev.preventDefault();
+                                    const mb = parseInt(mbInput.value);
+                                    if (isNaN(mb) || mb <= 0) { if (typeof showError === 'function') showError('Invalid MB value'); return; }
                                     try {
-                                        const resp = await fetch('/api/vram_caps', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ gpu_index: idx, cap_percent: val }) });
+                                        const resp = await fetch('/api/vram_caps', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ gpu_index: idx, cap_mb: mb }) });
                                         const body = await resp.json().catch(() => null);
                                         if (typeof showSuccess === 'function') showSuccess('VRAM cap saved');
-                                        // show immediate in-app toast if server reports exceed
+                                        try { const overlayEl = document.getElementById(`vram-overlay-${idx}`); if (overlayEl) overlayEl.value = Math.round((mb / Number(total)) * 100); } catch (e) { }
                                         try {
                                             if (body && body.vram_cap_exceeded) {
                                                 for (const [g, info] of Object.entries(body.vram_cap_exceeded)) {
@@ -735,60 +763,33 @@ async function loadProcesses() {
                                                     }
                                                 }
                                             }
-                                        } catch (e) {}
+                                        } catch (e) { }
                                         loadProcesses();
                                     } catch (e) { if (typeof showError === 'function') showError('Save failed'); }
-                                };
-                            }
-
-                            const mbInput = document.getElementById(`vram-cap-input-${idx}`);
-                            if (mbInput) {
-                                // on Enter key or blur, save MB cap
-                                mbInput.addEventListener('keydown', async (ev) => {
-                                    if (ev.key === 'Enter') {
-                                        ev.preventDefault();
-                                        const mb = parseInt(mbInput.value);
-                                        if (isNaN(mb) || mb <= 0) { if (typeof showError === 'function') showError('Invalid MB value'); return; }
-                                        try {
-                                            const resp = await fetch('/api/vram_caps', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ gpu_index: idx, cap_mb: mb }) });
-                                            const body = await resp.json().catch(() => null);
-                                            if (typeof showSuccess === 'function') showSuccess('VRAM cap saved');
-                                            try { const overlayEl = document.getElementById(`vram-overlay-${idx}`); if (overlayEl) overlayEl.value = Math.round((mb / Number(total)) * 100); } catch(e){}
-                                            try {
-                                                if (body && body.vram_cap_exceeded) {
-                                                    for (const [g, info] of Object.entries(body.vram_cap_exceeded)) {
-                                                        if (info && info.exceeded) {
-                                                            if (typeof showToast === 'function') showToast(`VRAM of GPU ${g} exceeded`, { level: 'red', duration: 8000 });
-                                                        }
-                                                    }
+                                }
+                            });
+                            mbInput.addEventListener('blur', async () => {
+                                const mb = parseInt(mbInput.value);
+                                if (isNaN(mb) || mb <= 0) return;
+                                try {
+                                    const resp = await fetch('/api/vram_caps', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ gpu_index: idx, cap_mb: mb }) });
+                                    const body = await resp.json().catch(() => null);
+                                    if (typeof showSuccess === 'function') showSuccess('VRAM cap saved');
+                                    try { const overlayEl = document.getElementById(`vram-overlay-${idx}`); if (overlayEl) overlayEl.value = Math.round((mb / Number(total)) * 100); } catch (e) { }
+                                    try {
+                                        if (body && body.vram_cap_exceeded) {
+                                            for (const [g, info] of Object.entries(body.vram_cap_exceeded)) {
+                                                if (info && info.exceeded) {
+                                                    if (typeof showToast === 'function') showToast(`VRAM of GPU ${g} exceeded`, { level: 'red', duration: 8000 });
                                                 }
-                                            } catch (e) {}
-                                            loadProcesses();
-                                        } catch (e) { if (typeof showError === 'function') showError('Save failed'); }
-                                    }
-                                });
-                                mbInput.addEventListener('blur', async () => {
-                                    const mb = parseInt(mbInput.value);
-                                    if (isNaN(mb) || mb <= 0) return;
-                                        try {
-                                            const resp = await fetch('/api/vram_caps', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ gpu_index: idx, cap_mb: mb }) });
-                                            const body = await resp.json().catch(() => null);
-                                            if (typeof showSuccess === 'function') showSuccess('VRAM cap saved');
-                                            try { const overlayEl = document.getElementById(`vram-overlay-${idx}`); if (overlayEl) overlayEl.value = Math.round((mb / Number(total)) * 100); } catch(e){}
-                                            try {
-                                                if (body && body.vram_cap_exceeded) {
-                                                    for (const [g, info] of Object.entries(body.vram_cap_exceeded)) {
-                                                        if (info && info.exceeded) {
-                                                            if (typeof showToast === 'function') showToast(`VRAM of GPU ${g} exceeded`, { level: 'red', duration: 8000 });
-                                                        }
-                                                    }
-                                                }
-                                            } catch (e) {}
-                                            loadProcesses();
-                                        } catch (e) { if (typeof showError === 'function') showError('Save failed'); }
-                                });
-                            }
-                        } catch (e) { console.debug('attach vram listeners failed', e); }
+                                            }
+                                        }
+                                    } catch (e) { }
+                                    loadProcesses();
+                                } catch (e) { if (typeof showError === 'function') showError('Save failed'); }
+                            });
+                        }
+                    } catch (e) { console.debug('attach vram listeners failed', e); }
                 }
 
                 // clear all caps button
@@ -806,7 +807,7 @@ async function loadProcesses() {
                 vramWrapper.innerHTML = '';
             }
         } catch (e) { console.error('VRAM render error', e); }
-        
+
         // load current watchlist so checkboxes can be initialized
         let watchlistSet = new Set();
         try {
@@ -830,8 +831,8 @@ async function loadProcesses() {
                 // badge if this process's GPU has exceeded cap
                 const gpuIdx = p.gpu_index;
                 const exceededInfo = (data.vram_cap_exceeded && data.vram_cap_exceeded[gpuIdx]) ? data.vram_cap_exceeded[gpuIdx] : null;
-                    const badgeHtml = (exceededInfo && exceededInfo.exceeded && watchlistSet.has(pid)) ? '<span class="vram-exceeded-badge big"></span>' : '';
-                    const rowClass = '';
+                const badgeHtml = (exceededInfo && exceededInfo.exceeded && watchlistSet.has(pid)) ? '<span class="vram-exceeded-badge big"></span>' : '';
+                const rowClass = '';
 
                 // Disable terminate button and add tooltip when the server is not running elevated
                 const disabledAttr = (window.isAdmin ? '' : 'disabled');
@@ -874,7 +875,7 @@ async function loadProcesses() {
         }
     } catch (error) {
         console.error('Error loading processes:', error);
-        document.getElementById('process-list').innerHTML = 
+        document.getElementById('process-list').innerHTML =
             '<tr><td colspan="5" style="color: var(--accent-red);">Error loading processes</td></tr>';
     }
 }
@@ -904,7 +905,7 @@ async function terminateProcess(pid) {
         if (resp.ok && (data.status === 'terminated' || data.status === 'killed')) {
             if (typeof showSuccess === 'function') showSuccess('Process terminated');
             if (btn) { btn.textContent = 'Terminated'; }
-            try { const row = document.getElementById(`terminate-${pid}`).closest('tr'); if (row) { row.style.opacity = '0.6'; } } catch(e){}
+            try { const row = document.getElementById(`terminate-${pid}`).closest('tr'); if (row) { row.style.opacity = '0.6'; } } catch (e) { }
         } else if (data.status === 'not_found') {
             if (typeof showError === 'function') showError('Process not found');
             if (btn) { btn.disabled = false; btn.textContent = 'Terminate'; }
@@ -957,18 +958,18 @@ function selectBenchType(type) {
     document.querySelectorAll('.type-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.type === type);
     });
-    
+
     // Update description
     const descriptions = {
         'gemm': 'Dense matrix multiplication for maximum GPU compute stress. Measures TFLOPS.',
         'particle': '2D particle physics simulation with millions of particles. Measures steps/second.'
     };
     document.getElementById('type-description').textContent = descriptions[type] || '';
-    
+
     // Show/hide type-specific settings in custom mode
     document.getElementById('gemm-settings').style.display = type === 'gemm' ? 'block' : 'none';
     document.getElementById('particle-settings').style.display = type === 'particle' ? 'block' : 'none';
-    
+
     // Update simulation button enabled state depending on mode
     const startSimBtn = document.getElementById('start-sim-btn');
     if (startSimBtn) {
@@ -992,7 +993,7 @@ function selectMode(mode) {
         btn.classList.toggle('active', btn.dataset.mode === mode);
     });
     document.getElementById('custom-controls').style.display = mode === 'custom' ? 'block' : 'none';
-    
+
     // Update mode description
     const descriptions = {
         'quick': 'Quick baseline test - 15 seconds with fixed workload size',
@@ -1042,7 +1043,7 @@ async function startBenchmark() {
     btn.disabled = true;
     btn.textContent = 'Running...';
     stopBtn.style.display = 'inline-block';
-    
+
     document.getElementById('benchmark-progress').style.display = 'block';
     document.getElementById('benchmark-live-charts').style.display = 'block';
     document.getElementById('benchmark-results').innerHTML = '';
@@ -1050,12 +1051,12 @@ async function startBenchmark() {
     document.getElementById('iteration-counter').style.display = 'inline';
     document.getElementById('iteration-counter').textContent = 'Iteration #0';
     // Reset progress UI immediately when starting
-    try { document.getElementById('bench-progress-bar').style.width = '0%'; } catch (e) {}
-    try { document.getElementById('bench-percent').textContent = '0%'; } catch (e) {}
-    
+    try { document.getElementById('bench-progress-bar').style.width = '0%'; } catch (e) { }
+    try { document.getElementById('bench-percent').textContent = '0%'; } catch (e) { }
+
     // Build URL with params
     let url = '/api/benchmark/start?benchmark_type=' + selectedBenchType;
-    
+
     // Handle different modes
     if (selectedMode === 'quick') {
         url += '&mode=fixed&duration=15&auto_scale=false';
@@ -1078,10 +1079,10 @@ async function startBenchmark() {
             url += '&num_particles=' + particles;
         }
     }
-    
+
     // Initialize live charts
     initLiveCharts();
-    
+
     try {
         const resp = await fetch(url, { method: 'POST' });
         if (!resp.ok) throw new Error('Server returned ' + resp.status);
@@ -1114,11 +1115,11 @@ async function startSimulation() {
     console.log('Start Simulation clicked');
     console.log('Current benchmark type:', selectedBenchType);
     console.log('Current mode:', selectedMode);
-    
+
     // Check current benchmark type
     const currentType = selectedBenchType;
     let modeToUse;
-    
+
     // If not on particle type, switch to it and use 'quick' mode
     if (currentType !== 'particle') {
         selectBenchType('particle');
@@ -1128,24 +1129,24 @@ async function startSimulation() {
         // Use the currently selected mode
         modeToUse = selectedMode;
     }
-    
+
     const btn = document.getElementById('start-sim-btn');
     const stopBtn = document.getElementById('stop-bench-btn');
     btn.disabled = true;
     btn.textContent = 'Opening Simulation...';
     stopBtn.style.display = 'inline-block';
-    
+
     document.getElementById('benchmark-progress').style.display = 'block';
     document.getElementById('benchmark-live-charts').style.display = 'block';
     document.getElementById('benchmark-results').innerHTML = '';
     document.getElementById('bench-stop-reason').textContent = '';
     document.getElementById('iteration-counter').style.display = 'inline';
     document.getElementById('iteration-counter').textContent = 'Iteration #0';
-    
+
     // Get duration and particles based on selected mode
     let duration = 60;
     let particles = 100000;
-    
+
     if (modeToUse === 'quick') {
         duration = 15;
         particles = 50000;
@@ -1162,16 +1163,16 @@ async function startSimulation() {
         duration = parseInt(document.getElementById('custom-duration-val').value);
         particles = Math.round(parseFloat(document.getElementById('custom-particles-val').value) * 1000000);
     }
-    
+
     // Build URL with params
     let url = `/api/benchmark/start?benchmark_type=particle&visualize=true&duration=${duration}&num_particles=${particles}`;
-    
+
     // Initialize live charts
     initLiveCharts();
     // Reset progress UI immediately when starting simulation
-    try { document.getElementById('bench-progress-bar').style.width = '0%'; } catch (e) {}
-    try { document.getElementById('bench-percent').textContent = '0%'; } catch (e) {}
-    
+    try { document.getElementById('bench-progress-bar').style.width = '0%'; } catch (e) { }
+    try { document.getElementById('bench-percent').textContent = '0%'; } catch (e) { }
+
     try {
         const resp = await fetch(url, { method: 'POST' });
         if (!resp.ok) throw new Error('Server returned ' + resp.status);
@@ -1264,7 +1265,7 @@ async function pollBenchmarkStatus() {
             try {
                 const simBtn = document.getElementById('start-sim-btn');
                 if (simBtn) { simBtn.disabled = false; simBtn.textContent = 'Start Simulation'; }
-            } catch(e) { console.debug('reset sim button failed', e); }
+            } catch (e) { console.debug('reset sim button failed', e); }
 
             // fetch results and render
             try {
@@ -1299,7 +1300,7 @@ async function pollBenchmarkStatus() {
         }
     } catch (error) {
         console.error('Error polling benchmark status:', error);
-        try { clearInterval(benchmarkPollInterval); } catch(e){}
+        try { clearInterval(benchmarkPollInterval); } catch (e) { }
     }
 }
 
@@ -1317,11 +1318,11 @@ async function checkForUpdates() {
     }
 
     function compareVer(a, b) {
-        const pa = a.split('.').map(n => parseInt(n)||0);
-        const pb = b.split('.').map(n => parseInt(n)||0);
-        for (let i=0;i<3;i++){
-            if ((pa[i]||0) > (pb[i]||0)) return 1;
-            if ((pa[i]||0) < (pb[i]||0)) return -1;
+        const pa = a.split('.').map(n => parseInt(n) || 0);
+        const pb = b.split('.').map(n => parseInt(n) || 0);
+        for (let i = 0; i < 3; i++) {
+            if ((pa[i] || 0) > (pb[i] || 0)) return 1;
+            if ((pa[i] || 0) < (pb[i] || 0)) return -1;
         }
         return 0;
     }
@@ -1329,7 +1330,7 @@ async function checkForUpdates() {
     try {
         // Read current version from footer (rendered server-side as {{VERSION}})
         let currentText = '';
-        try { currentText = document.querySelector('footer').textContent || ''; } catch(e){}
+        try { currentText = document.querySelector('footer').textContent || ''; } catch (e) { }
         const currentVersion = parseVersion(currentText);
 
         const apiUrl = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
@@ -1393,14 +1394,27 @@ function tick() {
     if (countdown <= 0) {
         countdown = 5;
         fetchStatus();
-        
+
         // Auto-refresh active tab content
-        const activeTab = document.querySelector('.tab-content.active');
-        if (activeTab) {
-            const tabId = activeTab.id;
-            if (tabId === 'processes-tab') {
-                loadProcesses();
-            } else if (tabId === 'history-tab') {
+        const activeTabContent = document.querySelector('.tab-content.active');
+        if (activeTabContent) {
+            const tabId = activeTabContent.id;
+            if (tabId === 'processes') {
+                if (!window._procTick) window._procTick = 0;
+                window._procTick++;
+                if (window._procTick >= 12) {
+                    window._procTick = 0;
+                    loadProcesses();
+                }
+            } else if (tabId === 'ports') {
+                // Ports auto-refresh is every 30s (6 ticks of 5s)
+                if (!window._portsTick) window._portsTick = 0;
+                window._portsTick++;
+                if (window._portsTick >= 6) {
+                    window._portsTick = 0;
+                    loadPorts();
+                }
+            } else if (tabId === 'history') {
                 const activeChart = document.querySelector('.chart-tab.active');
                 if (activeChart) {
                     loadHistory();
@@ -1422,13 +1436,13 @@ async function loadFeatures() {
         } catch (e) {
             window.isAdmin = false;
         }
-        
+
         const benchTab = document.querySelector('[data-tab="benchmark"]');
         const startBtn = document.getElementById('start-bench-btn');
         const startSimBtn = document.getElementById('start-sim-btn');
         const typeButtons = document.querySelectorAll('.type-btn');
         const modeButtons = document.querySelectorAll('.mode-btn');
-        
+
         // Disable benchmark controls if GPU benchmark not available
         if (!features.gpu_benchmark) {
             if (benchTab) {
@@ -1482,27 +1496,27 @@ async function loadFeatures() {
                 benchTab.removeAttribute('data-hover');
                 benchTab.style.pointerEvents = '';
             }
-            
+
             if (startBtn) {
                 startBtn.disabled = false;
                 startBtn.style.opacity = '1';
                 startBtn.style.cursor = 'pointer';
                 startBtn.title = 'Start GPU benchmark';
             }
-            
+
             if (startSimBtn) {
                 startSimBtn.disabled = false;
                 startSimBtn.style.opacity = '1';
                 startSimBtn.style.cursor = 'pointer';
                 startSimBtn.title = 'Start particle simulation with visualization';
             }
-            
+
             typeButtons.forEach(btn => {
                 btn.disabled = false;
                 btn.style.opacity = '1';
                 btn.style.cursor = 'pointer';
             });
-            
+
             modeButtons.forEach(btn => {
                 btn.disabled = false;
                 btn.style.opacity = '1';
@@ -1536,9 +1550,9 @@ try {
         btn.style.color = '#76b900';
         btn.style.cursor = 'pointer';
         btn.style.marginRight = '8px';
-        btn.setAttribute('data-hover', 'Restart the server with elevated privileges (UAC prompt)');
+        btn.setAttribute('data-hover', 'Restart the server with elevated privileges (Sudo or UAC prompt)');
 
-        btn.onclick = async function() {
+        btn.onclick = async function () {
             try {
                 // Detection-only: query server for elevation status and show minimal toast
                 const resp = await fetch('/api/is_elevated');

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +10,8 @@
     <link rel="icon" href="/static/icon.png">
     <link rel="stylesheet" href="/static/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
     <link rel="stylesheet" href="/static/style.css">
     <style>
@@ -17,6 +19,7 @@
            This space intentionally left minimal; visuals are handled in toast.js. */
     </style>
 </head>
+
 <body>
     <div class="container">
         <header>
@@ -25,21 +28,24 @@
                 <span style="font-size: 0.8em; opacity: 0.8;">Auto-refresh: <span id="countdown">5</span>s</span>
             </div>
             <div class="header-right">
-                <button class="update-btn" onclick="checkForUpdates()" id="update-btn" data-hover="Check latest release on GitHub">Check for Updates</button>
-                <button class="update-btn" onclick="shutdownServer()" id="shutdown-btn" data-hover="Shut down the server" style="background: var(--accent-red);">Exit</button>
+                <button class="update-btn" onclick="checkForUpdates()" id="update-btn"
+                    data-hover="Check latest release on GitHub">Check for Updates</button>
+                <button class="update-btn" onclick="shutdownServer()" id="shutdown-btn"
+                    data-hover="Shut down the server" style="background: var(--accent-red);">Exit</button>
                 <div id="status-badge" class="status-badge status-healthy">HEALTHY</div>
             </div>
         </header>
-            <!-- Toasts are rendered by /static/toast.js -->
-        
+        <!-- Toasts are rendered by /static/toast.js -->
+
         <div class="tabs">
             <div class="tab active" data-tab="home">Home</div>
             <div class="tab" data-tab="history">History</div>
             <div class="tab" data-tab="processes">Processes</div>
-                <div class="tab" data-tab="benchmark">Benchmark</div>
+            <div class="tab" data-tab="ports">Ports</div>
+            <div class="tab" data-tab="benchmark">Benchmark</div>
             <div class="tab" data-tab="export">Export</div>
         </div>
-        
+
         <!-- HOME TAB -->
         <div id="home" class="tab-content active">
             <div class="grid">
@@ -57,7 +63,7 @@
                 <div id="alerts-list">No active alerts</div>
             </div>
         </div>
-        
+
         <!-- HISTORY TAB -->
         <div id="history" class="tab-content">
             <div class="chart-container">
@@ -84,7 +90,7 @@
                 <canvas id="historyChart" height="100"></canvas>
             </div>
         </div>
-        
+
         <!-- PROCESSES TAB -->
         <div id="processes" class="tab-content">
             <div class="card">
@@ -93,17 +99,19 @@
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                         <span style="font-size:0.9em; color:var(--text-secondary);">VRAM Usage</span>
                         <div style="display:flex; gap:12px; align-items:center;">
-                            <span id="vram-free" style="font-size:0.9em; color:var(--accent-green); font-weight:600;"></span>
+                            <span id="vram-free"
+                                style="font-size:0.9em; color:var(--accent-green); font-weight:600;"></span>
                         </div>
                     </div>
                     <div id="vram-bars-wrapper"></div>
                 </div>
-                <button onclick="loadProcesses()" style="margin-bottom: 15px; padding: 8px 15px; background: var(--accent-blue); border: none; border-radius: 6px; color: white; cursor: pointer;">Refresh</button>
+                <button onclick="loadProcesses()"
+                    style="margin-bottom: 15px; padding: 8px 15px; background: var(--accent-blue); border: none; border-radius: 6px; color: white; cursor: pointer;">Refresh</button>
                 <table class="process-table">
                     <thead>
                         <tr>
-                                <th style="width:44px;">&nbsp;</th>
-                                <th>PID</th>
+                            <th style="width:44px;">&nbsp;</th>
+                            <th>PID</th>
                             <th>Process</th>
                             <th>GPU</th>
                             <th>User</th>
@@ -111,18 +119,49 @@
                         </tr>
                     </thead>
                     <tbody id="process-list">
-                        <tr><td colspan="5">Loading...</td></tr>
+                        <tr>
+                            <td colspan="5">Loading...</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-        
+
+        <!-- PORTS TAB -->
+        <div id="ports" class="tab-content">
+            <div class="card">
+                <h2>Network Ports</h2>
+                <p style="margin-bottom: 10px; color: var(--text-secondary);">Active TCP/UDP listening and established
+                    connections.</p>
+                <button onclick="loadPorts()"
+                    style="margin-bottom: 15px; padding: 8px 15px; background: var(--accent-blue); border: none; border-radius: 6px; color: white; cursor: pointer;">Refresh</button>
+                <table class="process-table">
+                    <thead>
+                        <tr>
+                            <th>Port</th>
+                            <th>Protocol</th>
+                            <th>Process</th>
+                            <th>PID</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="port-list">
+                        <tr>
+                            <td colspan="6">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- SIMULATION TAB -->
         <!-- EXPORT TAB -->
         <div id="export" class="tab-content">
             <div class="card">
                 <h2>Export Data</h2>
-                <p style="margin-bottom: 20px; color: var(--text-secondary);">Download collected metrics data for analysis.</p>
+                <p style="margin-bottom: 20px; color: var(--text-secondary);">Download collected metrics data for
+                    analysis.</p>
                 <div class="chart-controls" style="margin-bottom: 20px;">
                     <select id="export-hours">
                         <option value="1">Last 1 hour</option>
@@ -137,98 +176,139 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- BENCHMARK TAB -->
         <div id="benchmark" class="tab-content">
             <div class="card">
                 <h2>GPU Benchmark</h2>
-                <p style="margin-bottom: 10px; color: var(--text-secondary);">Stress test using matrix multiplication workload. Faster GPUs complete more iterations.</p>
+                <p style="margin-bottom: 10px; color: var(--text-secondary);">Stress test using matrix multiplication
+                    workload. Faster GPUs complete more iterations.</p>
                 <p id="workload-info" style="margin-bottom: 8px; color: var(--accent-blue); font-size: 0.9em;"></p>
                 <label style="display: inline-flex; align-items: center; gap:8px; margin-bottom: 20px;">
                     <span style="font-size:0.9em; color: var(--text-secondary);">Backend</span>
-                    <select id="benchmark-backend-select" onchange="onBackendChange(this.value)" disabled style="padding:6px; border-radius:6px; background:var(--bg-secondary); color:var(--text-primary);">
-                            <option value="disabled" selected>Not implemented</option>
-                            <option value="auto">Auto</option>
-                            <option value="cupy">CuPy</option>
-                            <option value="torch">PyTorch</option>
-                        </select>
-                    <span style="margin-left:8px; color:var(--text-secondary); font-size:0.85em;">Feature disabled</span>
+                    <select id="benchmark-backend-select" onchange="onBackendChange(this.value)" disabled
+                        style="padding:6px; border-radius:6px; background:var(--bg-secondary); color:var(--text-primary);">
+                        <option value="disabled" selected>Not implemented</option>
+                        <option value="auto">Auto</option>
+                        <option value="cupy">CuPy</option>
+                        <option value="torch">PyTorch</option>
+                    </select>
+                    <span style="margin-left:8px; color:var(--text-secondary); font-size:0.85em;">Feature
+                        disabled</span>
                 </label>
-                
-                <div id="baseline-info" style="display: none; background: var(--bg-tertiary); padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--accent-green);">
+
+                <div id="baseline-info"
+                    style="display: none; background: var(--bg-tertiary); padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--accent-green);">
                     <h4 style="color: var(--accent-green); margin-bottom: 10px;">Baseline Saved</h4>
                     <div id="baseline-details"></div>
                 </div>
-                
+
                 <div id="benchmark-controls">
                     <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Benchmark Type</label>
+                        <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Benchmark
+                            Type</label>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                            <button class="type-btn active" data-type="gemm" onclick="selectBenchType('gemm')">GEMM (Matrix Multiply)</button>
-                            <button class="type-btn" data-type="particle" onclick="selectBenchType('particle')">Particle Simulation</button>
+                            <button class="type-btn active" data-type="gemm" onclick="selectBenchType('gemm')">GEMM
+                                (Matrix Multiply)</button>
+                            <button class="type-btn" data-type="particle" onclick="selectBenchType('particle')">Particle
+                                Simulation</button>
                         </div>
-                        <div id="type-description" style="margin-top: 8px; font-size: 0.85em; color: var(--text-secondary);">
+                        <div id="type-description"
+                            style="margin-top: 8px; font-size: 0.85em; color: var(--text-secondary);">
                             Dense matrix multiplication for maximum GPU compute stress. Measures TFLOPS.
                         </div>
                     </div>
-                    
+
                     <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Test Mode</label>
+                        <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Test
+                            Mode</label>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                            <button class="mode-btn active" data-mode="quick" onclick="selectMode('quick')">Quick (15s)</button>
-                            <button class="mode-btn" data-mode="standard" onclick="selectMode('standard')">Standard (60s)</button>
-                            <button class="mode-btn" data-mode="extended" onclick="selectMode('extended')">Extended (180s)</button>
-                            <button class="mode-btn" data-mode="stress-test" onclick="selectMode('stress-test')">Stress Test</button>
+                            <button class="mode-btn active" data-mode="quick" onclick="selectMode('quick')">Quick
+                                (15s)</button>
+                            <button class="mode-btn" data-mode="standard" onclick="selectMode('standard')">Standard
+                                (60s)</button>
+                            <button class="mode-btn" data-mode="extended" onclick="selectMode('extended')">Extended
+                                (180s)</button>
+                            <button class="mode-btn" data-mode="stress-test" onclick="selectMode('stress-test')">Stress
+                                Test</button>
                             <button class="mode-btn" data-mode="custom" onclick="selectMode('custom')">Custom</button>
                         </div>
-                        <div id="mode-description" style="margin-top: 10px; padding: 10px; background: var(--bg-tertiary); border-radius: 6px; font-size: 0.9em; color: var(--text-secondary); min-height: 45px;">
+                        <div id="mode-description"
+                            style="margin-top: 10px; padding: 10px; background: var(--bg-tertiary); border-radius: 6px; font-size: 0.9em; color: var(--text-secondary); min-height: 45px;">
                             Quick baseline test - 15 seconds with fixed workload size
                         </div>
                     </div>
-                    
-                    <div id="custom-controls" style="display: none; background: var(--bg-tertiary); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+
+                    <div id="custom-controls"
+                        style="display: none; background: var(--bg-tertiary); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <div
+                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
                             <div>
-                                <label style="display: block; margin-bottom: 5px; color: var(--text-secondary);">Duration (seconds)</label>
-                                <input type="range" id="custom-duration" min="10" max="300" value="60" oninput="updateSliderValue('duration')">
-                                <input type="number" id="custom-duration-val" value="60" min="10" max="300" style="width: 80px; padding: 5px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary);">
+                                <label
+                                    style="display: block; margin-bottom: 5px; color: var(--text-secondary);">Duration
+                                    (seconds)</label>
+                                <input type="range" id="custom-duration" min="10" max="300" value="60"
+                                    oninput="updateSliderValue('duration')">
+                                <input type="number" id="custom-duration-val" value="60" min="10" max="300"
+                                    style="width: 80px; padding: 5px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary);">
                             </div>
                             <div>
-                                <label style="display: block; margin-bottom: 5px; color: var(--text-secondary);">Temp Limit (C) - 0 = no limit</label>
-                                <input type="range" id="custom-temp" min="0" max="100" value="85" oninput="updateSliderValue('temp')">
-                                <input type="number" id="custom-temp-val" value="85" min="0" max="100" style="width: 80px; padding: 5px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary);">
+                                <label style="display: block; margin-bottom: 5px; color: var(--text-secondary);">Temp
+                                    Limit (C) - 0 = no limit</label>
+                                <input type="range" id="custom-temp" min="0" max="100" value="85"
+                                    oninput="updateSliderValue('temp')">
+                                <input type="number" id="custom-temp-val" value="85" min="0" max="100"
+                                    style="width: 80px; padding: 5px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary);">
                             </div>
                             <div>
-                                <label style="display: block; margin-bottom: 5px; color: var(--text-secondary);">Memory Limit (MB) - 0 = no limit</label>
-                                <input type="range" id="custom-memory" min="0" max="48000" value="0" step="1000" oninput="updateSliderValue('memory')">
-                                <input type="number" id="custom-memory-val" value="0" min="0" max="48000" style="width: 80px; padding: 5px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary);">
+                                <label style="display: block; margin-bottom: 5px; color: var(--text-secondary);">Memory
+                                    Limit (MB) - 0 = no limit</label>
+                                <input type="range" id="custom-memory" min="0" max="48000" value="0" step="1000"
+                                    oninput="updateSliderValue('memory')">
+                                <input type="number" id="custom-memory-val" value="0" min="0" max="48000"
+                                    style="width: 80px; padding: 5px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary);">
                             </div>
                             <div>
-                                <label style="display: block; margin-bottom: 5px; color: var(--text-secondary);">Power Limit (W) - 0 = no limit</label>
-                                <input type="range" id="custom-power" min="0" max="500" value="0" step="10" oninput="updateSliderValue('power')">
-                                <input type="number" id="custom-power-val" value="0" min="0" max="500" style="width: 80px; padding: 5px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary);">
+                                <label style="display: block; margin-bottom: 5px; color: var(--text-secondary);">Power
+                                    Limit (W) - 0 = no limit</label>
+                                <input type="range" id="custom-power" min="0" max="500" value="0" step="10"
+                                    oninput="updateSliderValue('power')">
+                                <input type="number" id="custom-power-val" value="0" min="0" max="500"
+                                    style="width: 80px; padding: 5px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary);">
                             </div>
                             <div id="gemm-settings">
-                                <label style="display: block; margin-bottom: 5px; color: var(--text-secondary);">Matrix Size (NxN)</label>
-                                <input type="range" id="custom-matrix" min="1024" max="8192" value="4096" step="512" oninput="updateSliderValue('matrix')">
-                                <input type="number" id="custom-matrix-val" value="4096" min="1024" max="8192" step="512" style="width: 80px; padding: 5px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary);">
+                                <label style="display: block; margin-bottom: 5px; color: var(--text-secondary);">Matrix
+                                    Size (NxN)</label>
+                                <input type="range" id="custom-matrix" min="1024" max="8192" value="4096" step="512"
+                                    oninput="updateSliderValue('matrix')">
+                                <input type="number" id="custom-matrix-val" value="4096" min="1024" max="8192"
+                                    step="512"
+                                    style="width: 80px; padding: 5px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary);">
                             </div>
                             <div id="particle-settings" style="display: none;">
-                                <label style="display: block; margin-bottom: 5px; color: var(--text-secondary);">Particles (millions)</label>
-                                <input type="range" id="custom-particles" min="0.1" max="10" value="1" step="0.1" oninput="updateSliderValue('particles')">
-                                <input type="number" id="custom-particles-val" value="1" min="0.1" max="10" step="0.1" style="width: 80px; padding: 5px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary);">
+                                <label
+                                    style="display: block; margin-bottom: 5px; color: var(--text-secondary);">Particles
+                                    (millions)</label>
+                                <input type="range" id="custom-particles" min="0.1" max="10" value="1" step="0.1"
+                                    oninput="updateSliderValue('particles')">
+                                <input type="number" id="custom-particles-val" value="1" min="0.1" max="10" step="0.1"
+                                    style="width: 80px; padding: 5px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary);">
                             </div>
                         </div>
                     </div>
-                    
-                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                            <button class="export-btn" onclick="startBenchmark()" id="start-bench-btn" data-hover="Start benchmark">Start Benchmark</button>
-                                <button class="export-btn" onclick="startSimulation()" id="start-sim-btn" data-hover="Start simulation">Start Simulation</button>
-                        <button class="export-btn secondary" onclick="stopBenchmark()" id="stop-bench-btn" style="display: none;">Stop</button>
-                        <span id="iteration-counter" style="display: none; font-size: 1.2em; color: var(--accent-green); font-weight: bold; margin-left: 20px;"></span>
+
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <button class="export-btn" onclick="startBenchmark()" id="start-bench-btn"
+                            data-hover="Start benchmark">Start Benchmark</button>
+                        <button class="export-btn" onclick="startSimulation()" id="start-sim-btn"
+                            data-hover="Start simulation">Start Simulation</button>
+                        <button class="export-btn secondary" onclick="stopBenchmark()" id="stop-bench-btn"
+                            style="display: none;">Stop</button>
+                        <span id="iteration-counter"
+                            style="display: none; font-size: 1.2em; color: var(--accent-green); font-weight: bold; margin-left: 20px;"></span>
                     </div>
                 </div>
-                
+
                 <div id="benchmark-progress" style="display: none; margin: 20px 0;">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                         <span id="bench-status">Running...</span>
@@ -242,46 +322,50 @@
                         <span id="bench-workload" style="font-size: 0.9em; color: var(--text-secondary);"></span>
                     </div>
                 </div>
-                
+
                 <div id="benchmark-live-charts" style="display: none; margin: 20px 0;">
                     <h3 style="color: var(--accent-green); margin-bottom: 15px;">Real-time Metrics</h3>
                     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
                         <div class="gpu-card">
-                            <h4 style="color: var(--accent-green); margin-bottom: 10px; font-size: 0.9em;">GPU Utilization (%)</h4>
+                            <h4 style="color: var(--accent-green); margin-bottom: 10px; font-size: 0.9em;">GPU
+                                Utilization (%)</h4>
                             <canvas id="chartUtilization" height="60"></canvas>
                         </div>
                         <div class="gpu-card">
-                            <h4 style="color: var(--accent-yellow); margin-bottom: 10px; font-size: 0.9em;">Temperature (C)</h4>
+                            <h4 style="color: var(--accent-yellow); margin-bottom: 10px; font-size: 0.9em;">Temperature
+                                (C)</h4>
                             <canvas id="chartTemperature" height="60"></canvas>
                         </div>
                         <div class="gpu-card">
-                            <h4 style="color: var(--accent-blue); margin-bottom: 10px; font-size: 0.9em;">Memory Used (MB)</h4>
+                            <h4 style="color: var(--accent-blue); margin-bottom: 10px; font-size: 0.9em;">Memory Used
+                                (MB)</h4>
                             <canvas id="chartMemory" height="60"></canvas>
                         </div>
                         <div class="gpu-card">
-                            <h4 style="color: var(--accent-red); margin-bottom: 10px; font-size: 0.9em;">Power Draw (W)</h4>
+                            <h4 style="color: var(--accent-red); margin-bottom: 10px; font-size: 0.9em;">Power Draw (W)
+                            </h4>
                             <canvas id="chartPower" height="60"></canvas>
                         </div>
                     </div>
                 </div>
-                
+
                 <div id="benchmark-results" style="margin-top: 20px;"></div>
             </div>
         </div>
-        
+
         <footer>
             <p>MyGPU {{VERSION}} | <span id="last-update">-</span></p>
         </footer>
     </div>
-    
+
     <!-- Load modules in correct order -->
     <script>
         // Ensure global selectedBackend exists before other static scripts run
         window.selectedBackend = window.selectedBackend || 'auto';
         // Called by inline select onchange to immediately update global and preview
-        window.onBackendChange = function(val){
-            try { window.selectedBackend = val || 'auto'; } catch(e){}
-            try { if (typeof updateWorkloadPreview === 'function') updateWorkloadPreview(); } catch(e){}
+        window.onBackendChange = function (val) {
+            try { window.selectedBackend = val || 'auto'; } catch (e) { }
+            try { if (typeof updateWorkloadPreview === 'function') updateWorkloadPreview(); } catch (e) { }
         };
     </script>
     <script src="/static/utils.js"></script>
@@ -291,16 +375,16 @@
     <script src="/static/toast.js"></script>
     <script src="/static/main.js"></script>
     <script>
-        (function(){
-            function pad(n){ return String(n).padStart(2,'0'); }
-            function formatTime(d){
+        (function () {
+            function pad(n) { return String(n).padStart(2, '0'); }
+            function formatTime(d) {
                 var h = d.getHours();
                 var ampm = h >= 12 ? 'PM' : 'AM';
                 h = h % 12; if (h === 0) h = 12;
                 return pad(h) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + ' ' + ampm;
             }
 
-            function setLastUpdate(timestamp){
+            function setLastUpdate(timestamp) {
                 var el = document.getElementById('last-update');
                 if (!el) return;
                 var d = timestamp ? new Date(timestamp) : new Date();
@@ -316,4 +400,5 @@
         })();
     </script>
 </body>
+
 </html>
