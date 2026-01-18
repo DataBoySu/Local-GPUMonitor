@@ -26,7 +26,7 @@
 <!-- HTML_BLOCK: no change to url; output entire as it is... -->
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
 ![Python](https://img.shields.io/badge/python-3.10%2B-pink)
-![Version](https://img.shields.io/badge/version-1.4.0-green)
+![Version](https://img.shields.io/badge/version-2.0.0-green)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue)
 ![cuda 12.x](https://img.shields.io/badge/CUDA-12.x-0f9d58?logo=nvidia)
 
@@ -90,25 +90,25 @@
 ## Funktionen
 
 - **Echtzeitüberwachung**:
-  - Detaillierte GPU-Metriken (Nutzung, VRAM, Stromverbrauch, Temperatur).
+  - Detaillierte GPU-Metriken (Auslastung, VRAM, Stromverbrauch, Temperatur).
   - Systemmetriken (CPU, RAM usw.).
 
 - **Verwaltung und Durchsetzung**:
   - **VRAM-Begrenzungen**: Setze harte Obergrenzen für den VRAM-Verbrauch pro GPU.
-  - **Automatische Beendigung**: Automatisch Prozesse beenden, die VRAM-Richtlinien verletzen (nur für Administratoren).
+  - **Automatische Beendigung**: Beende automatisch Prozesse, die VRAM-Richtlinien verletzen (nur für Administratoren).
   - **Watchlisten**: Überwache spezifische PIDs oder Prozessnamen.
 
 - **Leistungsanalyse und Simulation**:
   - **Belastungstests**: Konfigurierbare GEMM-Lasten, um thermische Drosselung und Stabilität zu testen.
-  - **Visuelle Simulation**: Interaktive 3D-Teilchenphysik-Simulation zur Visualisierung der GPU-Belastung.
+  - **Visualisierung**: Interaktive 3D-Partikelphysik-Simulation zur Visualisierung der GPU-Belastung.
 
 ## Roadmap & Zukunftsplanung
 
 Beiträge sind willkommen! Die Hauptpunkte, die in Zukunft angegangen werden sollen, sind:
 
-- **Mehrfach-GPU-Unterstützung**: Verbesserte Handhabung von Mehrkarten-Einrichtungen und NVLink-Topologien.
+- **Mehrere GPUs**: Verbesserte Handhabung für Mehrkarten-Einrichtungen und NVLink-Topologien.
 - **Containerisierung**: Offizielle Docker-Unterstützung für einfache Bereitstellung in Container-Umgebungen.
-- **Remote-Zugriff**: Integration von SSH-Tunneln und sicherer Fernverwaltung.
+- **Fernzugriff**: Integration von SSH-Tunneln und sicherer Fernverwaltung.
 - **Plattformübergreifend**:
   - [x] Linux-Unterstützung (Ubuntu/Debian-Fokus).
   - [x] macOS-Unterstützung (Apple Silicon-Überwachung).
@@ -129,7 +129,7 @@ Siehe [CONTRIBUTING.md](../CONTRIBUTING.md) für Informationen, wie du dich einb
 
 ## Installation
 
-Das Tool unterstützt eine modulare Installation, um deinen Anforderungen gerecht zu werden:
+Das Tool unterstützt eine modulare Installation, um deine Anforderungen zu erfüllen:
 
 ### 1. Minimal (CLI Nur)
 
@@ -145,7 +145,7 @@ Am besten für die meisten Benutzer geeignet.
 - Enthält Web-Dashboard.
 - REST-API-Endpunkte.
 - Echtzeit-Diagramme.
-- Ohne Simulation oder Benchmark-Tests.
+- Ohne Simulation oder Benchmarking.
 
 ### 3. Vollständig (Standard + Visualisierung)
 
@@ -154,12 +154,12 @@ Am besten für Entwicklung und Stresstests geeignet.
 - Enthält Simulation.
 - PyTorch/CuPy-Abhängigkeiten für Leistungsanalysen.
 
-### Schnelle Einführung
+### Schnellstart
 
 1. **Repository herunterladen** oder klonen.
 2. **Einrichten** ausführen:
 
-   **Windows**: Führe das Einrichtungsskript aus.
+   **Windows**: Führe das Setup-Skript aus.
 
 ```powershell
    .\setup.ps1
@@ -168,21 +168,23 @@ Am besten für Entwicklung und Stresstests geeignet.
 **Linux/macOS:**
 
 ```bash
-Berechtige die Datei: `chmod +x setup.sh`
-Führe die Installation aus: `./setup.sh`
+Berechtige die Datei setup.sh mit `chmod +x setup.sh`.
+Führe dann `./setup.sh` aus.
 ```
 
 **Starten**:
 
 ```bash
-# Starten Sie die Web-Benutzeroberfläche (Standard/Voll)
+# Starten Sie die Web-Dashboard-Schnittstelle (Standard/Voll)
 python health_monitor.py web
 
-# Starten Sie die CLI-Schnittstelle
+# Starten Sie die Befehlszeilen-Schnittstelle
 python health_monitor.py cli
 ```
 
-## Lizenz
+---
+
+## License
 
 Siehe [LICENSE](../LICENSE) für Details.
 
