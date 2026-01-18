@@ -21,12 +21,12 @@
 
 <!-- HTML_BLOCK:... -->
 
-> *MyGPU: Utilidad de Gestión de GPU Ligera: un envoltorio compacto de `nvidia-smi` con un elegante panel web.*
+> *MyGPU: Utilidad de gestión de GPU ligera: un envoltorio compacto de `nvidia-smi` con un elegante panel web.*
 
 <!-- HTML_BLOCK: no change to url; output entire as it is... -->
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
 ![Python](https://img.shields.io/badge/python-3.10%2B-pink)
-![Version](https://img.shields.io/badge/version-1.4.0-green)
+![Version](https://img.shields.io/badge/version-2.0.0-green)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue)
 ![cuda 12.x](https://img.shields.io/badge/CUDA-12.x-0f9d58?logo=nvidia)
 
@@ -35,7 +35,7 @@
 <details>
 
   <summary>
-  Tablero Web
+  Panel Web
   </summary>
 
   <div style="display:flex; overflow-x:auto; gap:10px; padding:12px 0; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;">
@@ -83,7 +83,7 @@
 ### ¿Por qué usar esto?
 
 - **Ligero**: Huella de recursos mínima.
-- **Versátil**: Se ejecuta como una herramienta de línea de comandos (CLI) o un panel web completo.
+- **Versátil**: Funciona como una herramienta de línea de comandos (CLI) o un panel web completo.
 - **Centrado en la administración**: Incluye características como **aplicación de límites de VRAM** (detención automática de procesos que superen los límites) y **listas de vigilancia**.
 - **Amigable para desarrolladores**: Herramientas integradas de benchmarking y pruebas de estrés (GEMM, Física de Partículas) para validar la estabilidad del sistema.
 
@@ -107,7 +107,7 @@
 ¡Las contribuciones son bienvenidas! Los puntos futuros principales a cubrir serían:
 
 - **Soporte Multi-GPU**: Manejo mejorado para configuraciones de múltiples tarjetas y topologías NVLink.
-- **Contenedorización**: Soporte oficial para Docker para facilitar la implementación en entornos contenedorizados.
+- **Contenedorización**: Soporte oficial para Docker para una fácil implementación en entornos contenedorizados.
 - **Acceso Remoto**: Integración de túneles SSH y gestión remota segura.
 - **Plataformas Cruzadas**:
 
@@ -129,7 +129,7 @@ Consulte [CONTRIBUTING.md](../CONTRIBUTING.md) para saber cómo involucrarse.
 - **Python**: 3.10+
 - **Hardware**: NVIDIA GPU (todas las plataformas), Apple Silicon (macOS) o solo CPU.
 - **CUDA**: Toolkit 12.x (Recomendado para Benchmarking/Simulación en NVIDIA).
-  - *Nota: Si CUDA/MPS no se detecta, algunas características de benchmarking podrían estar deshabilitadas.*
+  - *Nota: Si no se detecta CUDA/MPS, algunas características de benchmarking podrían estar deshabilitadas.*
 
 ## Instalación
 
